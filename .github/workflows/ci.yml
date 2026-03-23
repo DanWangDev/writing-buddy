@@ -39,9 +39,7 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
-      - name: Run tests
-        run: npm run test -w packages/backend
-      - name: Run coverage
+      - name: Run tests with coverage
         run: npm run test:coverage -w packages/backend
 
   test-frontend:
@@ -55,9 +53,7 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
-      - name: Run tests
-        run: npm run test -w packages/frontend
-      - name: Run coverage
+      - name: Run tests with coverage
         run: npm run test:coverage -w packages/frontend
 
   build:
