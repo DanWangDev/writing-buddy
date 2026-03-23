@@ -5,7 +5,12 @@ import { requireAuth } from '../middleware/auth.js'
 import { SqliteCoachingPassRepository } from '../repositories/sqlite/coaching-pass-repository.js'
 import { SqliteSubmissionRepository } from '../repositories/sqlite/submission-repository.js'
 import { SqliteRevisionRepository } from '../repositories/sqlite/revision-repository.js'
+import { SqliteRubricScoresRepository } from '../repositories/sqlite/rubric-scores-repository.js'
+import { SqliteProgressRepository } from '../repositories/sqlite/progress-repository.js'
+import { SqlitePromptRepository } from '../repositories/sqlite/prompt-repository.js'
 import { AiCoachService } from '../services/coaching/ai-coach.js'
+import { RubricScorerService } from '../services/scoring/rubric-scorer.js'
+import { ProgressService } from '../services/progress-service.js'
 import { ContentSafetyService } from '../services/content-safety.js'
 import { ClaudeAdapter } from '../services/llm/claude-adapter.js'
 import { env } from '../config/env.js'
@@ -37,6 +42,9 @@ export function createCoachingRouter(
   const coachingPassRepo = new SqliteCoachingPassRepository(db)
   const submissionRepo = new SqliteSubmissionRepository(db)
   const revisionRepo = new SqliteRevisionRepository(db)
+  const rubricScoresRepo = new SqliteRubricScoresRepository(db)
+  const progressRepo = new SqliteProgressRepository(db)
+  const promptRepo = new SqlitePromptRepository(db)
   const contentSafety = new ContentSafetyService()
 
   const provider: LLMProvider = llmProvider ?? createDefaultProvider()
@@ -53,6 +61,9 @@ export function createCoachingRouter(
     }
   )
 
+  const rubricScorer = new RubricScorerService(provider, rubricScoresRepo)
+  const progressService = new ProgressService(progressRepo)
+
   router.post(
     '/:id/coach',
     requireAuth,
@@ -63,7 +74,42 @@ export function createCoachingRouter(
 
         const coachingPass = await aiCoach.getNextPass(submissionId, userId)
 
-        res.status(201).json({ success: true, data: coachingPass })
+        progressService.recordCoachingActivity(userId)
+
+        let scores = undefined
+
+        if (coachingPass.passType === 'polish') {
+          try {
+            const submission = submissionRepo.findById(submissionId)
+            const revisions = revisionRepo.findBySubmissionId(submissionId)
+            const latestRevision = revisions[revisions.length - 1]
+
+            let promptBody = 'Free writing exercise'
+            if (submission?.promptId) {
+              const prompt = promptRepo.findById(submission.promptId)
+              if (prompt) {
+                promptBody = prompt.body
+              }
+            }
+
+            scores = await rubricScorer.scoreSubmission(
+              submissionId,
+              latestRevision.content,
+              promptBody
+            )
+          } catch (error) {
+            logger.error('Rubric scoring failed during coaching', {
+              submissionId,
+              error: String(error),
+            })
+          }
+        }
+
+        const responseData = scores
+          ? { ...coachingPass, scores }
+          : coachingPass
+
+        res.status(201).json({ success: true, data: responseData })
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
 
