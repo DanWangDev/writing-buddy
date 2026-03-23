@@ -9,6 +9,8 @@ import {
   CheckCircle2,
   Loader2,
   ArrowLeft,
+  BookOpen,
+  Target,
 } from 'lucide-react'
 import * as api from '../services/api'
 import type {
@@ -160,32 +162,86 @@ export function WritingDesk() {
     )
   }
 
+  const genreColors: Record<string, string> = {
+    adventure: 'bg-emerald-100 text-emerald-700',
+    mystery: 'bg-violet-100 text-violet-700',
+    'sci-fi': 'bg-cyan-100 text-cyan-700',
+    fantasy: 'bg-pink-100 text-pink-700',
+    humor: 'bg-yellow-100 text-yellow-700',
+    descriptive: 'bg-blue-100 text-blue-700',
+    persuasive: 'bg-red-100 text-red-700',
+  }
+
+  const difficultyLabels: Record<string, { label: string; color: string }> = {
+    beginner: { label: 'Beginner', color: 'text-green-600 bg-green-50 border-green-200' },
+    standard: { label: 'Standard', color: 'text-yellow-600 bg-yellow-50 border-yellow-200' },
+    challenge: { label: 'Challenge', color: 'text-red-600 bg-red-50 border-red-200' },
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-          aria-label="Go back"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-xl font-bold text-gray-900">
-            {prompt ? prompt.title : 'Free Writing'}
-          </h1>
-          {prompt && (
-            <p className="text-sm text-gray-500 mt-0.5">{prompt.body}</p>
+      {/* Back button */}
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
+        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+        aria-label="Go back"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back
+      </button>
+
+      {/* Prompt context banner */}
+      {prompt ? (
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-indigo-500" />
+              <h1 className="text-lg font-bold text-gray-900">{prompt.title}</h1>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {currentPass > 0 && (
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700">
+                  Pass {currentPass}/4
+                </span>
+              )}
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 leading-relaxed mb-4">{prompt.body}</p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${genreColors[prompt.genre] ?? 'bg-gray-100 text-gray-700'}`}>
+              {prompt.genre}
+            </span>
+            <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${difficultyLabels[prompt.difficulty]?.color ?? 'text-gray-600 bg-gray-50 border-gray-200'}`}>
+              {difficultyLabels[prompt.difficulty]?.label ?? prompt.difficulty}
+            </span>
+            {prompt.wordCountTarget && (
+              <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+                <Target className="w-3.5 h-3.5" />
+                {prompt.wordCountTarget} words target
+              </span>
+            )}
+            {prompt.tags && prompt.tags.length > 0 && (
+              <div className="flex items-center gap-1.5 ml-auto">
+                {prompt.tags.map((tag: string) => (
+                  <span key={tag} className="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-bold text-gray-900">Free Writing</h1>
+          {currentPass > 0 && (
+            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700">
+              Pass {currentPass}/4
+            </span>
           )}
         </div>
-        {currentPass > 0 && (
-          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700">
-            Pass {currentPass} of 4
-          </span>
-        )}
-      </div>
+      )}
 
       {error && (
         <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3" role="alert">

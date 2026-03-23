@@ -5,6 +5,7 @@ import type { Database } from 'better-sqlite3'
 import { requireAuth } from '../middleware/auth.js'
 import { SqliteSubmissionRepository } from '../repositories/sqlite/submission-repository.js'
 import { SqliteRevisionRepository } from '../repositories/sqlite/revision-repository.js'
+import { SqlitePromptRepository } from '../repositories/sqlite/prompt-repository.js'
 import { SqliteProgressRepository } from '../repositories/sqlite/progress-repository.js'
 import { ProgressService } from '../services/progress-service.js'
 import { logger } from '../services/logger.js'
@@ -31,6 +32,7 @@ export function createSubmissionRouter(db: Database): Router {
   const router = Router()
   const submissionRepo = new SqliteSubmissionRepository(db)
   const revisionRepo = new SqliteRevisionRepository(db)
+  const promptRepo = new SqlitePromptRepository(db)
   const progressRepo = new SqliteProgressRepository(db)
   const progressService = new ProgressService(progressRepo)
 
@@ -90,10 +92,13 @@ export function createSubmissionRouter(db: Database): Router {
       }
 
       const revisions = revisionRepo.findBySubmissionId(id)
+      const prompt = submission.promptId
+        ? promptRepo.findById(submission.promptId)
+        : null
 
       res.json({
         success: true,
-        data: { ...submission, revisions },
+        data: { ...submission, revisions, prompt: prompt ?? undefined },
       })
     } catch (error) {
       logger.error('Failed to get submission', { error: String(error) })
