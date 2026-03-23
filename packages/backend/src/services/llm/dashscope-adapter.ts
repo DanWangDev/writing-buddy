@@ -74,20 +74,45 @@ export class DashScopeAdapter implements LLMProvider {
       body: JSON.stringify(body),
     })
 
+    const responseText = await response.text()
+
     if (!response.ok) {
-      const errorBody = (await response.json()) as OpenAIErrorResponse
-      const message = errorBody?.error?.message ?? `HTTP ${response.status}`
+      let message = `HTTP ${response.status}`
+      try {
+        const errorBody = JSON.parse(responseText) as OpenAIErrorResponse
+        message = errorBody?.error?.message ?? message
+      } catch {
+        message = responseText || message
+      }
       logger.error('LLM API error', {
         status: response.status,
         message,
+        url,
       })
       throw new Error(`DashScope API error: ${message}`)
     }
 
-    const data = (await response.json()) as OpenAIChatResponse
+    if (!responseText) {
+      throw new Error('DashScope API returned empty response')
+    }
+
+    let data: OpenAIChatResponse
+    try {
+      data = JSON.parse(responseText) as OpenAIChatResponse
+    } catch {
+      logger.error('LLM API returned invalid JSON', {
+        responseText: responseText.slice(0, 200),
+        url,
+      })
+      throw new Error('DashScope API returned invalid response')
+    }
+
+    if (!data.choices || data.choices.length === 0) {
+      throw new Error('DashScope API returned no choices')
+    }
 
     const content = data.choices[0]?.message?.content ?? ''
-    const tokensUsed = data.usage.total_tokens
+    const tokensUsed = data.usage?.total_tokens ?? 0
 
     logger.info('LLM response received', {
       model: data.model,

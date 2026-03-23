@@ -139,8 +139,12 @@ describe('AiCoachService', () => {
         { freeTierDailySessions: 2, dailySpendCeiling: 50, costPerToken: 0.000003 }
       )
 
+      // Create a second submission so we hit 2 distinct submissions
+      const submission2 = submissionRepo.create(userId)
+      revisionRepo.create(submission2.id, 'Another story about a knight.')
+
       await aiCoach.getNextPass(submissionId, userId)
-      await aiCoach.getNextPass(submissionId, userId)
+      await aiCoach.getNextPass(submission2.id, userId)
 
       await expect(
         aiCoach.getNextPass(submissionId, userId)
@@ -181,13 +185,12 @@ describe('AiCoachService', () => {
       ).rejects.toThrow('Access denied')
     })
 
-    it('uses fallback feedback when LLM fails', async () => {
+    it('throws error when LLM fails', async () => {
       mockLLM.shouldThrow = true
 
-      const pass = await aiCoach.getNextPass(submissionId, userId)
-
-      expect(pass.feedback).toContain('Great work on your writing')
-      expect(pass.llmModel).toBeUndefined()
+      await expect(aiCoach.getNextPass(submissionId, userId)).rejects.toThrow(
+        'Our AI coach is temporarily unavailable'
+      )
     })
 
     it('updates submission status to in_coaching', async () => {
