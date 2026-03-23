@@ -163,8 +163,11 @@ describe('Coaching Routes', () => {
 
       expect(res.status).toBe(200)
       expect(res.body.success).toBe(true)
-      expect(res.body.data).toHaveLength(1)
-      expect(res.body.data[0].passType).toBe('acknowledgment')
+      expect(res.body.data.passes).toHaveLength(1)
+      expect(res.body.data.passes[0].passType).toBe('acknowledgment')
+      expect(res.body.data.currentPass).toBe(1)
+      expect(res.body.data.isComplete).toBe(false)
+      expect(res.body.data.submissionId).toBe(submissionId)
     })
 
     it('returns empty array when no passes exist', async () => {
@@ -173,7 +176,12 @@ describe('Coaching Routes', () => {
         .set('Authorization', `Bearer ${token}`)
 
       expect(res.status).toBe(200)
-      expect(res.body.data).toEqual([])
+      expect(res.body.data).toEqual({
+        submissionId,
+        currentPass: 0,
+        passes: [],
+        isComplete: false,
+      })
     })
 
     it('returns 403 for submission owned by another user', async () => {
