@@ -16,7 +16,7 @@ export function InlineDiff({ oldText, newText }: InlineDiffProps) {
   const diff = useMemo(() => computeWordDiff(oldText, newText), [oldText, newText])
 
   return (
-    <div className="font-handwriting text-xl leading-relaxed text-warm-700">
+    <div className="font-body text-xl leading-relaxed text-warm-700">
       {diff.map((part, idx) => renderPart(part, idx))}
     </div>
   )

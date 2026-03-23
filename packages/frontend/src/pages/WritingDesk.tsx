@@ -340,7 +340,7 @@ export function WritingDesk() {
                 onChange={(e) => setContent(e.target.value)}
                 disabled={isCompleted}
                 placeholder="Start writing your story here... Let your imagination run wild!"
-                className="writing-paper w-full h-80 lg:h-[500px] rounded-[16px] border border-warm-200 p-6 font-handwriting text-xl leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-sky focus:border-transparent disabled:bg-warm-50 disabled:text-warm-400 text-warm-700"
+                className="writing-paper w-full h-80 lg:h-[500px] rounded-[16px] border border-warm-200 p-6 font-body text-xl leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-sky focus:border-transparent disabled:bg-warm-50 disabled:text-warm-400 text-warm-700"
                 aria-label="Writing area"
               />
 

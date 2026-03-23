@@ -183,7 +183,7 @@ export function SubmissionDetail() {
                     newText={currentRevision.content}
                   />
                 ) : (
-                  <div className="font-handwriting text-xl max-w-none text-warm-700 whitespace-pre-wrap leading-relaxed">
+                  <div className="font-body text-xl max-w-none text-warm-700 whitespace-pre-wrap leading-relaxed">
                     {currentRevision.content}
                   </div>
                 )}
