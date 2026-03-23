@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { WordCounter } from '../components/WordCounter'
 import { CoachingFeedback } from '../components/CoachingFeedback'
@@ -260,6 +260,15 @@ export function WritingDesk() {
     setCategorySuggestion(null)
   }, [])
 
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useLayoutEffect(() => {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${Math.max(320, el.scrollHeight)}px`
+  }, [content])
+
   const wordCount = countWords(content)
   const isCompleted = submission?.status === 'completed'
   const currentPass = passes.length
@@ -384,11 +393,12 @@ export function WritingDesk() {
           ) : (
             <>
               <textarea
+                ref={textareaRef}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 disabled={isCompleted}
                 placeholder="Start writing your story here... Let your imagination run wild!"
-                className="writing-paper w-full h-80 lg:h-[500px] rounded-[16px] border border-warm-200 p-6 font-body text-xl leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-sky focus:border-transparent disabled:bg-warm-50 disabled:text-warm-400 text-warm-700"
+                className="writing-paper w-full min-h-80 rounded-[16px] border border-warm-200 p-6 font-body text-xl leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-sky focus:border-transparent disabled:bg-warm-50 disabled:text-warm-400 text-warm-700 overflow-hidden"
                 aria-label="Writing area"
               />
 
