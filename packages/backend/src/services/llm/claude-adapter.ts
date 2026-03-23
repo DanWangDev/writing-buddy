@@ -26,14 +26,14 @@ export class ClaudeAdapter implements LLMProvider {
   private readonly model: string
   private readonly baseUrl: string
 
-  constructor(apiKey?: string, model?: string) {
-    this.apiKey = apiKey ?? env.ANTHROPIC_API_KEY
+  constructor(apiKey: string, model?: string) {
+    this.apiKey = apiKey
     this.model = model ?? env.LLM_MODEL
     this.baseUrl = 'https://api.anthropic.com/v1/messages'
 
     if (!this.apiKey) {
       throw new Error(
-        'ANTHROPIC_API_KEY is not configured. Set it in your .env file.'
+        'Anthropic API key is required. Pass it as a constructor argument.'
       )
     }
   }

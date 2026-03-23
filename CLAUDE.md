@@ -22,7 +22,7 @@ writting-buddy/
 ├── packages/
 │   ├── shared/          # Shared TypeScript types
 │   ├── backend/         # Express API (port 5050)
-│   └── frontend/        # React SPA (port 5173 dev, 3000 prod)
+│   └── frontend/        # React SPA (port 5179 dev, 5055 prod)
 ├── .github/workflows/   # CI pipeline
 ├── docker-compose.yml   # Production deployment
 └── deploy.sh            # One-command redeploy

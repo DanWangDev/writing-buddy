@@ -10,7 +10,7 @@ export const env = {
   JWT_SECRET: process.env.JWT_SECRET || 'dev-secret-change-in-production',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '15m',
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
-  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:5179',
   DASHSCOPE_API_KEY: process.env.DASHSCOPE_API_KEY || '',
   LLM_BASE_URL: process.env.LLM_BASE_URL || 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
   LLM_MODEL: process.env.LLM_MODEL || 'qwen-plus',
