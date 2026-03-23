@@ -2,12 +2,16 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
+COPY packages/shared/package.json packages/shared/
 COPY packages/frontend/package.json packages/frontend/
 COPY package.json package-lock.json ./
 
-RUN npm ci --workspace=packages/frontend
+RUN npm ci --workspace=packages/shared --workspace=packages/frontend
 
+COPY packages/shared/ packages/shared/
 COPY packages/frontend/ packages/frontend/
+
+RUN npm run build -w packages/shared
 
 ARG VITE_API_URL=/api
 ENV VITE_API_URL=${VITE_API_URL}
