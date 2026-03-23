@@ -72,14 +72,14 @@ export function SubmissionDetail() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+        <Loader2 className="w-8 h-8 text-sky animate-spin" />
       </div>
     )
   }
 
   if (!submission) {
     return (
-      <div className="text-center py-20 text-gray-400">
+      <div className="text-center py-20 text-warm-400">
         <p>Submission not found.</p>
       </div>
     )
@@ -95,16 +95,16 @@ export function SubmissionDetail() {
         <button
           type="button"
           onClick={() => navigate('/portfolio')}
-          className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+          className="p-2 text-warm-400 hover:text-warm-600 transition-colors rounded-lg hover:bg-warm-100"
           aria-label="Back to portfolio"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex-1">
-          <h1 className="text-xl font-bold text-gray-900">
+          <h1 className="font-display text-xl font-bold text-warm-800">
             {prompt ? prompt.title : `Submission #${submission.id.slice(0, 8)}`}
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-warm-500">
             {new Date(submission.startedAt).toLocaleDateString()} &middot;{' '}
             {submission.xpEarned} XP earned
           </p>
@@ -112,7 +112,7 @@ export function SubmissionDetail() {
         {canResume && (
           <Link
             to={`/write/${submission.id}`}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 h-10 text-sm font-semibold rounded-[10px] bg-sky text-white hover:bg-sky-dark transition-colors shadow-sm shadow-sky/20"
           >
             <PenLine className="w-4 h-4" />
             Resume Writing
@@ -121,7 +121,7 @@ export function SubmissionDetail() {
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3" role="alert">
+        <div className="bg-red-50 text-red-700 text-sm rounded-[10px] px-4 py-3 border-l-4 border-red-500" role="alert">
           {error}
         </div>
       )}
@@ -137,10 +137,10 @@ export function SubmissionDetail() {
                   key={rev.id}
                   type="button"
                   onClick={() => setSelectedRevision(idx)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
                     selectedRevision === idx
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                      ? 'bg-sky text-white'
+                      : 'bg-white border border-warm-200 text-warm-600 hover:bg-warm-50'
                   }`}
                 >
                   Revision {rev.revisionNumber}
@@ -150,18 +150,18 @@ export function SubmissionDetail() {
           )}
 
           {/* Content display */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="writing-paper rounded-[16px] border border-warm-200 p-6">
             {currentRevision ? (
               <>
-                <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap leading-relaxed">
+                <div className="font-handwriting text-xl max-w-none text-warm-700 whitespace-pre-wrap leading-relaxed">
                   {currentRevision.content}
                 </div>
-                <div className="mt-4 pt-3 border-t border-gray-100">
+                <div className="mt-4 pt-3 border-t border-warm-200">
                   <WordCounter count={currentRevision.wordCount} target={prompt?.wordCountTarget} />
                 </div>
               </>
             ) : (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8 text-warm-400">
                 <FileText className="w-8 h-8 mx-auto mb-2" />
                 <p>No content in this revision.</p>
               </div>
@@ -170,8 +170,8 @@ export function SubmissionDetail() {
 
           {/* Diff view between revisions */}
           {revisions.length > 1 && selectedRevision > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h3 className="font-semibold text-gray-800 mb-3 text-sm">
+            <div className="bg-white rounded-[16px] border border-warm-200 p-5">
+              <h3 className="font-display font-semibold text-warm-800 mb-3 text-sm">
                 Changes from Revision {revisions[selectedRevision - 1]?.revisionNumber} to{' '}
                 {currentRevision?.revisionNumber}
               </h3>
@@ -186,9 +186,9 @@ export function SubmissionDetail() {
         {/* Sidebar */}
         <div className="space-y-4">
           {/* Coaching feedback */}
-          <h2 className="font-semibold text-gray-800">Coaching Feedback</h2>
+          <h2 className="font-display text-lg font-semibold text-warm-800">Coaching Feedback</h2>
           {passes.length === 0 ? (
-            <p className="text-sm text-gray-400">No coaching feedback yet.</p>
+            <p className="text-sm text-warm-400">No coaching feedback yet.</p>
           ) : (
             passes.map((pass, idx) => (
               <CoachingFeedback key={pass.id} pass={pass} passNumber={idx + 1} />

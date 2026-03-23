@@ -52,7 +52,7 @@ export function Dashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+        <Loader2 className="w-8 h-8 text-sky animate-spin" />
       </div>
     )
   }
@@ -60,92 +60,98 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+      <div className="bg-white rounded-2xl border border-warm-200 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="font-display text-2xl font-bold text-warm-800">
               Welcome back, {user?.displayName ?? 'Writer'}!
             </h1>
-            <p className="text-gray-500 mt-1">Ready to write something amazing today?</p>
+            <p className="text-warm-500 mt-1 text-base">Ready to write something amazing today?</p>
           </div>
           <Link
             to="/write"
-            className="inline-flex items-center gap-2 bg-indigo-600 text-white font-medium rounded-lg px-5 py-2.5 text-sm hover:bg-indigo-700 transition-colors shrink-0"
+            className="inline-flex items-center gap-2 bg-sky text-white font-semibold rounded-[10px] px-5 h-12 text-base hover:bg-sky-dark transition-colors shrink-0 shadow-sm shadow-sky/20"
           >
-            <PenLine className="w-4 h-4" />
+            <PenLine className="w-5 h-5" />
             Start Writing
           </Link>
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3" role="alert">
+        <div className="bg-red-50 text-red-700 text-sm rounded-[10px] px-4 py-3 border-l-4 border-red-500" role="alert">
           {error}
         </div>
       )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-            <span className="text-lg">🔥</span>
+        <div className="bg-white rounded-[16px] border border-warm-200 p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-[10px] bg-coral/10 flex items-center justify-center">
+            <span className="text-2xl">🔥</span>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Writing Streak</p>
+            <p className="text-sm font-semibold text-warm-500">Writing Streak</p>
             <StreakBadge streak={streak} />
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
-            <Trophy className="w-5 h-5 text-indigo-600" />
+        <div className="bg-white rounded-[16px] border border-warm-200 p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-[10px] bg-gold/10 flex items-center justify-center">
+            <Trophy className="w-6 h-6 text-gold-dark" />
           </div>
           <div>
-            <p className="text-sm text-gray-500">XP Today</p>
-            <p className="text-xl font-bold text-gray-900">{todayXp}</p>
+            <p className="text-sm font-semibold text-warm-500">XP Today</p>
+            <p className="font-display text-2xl font-bold text-warm-800">{todayXp}</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-            <Clock className="w-5 h-5 text-purple-600" />
+        <div className="bg-white rounded-[16px] border border-warm-200 p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-[10px] bg-violet/10 flex items-center justify-center">
+            <Clock className="w-6 h-6 text-violet-dark" />
           </div>
           <div>
-            <p className="text-sm text-gray-500">Words This Week</p>
-            <p className="text-xl font-bold text-gray-900">{totalWords}</p>
+            <p className="text-sm font-semibold text-warm-500">Words This Week</p>
+            <p className="font-display text-2xl font-bold text-warm-800">{totalWords}</p>
           </div>
         </div>
       </div>
 
       {/* Recent submissions */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+      <div className="bg-white rounded-2xl border border-warm-200 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-gray-800">Recent Writing</h2>
+          <h2 className="font-display text-lg font-semibold text-warm-800">Recent Writing</h2>
           <Link
             to="/portfolio"
-            className="text-sm text-indigo-600 font-medium hover:underline flex items-center gap-1"
+            className="text-sm text-sky font-semibold hover:underline flex items-center gap-1"
           >
             View all <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
 
         {recentSubmissions.length === 0 ? (
-          <p className="text-gray-400 text-sm py-4 text-center">
-            No submissions yet. Start your first story!
-          </p>
+          <div className="text-center py-8">
+            <p className="text-warm-400 text-base">No stories yet — time to start your first adventure!</p>
+            <Link
+              to="/prompts"
+              className="inline-flex items-center gap-2 mt-4 bg-sky text-white font-semibold rounded-[10px] px-5 h-12 text-base hover:bg-sky-dark transition-colors"
+            >
+              Browse Prompts
+            </Link>
+          </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-warm-100">
             {recentSubmissions.map((sub) => (
               <Link
                 key={sub.id}
                 to={sub.status === 'completed' ? `/portfolio/${sub.id}` : `/write/${sub.id}`}
-                className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors"
+                className="flex items-center justify-between py-3 hover:bg-warm-50 -mx-2 px-2 rounded-[10px] transition-colors"
               >
                 <div>
-                  <p className="text-sm font-medium text-gray-700">
+                  <p className="text-base font-semibold text-warm-700">
                     Submission #{sub.id.slice(0, 8)}
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-sm text-warm-400">
                     {sub.wordCount} words &middot; {new Date(sub.startedAt).toLocaleDateString()}
                   </p>
                 </div>
@@ -161,8 +167,8 @@ export function Dashboard() {
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    draft: 'bg-gray-100 text-gray-600',
-    in_coaching: 'bg-blue-100 text-blue-700',
+    draft: 'bg-warm-100 text-warm-600',
+    in_coaching: 'bg-sky/10 text-sky',
     completed: 'bg-green-100 text-green-700',
   }
 
@@ -173,7 +179,7 @@ function StatusBadge({ status }: { status: string }) {
   }
 
   return (
-    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${styles[status] ?? styles.draft}`}>
+    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${styles[status] ?? styles.draft}`}>
       {labels[status] ?? status}
     </span>
   )

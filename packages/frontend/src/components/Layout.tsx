@@ -37,14 +37,18 @@ export function Layout() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-warm-50">
       {/* Top nav */}
-      <header className="bg-white/80 backdrop-blur border-b border-gray-200 sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+      <header className="bg-white/90 backdrop-blur-sm border-b border-warm-200 sticky top-0 z-30">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <NavLink to="/" className="flex items-center gap-2 font-bold text-indigo-700">
-              <PenLine className="w-5 h-5" />
-              <span className="hidden sm:inline">Writing Buddy</span>
+            <NavLink to="/" className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl bg-sky flex items-center justify-center">
+                <PenLine className="w-5 h-5 text-white" />
+              </div>
+              <span className="hidden sm:inline font-display font-bold text-xl text-warm-800">
+                Writing Buddy
+              </span>
             </NavLink>
 
             {/* Desktop nav */}
@@ -55,10 +59,10 @@ export function Layout() {
                   to={item.to}
                   end={item.to === '/'}
                   className={({ isActive }) =>
-                    `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    `flex items-center gap-1.5 px-3 py-2 rounded-[10px] text-sm font-semibold transition-colors ${
                       isActive
-                        ? 'bg-indigo-100 text-indigo-700'
-                        : 'text-gray-600 hover:bg-gray-100'
+                        ? 'bg-sky/10 text-sky'
+                        : 'text-warm-500 hover:bg-warm-100 hover:text-warm-700'
                     }`
                   }
                 >
@@ -71,13 +75,13 @@ export function Layout() {
 
           <div className="flex items-center gap-3">
             <StreakBadge streak={streak} />
-            <span className="text-sm font-medium text-gray-700 hidden sm:inline">
+            <span className="text-sm font-semibold text-warm-700 hidden sm:inline">
               {user?.displayName}
             </span>
             <button
               type="button"
               onClick={handleLogout}
-              className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+              className="p-2 text-warm-400 hover:text-red-500 transition-colors rounded-lg hover:bg-warm-100"
               aria-label="Log out"
             >
               <LogOut className="w-4 h-4" />
@@ -87,7 +91,7 @@ export function Layout() {
             <button
               type="button"
               onClick={() => setMobileOpen((p) => !p)}
-              className="md:hidden p-2 text-gray-500"
+              className="md:hidden p-2 text-warm-500"
               aria-label="Toggle menu"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,7 +103,7 @@ export function Layout() {
 
         {/* Mobile nav */}
         {mobileOpen && (
-          <nav className="md:hidden border-t border-gray-100 px-4 pb-3 pt-2 flex flex-col gap-1">
+          <nav className="md:hidden border-t border-warm-200 px-4 pb-3 pt-2 flex flex-col gap-1 bg-white">
             {NAV_ITEMS.map((item) => (
               <NavLink
                 key={item.to}
@@ -107,10 +111,10 @@ export function Layout() {
                 end={item.to === '/'}
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${
+                  `flex items-center gap-2 px-3 py-3 rounded-[10px] text-sm font-semibold ${
                     isActive
-                      ? 'bg-indigo-100 text-indigo-700'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      ? 'bg-sky/10 text-sky'
+                      : 'text-warm-500 hover:bg-warm-100'
                   }`
                 }
               >
