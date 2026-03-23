@@ -2,8 +2,25 @@ node_modules/
 dist/
 .env
 .env.local
+.env.production
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
 .DS_Store
 Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Build artifacts
+*.tsbuildinfo
+
+# Coverage
+coverage/
+
+# Data
+packages/backend/data/
+
+# Logs
+*.log
