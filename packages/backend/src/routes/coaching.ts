@@ -12,14 +12,14 @@ import { AiCoachService } from '../services/coaching/ai-coach.js'
 import { RubricScorerService } from '../services/scoring/rubric-scorer.js'
 import { ProgressService } from '../services/progress-service.js'
 import { ContentSafetyService } from '../services/content-safety.js'
-import { ClaudeAdapter } from '../services/llm/claude-adapter.js'
+import { DashScopeAdapter } from '../services/llm/dashscope-adapter.js'
 import { env } from '../config/env.js'
 import { logger } from '../services/logger.js'
 import type { LLMProvider, LLMProviderOptions, LLMResponse } from '../services/llm/provider.js'
 
 function createDefaultProvider(): LLMProvider {
-  if (!env.ANTHROPIC_API_KEY) {
-    logger.warn('ANTHROPIC_API_KEY not set — coaching will use a no-op LLM provider')
+  if (!env.DASHSCOPE_API_KEY) {
+    logger.warn('DASHSCOPE_API_KEY not set — coaching will use a no-op LLM provider')
     return {
       async generateResponse(
         _systemPrompt: string,
@@ -30,7 +30,7 @@ function createDefaultProvider(): LLMProvider {
       },
     }
   }
-  return new ClaudeAdapter()
+  return new DashScopeAdapter()
 }
 
 export function createCoachingRouter(

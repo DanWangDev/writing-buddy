@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: packages/backend/Dockerfile
     ports:
-      - "3001:3001"
+      - "5050:5050"
     volumes:
       - db-data:/app/data
     env_file:

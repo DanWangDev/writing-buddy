@@ -27,6 +27,6 @@ RUN mkdir -p /app/data
 ENV NODE_ENV=production
 ENV DATABASE_PATH=/app/data/writting-buddy.db
 
-EXPOSE 3001
+EXPOSE 5050
 
 CMD ["node", "dist/index.js"]
