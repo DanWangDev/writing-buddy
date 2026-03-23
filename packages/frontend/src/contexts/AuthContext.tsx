@@ -1,32 +1,18 @@
 import {
-  createContext,
-  useContext,
   useState,
   useEffect,
   useCallback,
 } from 'react'
 import type { ReactNode } from 'react'
-import type { PublicUser, UserRole } from '@writting-buddy/shared'
+import type { UserRole } from '@writting-buddy/shared'
+import { AuthContext } from './auth-context-value'
 import * as api from '../services/api'
 
-interface AuthContextValue {
-  user: PublicUser | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  login: (email: string, password: string) => Promise<void>
-  register: (
-    email: string,
-    displayName: string,
-    password: string,
-    role: UserRole,
-  ) => Promise<void>
-  logout: () => Promise<void>
-}
-
-const AuthContext = createContext<AuthContextValue | null>(null)
+export { AuthContext } from './auth-context-value'
+export type { AuthContextValue } from './auth-context-value'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<PublicUser | null>(null)
+  const [user, setUser] = useState<ReturnType<typeof api.getMe> extends Promise<infer U> ? U | null : never>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -70,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
-  const value: AuthContextValue = {
+  const value = {
     user,
     isAuthenticated: user !== null,
     isLoading,
@@ -80,12 +66,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-export function useAuth(): AuthContextValue {
-  const ctx = useContext(AuthContext)
-  if (!ctx) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return ctx
 }

@@ -29,15 +29,9 @@ export function PromptBrowser() {
   const [error, setError] = useState('')
   const [genre, setGenre] = useState<PromptGenre | 'all'>('all')
   const [difficulty, setDifficulty] = useState<PromptDifficulty>('standard')
-
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
-    setError('')
-
-    const filters: { genre?: PromptGenre; difficulty?: PromptDifficulty } = {
-      difficulty,
-    }
+    const filters: { genre?: PromptGenre; difficulty?: PromptDifficulty } = { difficulty }
     if (genre !== 'all') {
       filters.genre = genre
     }
@@ -45,15 +39,17 @@ export function PromptBrowser() {
     api
       .getPrompts(filters)
       .then((data) => {
-        if (!cancelled) setPrompts(data)
+        if (!cancelled) {
+          setPrompts(data)
+          setError('')
+          setLoading(false)
+        }
       })
       .catch((err) => {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : 'Failed to load prompts.')
+          setLoading(false)
         }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
       })
 
     return () => {
