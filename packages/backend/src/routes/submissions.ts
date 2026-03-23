@@ -5,6 +5,8 @@ import type { Database } from 'better-sqlite3'
 import { requireAuth } from '../middleware/auth.js'
 import { SqliteSubmissionRepository } from '../repositories/sqlite/submission-repository.js'
 import { SqliteRevisionRepository } from '../repositories/sqlite/revision-repository.js'
+import { SqliteProgressRepository } from '../repositories/sqlite/progress-repository.js'
+import { ProgressService } from '../services/progress-service.js'
 import { logger } from '../services/logger.js'
 
 const createSubmissionSchema = z.object({
@@ -29,6 +31,8 @@ export function createSubmissionRouter(db: Database): Router {
   const router = Router()
   const submissionRepo = new SqliteSubmissionRepository(db)
   const revisionRepo = new SqliteRevisionRepository(db)
+  const progressRepo = new SqliteProgressRepository(db)
+  const progressService = new ProgressService(progressRepo)
 
   router.post('/', requireAuth, (req: Request, res: Response) => {
     try {
@@ -41,6 +45,8 @@ export function createSubmissionRouter(db: Database): Router {
 
       const userId = req.user!.sub
       const submission = submissionRepo.create(userId, parsed.data.promptId)
+
+      progressService.recordSubmissionActivity(userId)
 
       res.status(201).json({ success: true, data: submission })
     } catch (error) {
@@ -131,6 +137,8 @@ export function createSubmissionRouter(db: Database): Router {
 
       const revision = revisionRepo.create(id, content)
 
+      progressService.recordRevisionActivity(req.user!.sub, wordCount)
+
       res.status(201).json({ success: true, data: revision })
     } catch (error) {
       logger.error('Failed to create revision', { error: String(error) })
@@ -163,6 +171,10 @@ export function createSubmissionRouter(db: Database): Router {
       const xpEarned = baseXp + (revisionCount * 5)
 
       const completed = submissionRepo.complete(id, xpEarned)
+
+      const userId = req.user!.sub
+      progressService.awardXp(userId, xpEarned)
+      progressService.updateStreakInProgress(userId)
 
       res.json({ success: true, data: completed })
     } catch (error) {
