@@ -7,6 +7,7 @@ import { SqliteCoachingPassRepository } from '../repositories/sqlite/coaching-pa
 import { SqliteSubmissionRepository } from '../repositories/sqlite/submission-repository.js'
 import { SqliteRevisionRepository } from '../repositories/sqlite/revision-repository.js'
 import { SqliteUserRepository } from '../repositories/sqlite/user-repository.js'
+import { SqlitePromptRepository } from '../repositories/sqlite/prompt-repository.js'
 import { AiCoachService } from '../services/coaching/ai-coach.js'
 import { ContentSafetyService } from '../services/content-safety.js'
 import type { LLMProvider, LLMResponse, LLMProviderOptions } from '../services/llm/provider.js'
@@ -40,6 +41,8 @@ describe('AiCoachService', () => {
   let coachingPassRepo: SqliteCoachingPassRepository
   let submissionRepo: SqliteSubmissionRepository
   let revisionRepo: SqliteRevisionRepository
+  let promptRepo: SqlitePromptRepository
+  let userRepo: SqliteUserRepository
   let userId: string
   let submissionId: string
 
@@ -49,7 +52,7 @@ describe('AiCoachService', () => {
     const migrator = new Migrator(db, migrations)
     migrator.migrate()
 
-    const userRepo = new SqliteUserRepository(db)
+    userRepo = new SqliteUserRepository(db)
     const user = userRepo.create({
       email: 'coach@example.com',
       displayName: 'Test Writer',
@@ -70,6 +73,7 @@ describe('AiCoachService', () => {
     )
 
     coachingPassRepo = new SqliteCoachingPassRepository(db)
+    promptRepo = new SqlitePromptRepository(db)
     mockLLM = new MockLLMProvider()
 
     aiCoach = new AiCoachService(
@@ -77,6 +81,8 @@ describe('AiCoachService', () => {
       coachingPassRepo,
       submissionRepo,
       revisionRepo,
+      promptRepo,
+      userRepo,
       new ContentSafetyService(),
       {
         freeTierDailySessions: 3,
@@ -116,6 +122,8 @@ describe('AiCoachService', () => {
         coachingPassRepo,
         submissionRepo,
         revisionRepo,
+        promptRepo,
+        userRepo,
         new ContentSafetyService(),
         { freeTierDailySessions: 10, dailySpendCeiling: 50, costPerToken: 0.000003 }
       )
@@ -135,6 +143,8 @@ describe('AiCoachService', () => {
         coachingPassRepo,
         submissionRepo,
         revisionRepo,
+        promptRepo,
+        userRepo,
         new ContentSafetyService(),
         { freeTierDailySessions: 2, dailySpendCeiling: 50, costPerToken: 0.000003 }
       )
@@ -157,6 +167,8 @@ describe('AiCoachService', () => {
         coachingPassRepo,
         submissionRepo,
         revisionRepo,
+        promptRepo,
+        userRepo,
         new ContentSafetyService(),
         {
           freeTierDailySessions: 100,
@@ -214,6 +226,50 @@ describe('AiCoachService', () => {
       expect(mockLLM.calls).toHaveLength(1)
       expect(mockLLM.calls[0].systemPrompt).toContain('writing coach')
       expect(mockLLM.calls[0].userPrompt).toContain('dragon flew over')
+    })
+
+    it('includes student display name in context', async () => {
+      await aiCoach.getNextPass(submissionId, userId)
+
+      expect(mockLLM.calls[0].userPrompt).toContain('Test Writer')
+    })
+
+    it('includes prompt title and body when available', async () => {
+      const prompt = promptRepo.create({
+        title: 'The Haunted Castle',
+        body: 'Write a story about exploring a haunted castle at midnight.',
+        genre: 'mystery',
+        difficulty: 'standard',
+        wordCountTarget: 300,
+        tags: ['spooky'],
+      })
+
+      const sub = submissionRepo.create(userId, prompt.id)
+      revisionRepo.create(sub.id, 'I crept through the dark hallway of the old castle. The floorboards creaked beneath my feet as shadows danced on the walls.')
+
+      await aiCoach.getNextPass(sub.id, userId)
+
+      expect(mockLLM.calls[0].userPrompt).toContain('The Haunted Castle')
+      expect(mockLLM.calls[0].userPrompt).toContain('haunted castle at midnight')
+    })
+
+    it('includes genre-specific coaching in system prompt', async () => {
+      const prompt = promptRepo.create({
+        title: 'Adventure Quest',
+        body: 'Write about an adventure.',
+        genre: 'adventure',
+        difficulty: 'standard',
+        wordCountTarget: 200,
+        tags: [],
+      })
+
+      const sub = submissionRepo.create(userId, prompt.id)
+      revisionRepo.create(sub.id, 'The explorer hacked through the jungle vines with determination. Each step brought them closer to the hidden temple.')
+
+      await aiCoach.getNextPass(sub.id, userId)
+
+      expect(mockLLM.calls[0].systemPrompt).toContain('adventure')
+      expect(mockLLM.calls[0].systemPrompt).toContain('pacing')
     })
   })
 })

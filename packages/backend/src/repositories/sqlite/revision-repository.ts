@@ -51,6 +51,11 @@ export class SqliteRevisionRepository implements IRevisionRepository {
   }
 
   create(submissionId: string, content: string): Revision {
+    const latest = this.findLatest(submissionId)
+    if (latest && latest.content === content) {
+      return latest
+    }
+
     const id = crypto.randomUUID()
     const now = new Date().toISOString()
     const wordCount = countWords(content)

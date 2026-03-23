@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { WordCounter } from '../components/WordCounter'
 import { CoachingFeedback } from '../components/CoachingFeedback'
+import type { ApplyMode } from '../components/CoachingFeedback'
 import { RubricChart } from '../components/RubricChart'
+import { InlineDiff } from '../components/InlineDiff'
 import {
   Save,
   MessageSquare,
@@ -11,6 +13,8 @@ import {
   ArrowLeft,
   BookOpen,
   Target,
+  Check,
+  X,
 } from 'lucide-react'
 import * as api from '../services/api'
 import type {
@@ -53,7 +57,13 @@ export function WritingDesk() {
   const [saving, setSaving] = useState(false)
   const [coaching, setCoaching] = useState(false)
   const [completing, setCompleting] = useState(false)
+  const [applying, setApplying] = useState(false)
   const [error, setError] = useState('')
+  const lastSavedContent = useRef('')
+
+  // Inline diff preview state
+  const [previewContent, setPreviewContent] = useState<string | null>(null)
+  const [previewMode, setPreviewMode] = useState<string>('')
 
   // Load existing submission
   useEffect(() => {
@@ -71,7 +81,9 @@ export function WritingDesk() {
           data.revisions.length > 0
             ? data.revisions[data.revisions.length - 1]
             : null
-        setContent(lastRevision?.content ?? '')
+        const lastContent = lastRevision?.content ?? ''
+        setContent(lastContent)
+        lastSavedContent.current = lastContent
 
         // Load coaching passes
         try {
@@ -113,10 +125,12 @@ export function WritingDesk() {
         // Create new
         const data = await api.createSubmission({ content })
         setSubmission(data)
+        lastSavedContent.current = content
         navigate(`/write/${data.id}`, { replace: true })
       } else {
         // Add revision
         await api.createRevision(submission.id, content)
+        lastSavedContent.current = content
         const updated = await api.getSubmission(submission.id)
         setSubmission(updated)
       }
@@ -132,8 +146,11 @@ export function WritingDesk() {
     setError('')
     setCoaching(true)
     try {
-      // Save first
-      await api.createRevision(submission.id, content)
+      // Save first (skip if content unchanged)
+      if (content !== lastSavedContent.current) {
+        await api.createRevision(submission.id, content)
+        lastSavedContent.current = content
+      }
       const pass = await api.requestCoaching(submission.id)
       setPasses((prev) => [...prev, pass])
       const updated = await api.getSubmission(submission.id)
@@ -150,7 +167,10 @@ export function WritingDesk() {
     setError('')
     setCompleting(true)
     try {
-      await api.createRevision(submission.id, content)
+      if (content !== lastSavedContent.current) {
+        await api.createRevision(submission.id, content)
+        lastSavedContent.current = content
+      }
       const updated = await api.completeSubmission(submission.id)
       setSubmission(updated)
       try {
@@ -165,6 +185,34 @@ export function WritingDesk() {
       setCompleting(false)
     }
   }, [submission, content])
+
+  const handleApply = useCallback(async (feedback: string, mode: ApplyMode) => {
+    if (!submission) return
+    setError('')
+    setApplying(true)
+    try {
+      const result = await api.applySuggestions(submission.id, content, feedback, mode)
+      setPreviewContent(result.improvedContent)
+      setPreviewMode(mode)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to apply suggestions.')
+    } finally {
+      setApplying(false)
+    }
+  }, [submission, content])
+
+  const handleAcceptPreview = useCallback(() => {
+    if (previewContent) {
+      setContent(previewContent)
+      setPreviewContent(null)
+      setPreviewMode('')
+    }
+  }, [previewContent])
+
+  const handleRejectPreview = useCallback(() => {
+    setPreviewContent(null)
+    setPreviewMode('')
+  }, [])
 
   const wordCount = countWords(content)
   const isCompleted = submission?.status === 'completed'
@@ -252,64 +300,101 @@ export function WritingDesk() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Writing area */}
         <div className="lg:col-span-2 space-y-3">
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            disabled={isCompleted}
-            placeholder="Start writing your story here... Let your imagination run wild!"
-            className="writing-paper w-full h-80 lg:h-[500px] rounded-[16px] border border-warm-200 p-6 font-handwriting text-xl leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-sky focus:border-transparent disabled:bg-warm-50 disabled:text-warm-400 text-warm-700"
-            aria-label="Writing area"
-          />
-
-          <div className="flex items-center justify-between">
-            <WordCounter count={wordCount} target={prompt?.wordCountTarget} />
-
-            {!isCompleted && (
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={saving || !content.trim()}
-                  className="inline-flex items-center gap-1.5 px-4 h-10 text-sm font-semibold rounded-[10px] border-2 border-warm-200 bg-white text-warm-700 hover:bg-warm-50 transition-colors disabled:opacity-50"
-                >
-                  {saving ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4" />
-                  )}
-                  Save
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleCoaching}
-                  disabled={coaching || !content.trim() || currentPass >= 4}
-                  className="inline-flex items-center gap-1.5 px-4 h-10 text-sm font-semibold rounded-[10px] bg-sky text-white hover:bg-sky-dark transition-colors disabled:opacity-50 shadow-sm shadow-sky/20"
-                >
-                  {coaching ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <MessageSquare className="w-4 h-4" />
-                  )}
-                  Get Coaching
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleComplete}
-                  disabled={completing || !content.trim()}
-                  className="inline-flex items-center gap-1.5 px-4 h-10 text-sm font-semibold rounded-[10px] bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50"
-                >
-                  {completing ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <CheckCircle2 className="w-4 h-4" />
-                  )}
-                  Mark Complete
-                </button>
+          {/* Preview mode: show inline diff */}
+          {previewContent ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-violet-dark bg-violet/10 px-3 py-1 rounded-full">
+                    Preview: {previewMode === 'grammar' ? 'Grammar Fix' : previewMode === 'vocabulary' ? 'Vocabulary Boost' : 'Applied Suggestions'}
+                  </span>
+                  <span className="text-xs text-warm-400">Review changes before accepting</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAcceptPreview}
+                    className="inline-flex items-center gap-1 px-4 h-10 text-sm font-semibold rounded-[10px] bg-green-500 text-white hover:bg-green-600 transition-colors"
+                  >
+                    <Check className="w-4 h-4" />
+                    Accept
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRejectPreview}
+                    className="inline-flex items-center gap-1 px-4 h-10 text-sm font-semibold rounded-[10px] border-2 border-warm-200 bg-white text-warm-700 hover:bg-warm-50 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                    Reject
+                  </button>
+                </div>
               </div>
-            )}
-          </div>
+              <div className="writing-paper rounded-[16px] border-2 border-violet/30 p-6">
+                <InlineDiff oldText={content} newText={previewContent} />
+              </div>
+            </div>
+          ) : (
+            <>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                disabled={isCompleted}
+                placeholder="Start writing your story here... Let your imagination run wild!"
+                className="writing-paper w-full h-80 lg:h-[500px] rounded-[16px] border border-warm-200 p-6 font-handwriting text-xl leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-sky focus:border-transparent disabled:bg-warm-50 disabled:text-warm-400 text-warm-700"
+                aria-label="Writing area"
+              />
+
+              <div className="flex items-center justify-between">
+                <WordCounter count={wordCount} target={prompt?.wordCountTarget} />
+
+                {!isCompleted && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      disabled={saving || !content.trim()}
+                      className="inline-flex items-center gap-1.5 px-4 h-10 text-sm font-semibold rounded-[10px] border-2 border-warm-200 bg-white text-warm-700 hover:bg-warm-50 transition-colors disabled:opacity-50"
+                    >
+                      {saving ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Save className="w-4 h-4" />
+                      )}
+                      Save
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleCoaching}
+                      disabled={coaching || !content.trim() || currentPass >= 4}
+                      className="inline-flex items-center gap-1.5 px-4 h-10 text-sm font-semibold rounded-[10px] bg-sky text-white hover:bg-sky-dark transition-colors disabled:opacity-50 shadow-sm shadow-sky/20"
+                    >
+                      {coaching ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <MessageSquare className="w-4 h-4" />
+                      )}
+                      Get Coaching
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleComplete}
+                      disabled={completing || !content.trim()}
+                      className="inline-flex items-center gap-1.5 px-4 h-10 text-sm font-semibold rounded-[10px] bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50"
+                    >
+                      {completing ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="w-4 h-4" />
+                      )}
+                      Mark Complete
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Coaching sidebar */}
@@ -324,7 +409,14 @@ export function WritingDesk() {
             </div>
           ) : (
             passes.map((pass, idx) => (
-              <CoachingFeedback key={pass.id} pass={pass} passNumber={idx + 1} />
+              <CoachingFeedback
+                key={pass.id}
+                pass={pass}
+                passNumber={idx + 1}
+                onApply={handleApply}
+                applying={applying}
+                isCompleted={isCompleted}
+              />
             ))
           )}
 

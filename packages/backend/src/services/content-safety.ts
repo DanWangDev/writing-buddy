@@ -20,24 +20,31 @@ const CONCERNING_INPUT_TERMS: ReadonlyArray<string> = [
   'drug recipe',
 ]
 
-const INAPPROPRIATE_OUTPUT_TERMS: ReadonlyArray<string> = [
-  'profanity_placeholder',
-  'damn',
-  'hell',
-  'crap',
-  'stupid',
-  'idiot',
-  'dumb',
-  'shut up',
-  'loser',
-  'hate you',
-  'you suck',
-  'kill',
-  'die',
-  'drug',
-  'alcohol',
-  'sexual',
-  'violent',
+/**
+ * Output filter for coaching feedback.
+ * Uses word-boundary matching to avoid false positives on legitimate words
+ * like "skills" (contains "kill"), "audience" (contains "die"), etc.
+ *
+ * Only flags terms that are genuinely inappropriate for a writing coach
+ * to say to a 10-11 year old student. Terms that could legitimately appear
+ * in feedback about creative writing stories are excluded.
+ */
+const INAPPROPRIATE_OUTPUT_PATTERNS: ReadonlyArray<RegExp> = [
+  // Direct insults a coach should never use
+  /\bstupid\b/i,
+  /\bidiot\b/i,
+  /\bdumb\b/i,
+  /\bshut up\b/i,
+  /\bloser\b/i,
+  /\bhate you\b/i,
+  /\byou suck\b/i,
+  // Profanity
+  /\bdamn\b/i,
+  /\bcrap\b/i,
+  /\bhell\b/i,
+  // Genuinely inappropriate coach behavior
+  /\bgive up\b/i,
+  /\byou('re| are) (bad|terrible|awful|hopeless)\b/i,
 ]
 
 function containsTerms(
@@ -46,6 +53,18 @@ function containsTerms(
 ): string | undefined {
   const lowered = content.toLowerCase()
   return terms.find((term) => lowered.includes(term))
+}
+
+function matchesPatterns(
+  content: string,
+  patterns: ReadonlyArray<RegExp>
+): string | undefined {
+  for (const pattern of patterns) {
+    if (pattern.test(content)) {
+      return pattern.source
+    }
+  }
+  return undefined
 }
 
 export class ContentSafetyService {
@@ -73,10 +92,10 @@ export class ContentSafetyService {
 
   async filterOutput(content: string): Promise<SafetyScreenResult> {
     try {
-      const matchedTerm = containsTerms(content, INAPPROPRIATE_OUTPUT_TERMS)
-      if (matchedTerm) {
+      const matchedPattern = matchesPatterns(content, INAPPROPRIATE_OUTPUT_PATTERNS)
+      if (matchedPattern) {
         logger.warn('Content safety: inappropriate output detected', {
-          matchedTerm,
+          matchedPattern,
           contentLength: content.length,
         })
         return {

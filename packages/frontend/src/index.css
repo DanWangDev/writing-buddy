@@ -3,7 +3,7 @@
 @theme {
   /* Typography */
   --font-display: 'Fredoka', sans-serif;
-  --font-body: 'Quicksand', sans-serif;
+  --font-body: 'Comic Sans MS', 'Comic Sans', 'Comic Neue', cursive;
   --font-handwriting: 'Caveat', cursive;
 
   /* Core palette */
