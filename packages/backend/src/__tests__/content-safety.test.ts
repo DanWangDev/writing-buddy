@@ -67,11 +67,18 @@ describe('ContentSafetyService', () => {
       expect(result.safe).toBe(false)
     })
 
-    it('flags output with age-inappropriate content', async () => {
+    it('flags output with demeaning language', async () => {
       const result = await service.filterOutput(
-        'Let me tell you about violent acts and sexual content in literature.'
+        'You should just give up on this story. You are terrible at writing.'
       )
       expect(result.safe).toBe(false)
+    })
+
+    it('allows coaching feedback that references story themes like death or conflict', async () => {
+      const result = await service.filterOutput(
+        'I love how your character faces the dragon and nearly dies — that tension really pulls the reader in! Your skills at building suspense are developing nicely.'
+      )
+      expect(result.safe).toBe(true)
     })
 
     it('returns safe true on classifier error (fallback 8C)', async () => {

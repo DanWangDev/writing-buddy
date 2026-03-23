@@ -77,6 +77,13 @@ function buildRevisionHistory(
   return ['Prior revision history:', ...lines].join('\n')
 }
 
+function splitSentences(text: string): string[] {
+  return text
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 0)
+}
+
 function buildDiffSummary(
   revisions: ReadonlyArray<Revision>
 ): string {
@@ -105,7 +112,25 @@ function buildDiffSummary(
         ? `${paragraphDiff} paragraphs`
         : 'same paragraph count'
 
-  return `Changes from last revision: ${wordChange}, ${paragraphChange}`
+  const lines = [`Changes from last revision: ${wordChange}, ${paragraphChange}`]
+
+  // Include text excerpts of what changed
+  const prevSentences = new Set(splitSentences(previous.content))
+  const latestSentences = new Set(splitSentences(latest.content))
+
+  const added = [...latestSentences].filter(s => !prevSentences.has(s))
+  const removed = [...prevSentences].filter(s => !latestSentences.has(s))
+
+  if (added.length > 0) {
+    const examples = added.slice(0, 2).map(s => s.slice(0, 120))
+    lines.push(`New text added: "${examples.join('" / "')}"`)
+  }
+  if (removed.length > 0) {
+    const examples = removed.slice(0, 2).map(s => s.slice(0, 120))
+    lines.push(`Text removed: "${examples.join('" / "')}"`)
+  }
+
+  return lines.join('\n')
 }
 
 export function buildContext(input: ContextInput): BuiltContext {

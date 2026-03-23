@@ -3,6 +3,8 @@ import type { LLMProvider } from '../llm/provider.js'
 import type { ICoachingPassRepository } from '../../repositories/interfaces/coaching-pass-repository.js'
 import type { ISubmissionRepository } from '../../repositories/interfaces/submission-repository.js'
 import type { IRevisionRepository } from '../../repositories/interfaces/revision-repository.js'
+import type { IPromptRepository } from '../../repositories/interfaces/prompt-repository.js'
+import type { IUserRepository } from '../../repositories/interfaces/user-repository.js'
 import { ContentSafetyService } from '../content-safety.js'
 import { buildContext } from './context-builder.js'
 import { buildSystemPrompt, getNextPassType } from './prompts.js'
@@ -23,13 +25,15 @@ const DEFAULT_CONFIG: AiCoachConfig = {
 const FALLBACK_FEEDBACK =
   'Great work on your writing! Keep going — I\'ll have more specific feedback for you next time.'
 
-const MAX_OUTPUT_TOKENS = 500
+const MAX_OUTPUT_TOKENS = 800
 
 export class AiCoachService {
   private readonly llmProvider: LLMProvider
   private readonly coachingPassRepo: ICoachingPassRepository
   private readonly submissionRepo: ISubmissionRepository
   private readonly revisionRepo: IRevisionRepository
+  private readonly promptRepo: IPromptRepository
+  private readonly userRepo: IUserRepository
   private readonly contentSafety: ContentSafetyService
   private readonly config: AiCoachConfig
 
@@ -38,6 +42,8 @@ export class AiCoachService {
     coachingPassRepo: ICoachingPassRepository,
     submissionRepo: ISubmissionRepository,
     revisionRepo: IRevisionRepository,
+    promptRepo: IPromptRepository,
+    userRepo: IUserRepository,
     contentSafety?: ContentSafetyService,
     config?: Partial<AiCoachConfig>
   ) {
@@ -45,6 +51,8 @@ export class AiCoachService {
     this.coachingPassRepo = coachingPassRepo
     this.submissionRepo = submissionRepo
     this.revisionRepo = revisionRepo
+    this.promptRepo = promptRepo
+    this.userRepo = userRepo
     this.contentSafety = contentSafety ?? new ContentSafetyService()
     this.config = { ...DEFAULT_CONFIG, ...config }
   }
@@ -108,9 +116,27 @@ export class AiCoachService {
       this.coachingPassRepo.findBySubmissionId(submissionId)
     const passType = getNextPassType(existingPasses.length)
 
-    const systemPrompt = buildSystemPrompt({ passType })
+    // Fetch prompt and user for richer coaching context
+    let promptTitle: string | undefined
+    let promptBody: string | undefined
+    let promptGenre: string | undefined
+    if (submission.promptId) {
+      const prompt = this.promptRepo.findById(submission.promptId)
+      if (prompt) {
+        promptTitle = prompt.title
+        promptBody = prompt.body
+        promptGenre = prompt.genre
+      }
+    }
+
+    const user = this.userRepo.findById(userId)
+    const studentName = user?.displayName ?? 'Writer'
+
+    const systemPrompt = buildSystemPrompt({ passType, genre: promptGenre })
     const context = buildContext({
-      studentName: 'Writer',
+      studentName,
+      promptTitle,
+      promptBody,
       revisions,
       coachingPasses: existingPasses,
       systemPrompt,

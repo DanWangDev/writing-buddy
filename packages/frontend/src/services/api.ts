@@ -237,6 +237,25 @@ export async function getCoachingSession(
   return request<CoachingSession>(`/submissions/${submissionId}/coaching`)
 }
 
+export interface ApplySuggestionsResult {
+  originalContent: string
+  improvedContent: string
+  mode: string
+  tokensUsed: number
+}
+
+export async function applySuggestions(
+  submissionId: string,
+  content: string,
+  feedback: string,
+  mode: 'grammar' | 'vocabulary' | 'improve' = 'improve',
+): Promise<ApplySuggestionsResult> {
+  return request<ApplySuggestionsResult>(`/submissions/${submissionId}/apply`, {
+    method: 'POST',
+    body: JSON.stringify({ content, feedback, mode }),
+  })
+}
+
 // Scoring
 export async function getScores(
   submissionId: string,

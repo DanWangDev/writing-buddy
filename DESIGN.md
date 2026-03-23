@@ -14,10 +14,10 @@
 
 ## Typography
 - **Display/Hero:** Fredoka (600-700 weight) — rounded, friendly, substantial presence without being childish. Used for page titles, hero text, celebration headings
-- **Body:** Quicksand (400-600 weight) — geometric, highly readable, warm personality that pairs naturally with Fredoka. Used for all body text, UI labels, navigation
-- **UI/Labels:** Quicksand (500-600 weight)
+- **Body:** Comic Sans MS with Comic Neue fallback — Comic Sans has proven readability for young and dyslexic readers, casual and approachable. System font on Windows/Mac, Comic Neue (Google Fonts) for Linux/fallback. Used for all body text, UI labels, navigation
+- **UI/Labels:** Comic Sans MS / Comic Neue
 - **Writing/Handwriting:** Caveat (400-700 weight) — natural handwriting feel for student writing display, coaching annotations, and the "notebook" experience. This is the signature font that makes the writing feel personal
-- **Data/Tables:** Quicksand with tabular-nums (for scores, word counts, progress numbers)
+- **Data/Tables:** Comic Neue with tabular-nums (for scores, word counts, progress numbers)
 - **Loading:** Google Fonts CDN
 - **Scale:**
   - `text-xs`: 12px / 0.75rem — fine print, metadata
@@ -100,7 +100,7 @@
 
 ## Tailwind Custom Classes
 - `font-display` — Fredoka (headings)
-- `font-body` — Quicksand (everything else)
+- `font-body` — Comic Neue (everything else)
 - `font-handwriting` — Caveat (writing areas)
 - `bg-sky` / `text-sky` / `border-sky` — primary blue
 - `bg-coral` / `text-coral` — secondary orange
@@ -114,7 +114,7 @@
 |------|----------|-----------|
 | 2026-03-23 | Initial design system created | Created by /design-consultation based on competitive analysis |
 | 2026-03-23 | Chose "Storybook Playground" aesthetic | Differentiates from Writeasy while keeping warmth |
-| 2026-03-23 | Fredoka + Quicksand + Caveat typography | Fredoka for personality, Quicksand for readability, Caveat for handwriting |
+| 2026-03-23 | Fredoka + Comic Neue + Caveat typography | Fredoka for personality, Comic Neue for proven kid readability, Caveat for handwriting |
 | 2026-03-23 | Sky Blue as primary | Trust + creativity, avoids EdTech cliche green |
 | 2026-03-23 | 48px touch targets | Target audience is 10-11 year olds on tablets |
 | 2026-03-23 | Paper texture for writing area | Makes writing feel personal and familiar |

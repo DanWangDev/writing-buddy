@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import type { Request, Response } from 'express'
 import type { Database } from 'better-sqlite3'
+import { z } from 'zod'
 import { requireAuth } from '../middleware/auth.js'
 import { SqliteCoachingPassRepository } from '../repositories/sqlite/coaching-pass-repository.js'
 import { SqliteSubmissionRepository } from '../repositories/sqlite/submission-repository.js'
@@ -8,6 +9,7 @@ import { SqliteRevisionRepository } from '../repositories/sqlite/revision-reposi
 import { SqliteRubricScoresRepository } from '../repositories/sqlite/rubric-scores-repository.js'
 import { SqliteProgressRepository } from '../repositories/sqlite/progress-repository.js'
 import { SqlitePromptRepository } from '../repositories/sqlite/prompt-repository.js'
+import { SqliteUserRepository } from '../repositories/sqlite/user-repository.js'
 import { AiCoachService } from '../services/coaching/ai-coach.js'
 import { RubricScorerService } from '../services/scoring/rubric-scorer.js'
 import { ProgressService } from '../services/progress-service.js'
@@ -45,6 +47,7 @@ export function createCoachingRouter(
   const rubricScoresRepo = new SqliteRubricScoresRepository(db)
   const progressRepo = new SqliteProgressRepository(db)
   const promptRepo = new SqlitePromptRepository(db)
+  const userRepo = new SqliteUserRepository(db)
   const contentSafety = new ContentSafetyService()
 
   const provider: LLMProvider = llmProvider ?? createDefaultProvider()
@@ -54,6 +57,8 @@ export function createCoachingRouter(
     coachingPassRepo,
     submissionRepo,
     revisionRepo,
+    promptRepo,
+    userRepo,
     contentSafety,
     {
       freeTierDailySessions: env.FREE_TIER_DAILY_SESSIONS,
@@ -190,6 +195,111 @@ export function createCoachingRouter(
           error: String(error),
         })
         res.status(500).json({ success: false, error: 'Internal server error' })
+      }
+    }
+  )
+
+  const applySuggestionsSchema = z.object({
+    content: z.string().min(1),
+    feedback: z.string().min(1),
+    mode: z.enum(['grammar', 'vocabulary', 'improve']).default('improve'),
+  })
+
+  router.post(
+    '/:id/apply',
+    requireAuth,
+    async (req: Request, res: Response) => {
+      try {
+        const submissionId = req.params.id as string
+        const userId = req.user!.sub
+
+        const submission = submissionRepo.findById(submissionId)
+        if (!submission) {
+          res.status(404).json({ success: false, error: 'Submission not found' })
+          return
+        }
+
+        if (submission.userId !== userId) {
+          res.status(403).json({ success: false, error: 'Access denied' })
+          return
+        }
+
+        const parsed = applySuggestionsSchema.safeParse(req.body)
+        if (!parsed.success) {
+          const messages = parsed.error.errors.map(e => e.message)
+          res.status(400).json({ success: false, error: messages.join(', ') })
+          return
+        }
+
+        const { content, feedback, mode } = parsed.data
+
+        const modePrompts: Record<string, string> = {
+          grammar: [
+            'You are a careful copy editor for a student (age 10-11).',
+            'Fix grammar, spelling, and punctuation errors in the student\'s writing.',
+            'Do NOT change their voice, word choices, or sentence structure beyond fixing errors.',
+            'Do NOT add new content or rewrite sentences.',
+            'Return ONLY the corrected text. No explanations, no comments.',
+          ].join('\n'),
+          vocabulary: [
+            'You are a vocabulary coach for a student (age 10-11) preparing for 11+ exams.',
+            'Replace weak or overused words with more ambitious alternatives that fit the student\'s voice.',
+            'Focus on: replacing "said" with speech verbs, replacing "nice/good/bad" with specific adjectives, upgrading common verbs.',
+            'Keep the student\'s natural voice — don\'t make it sound adult.',
+            'Return ONLY the improved text. No explanations, no comments.',
+          ].join('\n'),
+          improve: [
+            'You are a writing coach for a student (age 10-11) preparing for 11+ creative writing exams.',
+            'Apply the coaching suggestions below to improve the student\'s writing.',
+            'Maintain the student\'s voice and style — make minimal changes that target the suggestions.',
+            'Focus on: sensory details, show-don\'t-tell, varied sentence starters, ambitious vocabulary.',
+            'Return ONLY the improved text. No explanations, no comments, no quotation marks around the text.',
+          ].join('\n'),
+        }
+
+        const systemPrompt = modePrompts[mode] ?? modePrompts['improve']
+
+        const userPrompt = mode === 'improve'
+          ? `Coaching feedback to apply:\n${feedback}\n\nStudent's writing:\n${content}`
+          : `Student's writing:\n${content}`
+
+        const llmResponse = await provider.generateResponse(
+          systemPrompt,
+          userPrompt,
+          { maxTokens: 2000, temperature: 0.3 }
+        )
+
+        const improvedContent = llmResponse.content.trim()
+
+        // Safety check on output
+        const screening = await contentSafety.filterOutput(improvedContent)
+        if (!screening.safe) {
+          res.status(422).json({
+            success: false,
+            error: 'The improved text could not be generated safely. Try again.',
+          })
+          return
+        }
+
+        res.json({
+          success: true,
+          data: {
+            originalContent: content,
+            improvedContent,
+            mode,
+            tokensUsed: llmResponse.tokensUsed,
+          },
+        })
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        logger.error('Apply suggestions failed', { error: message })
+
+        if (message.includes('temporarily unavailable') || message.includes('API')) {
+          res.status(503).json({ success: false, error: 'AI is temporarily unavailable. Please try again.' })
+          return
+        }
+
+        res.status(500).json({ success: false, error: 'Failed to apply suggestions.' })
       }
     }
   )
