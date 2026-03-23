@@ -3,7 +3,8 @@ set -e
 
 # ─────────────────────────────────────────
 #  Writing Buddy — One-Command Redeploy
-#  Usage: ./deploy.sh
+#  Usage: ./deploy.sh          (local build)
+#         ./deploy.sh --ghcr   (pull from GitHub Container Registry)
 # ─────────────────────────────────────────
 
 BOLD='\033[1m'
@@ -16,6 +17,11 @@ log()  { echo -e "${BOLD}[deploy]${NC} $1"; }
 ok()   { echo -e "${GREEN}[✔]${NC} $1"; }
 warn() { echo -e "${YELLOW}[!]${NC} $1"; }
 fail() { echo -e "${RED}[✘]${NC} $1"; exit 1; }
+
+USE_GHCR=false
+if [ "$1" = "--ghcr" ]; then
+  USE_GHCR=true
+fi
 
 ENV_FILE=".env.production"
 if [ ! -f "$ENV_FILE" ]; then
@@ -34,20 +40,43 @@ log "Pulling latest changes from git..."
 git pull || fail "git pull failed"
 ok "Git pull complete"
 
+if [ "$USE_GHCR" = true ]; then
+  COMPOSE_FILE="docker-compose.prod.yml"
+  log "Mode: pull from GitHub Container Registry"
+
+  # Log in to GHCR
+  log "Logging in to ghcr.io..."
+  echo "${GHCR_TOKEN:-}" | docker login ghcr.io -u "${GITHUB_USER:-DanWangDev}" --password-stdin 2>/dev/null \
+    || warn "GHCR login skipped (set GHCR_TOKEN env var for private images)"
+
+  # Pull latest images
+  log "Pulling latest images..."
+  docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" pull || fail "docker compose pull failed"
+  ok "Images pulled"
+else
+  COMPOSE_FILE="docker-compose.yml"
+  log "Mode: local build"
+fi
+
 # 2. Bring containers down
 log "Stopping containers..."
-docker compose --env-file "$ENV_FILE" down || fail "docker compose down failed"
+docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down || fail "docker compose down failed"
 ok "Containers stopped"
 
-# 3. Rebuild and start
-log "Building and starting containers..."
-docker compose --env-file "$ENV_FILE" up -d --build || fail "docker compose up failed"
+# 3. Start (build if local mode, just up if GHCR mode)
+if [ "$USE_GHCR" = true ]; then
+  log "Starting containers..."
+  docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d || fail "docker compose up failed"
+else
+  log "Building and starting containers..."
+  docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d --build || fail "docker compose up failed"
+fi
 ok "Containers started"
 
 # 4. Show running containers
 echo ""
 log "Running services:"
-docker compose ps
+docker compose -f "$COMPOSE_FILE" ps
 
 echo ""
 ok "Redeployment complete! App is live."

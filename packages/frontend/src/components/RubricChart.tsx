@@ -1,40 +1,72 @@
 import type { RubricScores } from '@writting-buddy/shared'
-import { AlertTriangle } from 'lucide-react'
+import type { RubricCategory } from '../services/api'
+import { AlertTriangle, Loader2 } from 'lucide-react'
 
-const DIMENSIONS = [
-  { key: 'content' as const, label: 'Content' },
-  { key: 'organization' as const, label: 'Organization' },
-  { key: 'vocabulary' as const, label: 'Vocabulary' },
-  { key: 'grammar' as const, label: 'Grammar' },
-  { key: 'spelling' as const, label: 'Spelling' },
+const DIMENSIONS: ReadonlyArray<{ key: RubricCategory; label: string }> = [
+  { key: 'content', label: 'Content' },
+  { key: 'organization', label: 'Organization' },
+  { key: 'vocabulary', label: 'Vocabulary' },
+  { key: 'grammar', label: 'Grammar' },
+  { key: 'spelling', label: 'Spelling' },
 ]
 
 interface RubricChartProps {
   scores: RubricScores
+  activeCategory?: RubricCategory | null
+  loadingCategory?: RubricCategory | null
+  onToggleCategory?: (category: RubricCategory) => void
 }
 
-function ScoreBar({ label, score }: { label: string; score: number }) {
+function ScoreBar({
+  label,
+  score,
+  active,
+  loading,
+  onClick,
+}: {
+  label: string
+  score: number
+  active: boolean
+  loading: boolean
+  onClick?: () => void
+}) {
   const pct = Math.min(100, Math.max(0, (score / 10) * 100))
   const barColor =
     score >= 8 ? 'bg-green-500' : score >= 6 ? 'bg-gold' : 'bg-coral'
 
+  const isClickable = !!onClick
+
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-sm font-semibold text-warm-600 w-28">{label}</span>
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!isClickable}
+      className={`flex items-center gap-3 w-full rounded-lg px-2 py-1.5 transition-all ${
+        active
+          ? 'bg-sky/10 ring-2 ring-sky/40'
+          : isClickable
+            ? 'hover:bg-warm-50 cursor-pointer'
+            : ''
+      } ${!isClickable ? 'cursor-default' : ''}`}
+    >
+      <span className={`text-sm font-semibold w-28 text-left ${active ? 'text-sky' : 'text-warm-600'}`}>
+        {label}
+        {loading && <Loader2 className="w-3 h-3 inline-block ml-1 animate-spin" />}
+      </span>
       <div className="flex-1 h-3 bg-warm-100 rounded-full overflow-hidden">
         <div
-          className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+          className={`h-full rounded-full transition-all duration-500 ${active ? 'bg-sky' : barColor}`}
           style={{ width: `${pct}%` }}
         />
       </div>
       <span className="text-sm font-bold text-warm-700 w-8 text-right tabular-nums">
         {score}
       </span>
-    </div>
+    </button>
   )
 }
 
-export function RubricChart({ scores }: RubricChartProps) {
+export function RubricChart({ scores, activeCategory, loadingCategory, onToggleCategory }: RubricChartProps) {
   if (scores.status === 'scoring_failed') {
     return (
       <div className="rounded-[12px] border-l-4 border-l-gold border border-gold-light/50 bg-gold/5 p-4 flex items-center gap-3">
@@ -57,11 +89,23 @@ export function RubricChart({ scores }: RubricChartProps) {
           <span className="text-sm text-warm-400">/ 50</span>
         </div>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-1">
         {DIMENSIONS.map((dim) => (
-          <ScoreBar key={dim.key} label={dim.label} score={scores[dim.key]} />
+          <ScoreBar
+            key={dim.key}
+            label={dim.label}
+            score={scores[dim.key]}
+            active={activeCategory === dim.key}
+            loading={loadingCategory === dim.key}
+            onClick={onToggleCategory ? () => onToggleCategory(dim.key) : undefined}
+          />
         ))}
       </div>
+      {onToggleCategory && (
+        <p className="text-xs text-warm-400 mt-3 text-center">
+          Tap a category to see AI suggestions
+        </p>
+      )}
     </div>
   )
 }
