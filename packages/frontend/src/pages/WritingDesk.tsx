@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { WordCounter } from '../components/WordCounter'
 import { CoachingFeedback } from '../components/CoachingFeedback'
@@ -262,7 +262,15 @@ export function WritingDesk() {
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  useLayoutEffect(() => {
+  const textareaCallbackRef = useCallback((el: HTMLTextAreaElement | null) => {
+    textareaRef.current = el
+    if (el) {
+      el.style.height = 'auto'
+      el.style.height = `${Math.max(320, el.scrollHeight)}px`
+    }
+  }, [])
+
+  useEffect(() => {
     const el = textareaRef.current
     if (!el) return
     el.style.height = 'auto'
@@ -393,7 +401,7 @@ export function WritingDesk() {
           ) : (
             <>
               <textarea
-                ref={textareaRef}
+                ref={textareaCallbackRef}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 disabled={isCompleted}
