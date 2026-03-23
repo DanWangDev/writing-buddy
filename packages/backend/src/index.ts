@@ -10,8 +10,21 @@ import { writingRouter } from './routes/index.js'
 const app = express()
 
 app.use(helmet())
+const allowedOrigins = [
+  env.CORS_ORIGIN,
+  ...env.CORS_EXTRA_ORIGINS.split(',').map(o => o.trim()).filter(Boolean),
+]
+
 app.use(cors({
-  origin: env.CORS_ORIGIN,
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin) ||
+        allowedOrigins.some(allowed => allowed.startsWith('*.') &&
+          origin.endsWith(allowed.slice(1)))) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
   credentials: true,
 }))
 app.use(express.json({ limit: '1mb' }))
