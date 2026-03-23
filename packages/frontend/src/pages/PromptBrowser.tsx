@@ -72,21 +72,21 @@ export function PromptBrowser() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Browse Prompts</h1>
-        <p className="text-gray-500 mt-1">Pick a prompt and start your story!</p>
+        <h1 className="font-display text-2xl font-bold text-warm-800">Browse Prompts</h1>
+        <p className="text-warm-500 mt-1 text-base">Pick a prompt and start your story!</p>
       </div>
 
       {/* Difficulty tabs */}
-      <div className="flex gap-1 bg-white rounded-lg border border-gray-200 p-1 w-fit">
+      <div className="flex gap-1 bg-white rounded-[10px] border border-warm-200 p-1 w-fit">
         {DIFFICULTIES.map((d) => (
           <button
             key={d.value}
             type="button"
             onClick={() => setDifficulty(d.value)}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+            className={`px-4 h-10 rounded-lg text-sm font-semibold transition-colors ${
               difficulty === d.value
-                ? 'bg-indigo-600 text-white'
-                : 'text-gray-600 hover:bg-gray-100'
+                ? 'bg-sky text-white shadow-sm'
+                : 'text-warm-500 hover:bg-warm-100'
             }`}
           >
             {d.label}
@@ -101,10 +101,10 @@ export function PromptBrowser() {
             key={g.value}
             type="button"
             onClick={() => setGenre(g.value)}
-            className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${
+            className={`px-3 py-1.5 rounded-full text-sm font-semibold border-2 transition-colors ${
               genre === g.value
-                ? 'bg-indigo-100 border-indigo-300 text-indigo-700'
-                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                ? 'bg-sky/10 border-sky text-sky'
+                : 'bg-white border-warm-200 text-warm-500 hover:bg-warm-50'
             }`}
           >
             {g.label}
@@ -113,22 +113,22 @@ export function PromptBrowser() {
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3" role="alert">
+        <div className="bg-red-50 text-red-700 text-sm rounded-[10px] px-4 py-3 border-l-4 border-red-500" role="alert">
           {error}
         </div>
       )}
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+          <Loader2 className="w-8 h-8 text-sky animate-spin" />
         </div>
       ) : prompts.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <Search className="w-10 h-10 mx-auto mb-3" />
-          <p>No prompts found for these filters. Try a different combination!</p>
+        <div className="text-center py-20 text-warm-400">
+          <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <p className="text-base">No prompts found for these filters. Try a different combination!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {prompts.map((prompt) => (
             <PromptCard
               key={prompt.id}

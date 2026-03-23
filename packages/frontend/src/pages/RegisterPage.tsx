@@ -5,10 +5,10 @@ import { useAuth } from '../hooks/useAuth'
 import { PenLine, Loader2 } from 'lucide-react'
 import type { UserRole } from '@writting-buddy/shared'
 
-const ROLES: { value: UserRole; label: string }[] = [
-  { value: 'student', label: 'Student' },
-  { value: 'parent', label: 'Parent' },
-  { value: 'tutor', label: 'Tutor' },
+const ROLES: { value: UserRole; label: string; emoji: string }[] = [
+  { value: 'student', label: 'Student', emoji: '✏️' },
+  { value: 'parent', label: 'Parent', emoji: '👋' },
+  { value: 'tutor', label: 'Tutor', emoji: '📚' },
 ]
 
 export function RegisterPage() {
@@ -62,28 +62,28 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-warm-50 flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-indigo-600 rounded-2xl mb-4">
-            <PenLine className="w-7 h-7 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-sky rounded-2xl mb-4 shadow-lg shadow-sky/20">
+            <PenLine className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Join Writing Buddy!</h1>
-          <p className="text-gray-500 mt-1">Start your creative writing adventure</p>
+          <h1 className="font-display text-3xl font-bold text-warm-800">Join Writing Buddy!</h1>
+          <p className="text-warm-500 mt-2 text-base">Start your creative writing adventure</p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4"
+          className="bg-white rounded-2xl shadow-sm border border-warm-200 p-6 space-y-5"
         >
           {error && (
-            <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3" role="alert">
+            <div className="bg-red-50 text-red-700 text-sm rounded-[10px] px-4 py-3 border-l-4 border-red-500" role="alert">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-semibold text-warm-700 mb-1.5">
               Email
             </label>
             <input
@@ -91,13 +91,13 @@ export function RegisterPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full rounded-[10px] border border-warm-200 bg-warm-50 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-sky focus:border-transparent"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="displayName" className="block text-sm font-semibold text-warm-700 mb-1.5">
               Display Name
             </label>
             <input
@@ -105,13 +105,13 @@ export function RegisterPage() {
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full rounded-[10px] border border-warm-200 bg-warm-50 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-sky focus:border-transparent"
               placeholder="Your name"
             />
           </div>
 
           <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="role" className="block text-sm font-semibold text-warm-700 mb-1.5">
               I am a...
             </label>
             <div className="flex gap-2">
@@ -120,20 +120,20 @@ export function RegisterPage() {
                   key={r.value}
                   type="button"
                   onClick={() => setRole(r.value)}
-                  className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                  className={`flex-1 px-3 h-12 rounded-[10px] text-sm font-semibold border-2 transition-colors ${
                     role === r.value
-                      ? 'bg-indigo-100 border-indigo-300 text-indigo-700'
-                      : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
+                      ? 'bg-sky/10 border-sky text-sky'
+                      : 'bg-white border-warm-200 text-warm-600 hover:bg-warm-50'
                   }`}
                 >
-                  {r.label}
+                  {r.emoji} {r.label}
                 </button>
               ))}
             </div>
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-semibold text-warm-700 mb-1.5">
               Password
             </label>
             <input
@@ -141,13 +141,13 @@ export function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full rounded-[10px] border border-warm-200 bg-warm-50 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-sky focus:border-transparent"
               placeholder="At least 8 characters"
             />
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="confirmPassword" className="block text-sm font-semibold text-warm-700 mb-1.5">
               Confirm Password
             </label>
             <input
@@ -155,7 +155,7 @@ export function RegisterPage() {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full rounded-[10px] border border-warm-200 bg-warm-50 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-sky focus:border-transparent"
               placeholder="Type password again"
             />
           </div>
@@ -163,16 +163,16 @@ export function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white font-medium rounded-lg px-4 py-2.5 text-sm hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-sky text-white font-semibold rounded-[10px] px-4 h-12 text-base hover:bg-sky-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm shadow-sky/20"
           >
-            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {loading && <Loader2 className="w-5 h-5 animate-spin" />}
             Create Account
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="text-center text-base text-warm-500 mt-5">
           Already have an account?{' '}
-          <Link to="/login" className="text-indigo-600 font-medium hover:underline">
+          <Link to="/login" className="text-sky font-semibold hover:underline">
             Sign in
           </Link>
         </p>

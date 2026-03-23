@@ -24,6 +24,22 @@ function countWords(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length
 }
 
+const GENRE_STYLES: Record<string, string> = {
+  adventure: 'bg-sky/10 text-sky',
+  mystery: 'bg-violet/10 text-violet-dark',
+  'sci-fi': 'bg-sky-light/20 text-sky-dark',
+  fantasy: 'bg-violet-light/20 text-violet-dark',
+  humor: 'bg-gold/15 text-gold-dark',
+  descriptive: 'bg-coral/10 text-coral-dark',
+  persuasive: 'bg-coral-light/20 text-coral-dark',
+}
+
+const DIFFICULTY_STYLES: Record<string, string> = {
+  beginner: 'text-green-600 bg-green-50 border-green-200',
+  standard: 'text-gold-dark bg-gold/10 border-gold-light',
+  challenge: 'text-coral-dark bg-coral/10 border-coral-light',
+}
+
 export function WritingDesk() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -157,25 +173,9 @@ export function WritingDesk() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+        <Loader2 className="w-8 h-8 text-sky animate-spin" />
       </div>
     )
-  }
-
-  const genreColors: Record<string, string> = {
-    adventure: 'bg-emerald-100 text-emerald-700',
-    mystery: 'bg-violet-100 text-violet-700',
-    'sci-fi': 'bg-cyan-100 text-cyan-700',
-    fantasy: 'bg-pink-100 text-pink-700',
-    humor: 'bg-yellow-100 text-yellow-700',
-    descriptive: 'bg-blue-100 text-blue-700',
-    persuasive: 'bg-red-100 text-red-700',
-  }
-
-  const difficultyLabels: Record<string, { label: string; color: string }> = {
-    beginner: { label: 'Beginner', color: 'text-green-600 bg-green-50 border-green-200' },
-    standard: { label: 'Standard', color: 'text-yellow-600 bg-yellow-50 border-yellow-200' },
-    challenge: { label: 'Challenge', color: 'text-red-600 bg-red-50 border-red-200' },
   }
 
   return (
@@ -184,7 +184,7 @@ export function WritingDesk() {
       <button
         type="button"
         onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+        className="inline-flex items-center gap-1 text-sm font-semibold text-warm-500 hover:text-warm-700 transition-colors"
         aria-label="Go back"
       >
         <ArrowLeft className="w-4 h-4" />
@@ -193,30 +193,30 @@ export function WritingDesk() {
 
       {/* Prompt context banner */}
       {prompt ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-[16px] border border-warm-200 p-5">
           <div className="flex items-start justify-between gap-4 mb-3">
             <div className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-indigo-500" />
-              <h1 className="text-lg font-bold text-gray-900">{prompt.title}</h1>
+              <BookOpen className="w-5 h-5 text-sky" />
+              <h1 className="font-display text-xl font-bold text-warm-800">{prompt.title}</h1>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {currentPass > 0 && (
-                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700">
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-sky/10 text-sky">
                   Pass {currentPass}/4
                 </span>
               )}
             </div>
           </div>
-          <p className="text-sm text-gray-600 leading-relaxed mb-4">{prompt.body}</p>
+          <p className="text-sm text-warm-600 leading-relaxed mb-4">{prompt.body}</p>
           <div className="flex items-center gap-3 flex-wrap">
-            <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${genreColors[prompt.genre] ?? 'bg-gray-100 text-gray-700'}`}>
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${GENRE_STYLES[prompt.genre] ?? 'bg-warm-100 text-warm-700'}`}>
               {prompt.genre}
             </span>
-            <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${difficultyLabels[prompt.difficulty]?.color ?? 'text-gray-600 bg-gray-50 border-gray-200'}`}>
-              {difficultyLabels[prompt.difficulty]?.label ?? prompt.difficulty}
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${DIFFICULTY_STYLES[prompt.difficulty] ?? 'text-warm-600 bg-warm-50 border-warm-200'}`}>
+              {prompt.difficulty}
             </span>
             {prompt.wordCountTarget && (
-              <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+              <span className="inline-flex items-center gap-1 text-xs text-warm-500">
                 <Target className="w-3.5 h-3.5" />
                 {prompt.wordCountTarget} words target
               </span>
@@ -224,7 +224,7 @@ export function WritingDesk() {
             {prompt.tags && prompt.tags.length > 0 && (
               <div className="flex items-center gap-1.5 ml-auto">
                 {prompt.tags.map((tag: string) => (
-                  <span key={tag} className="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">
+                  <span key={tag} className="text-xs text-warm-400 bg-warm-50 px-2 py-0.5 rounded">
                     {tag}
                   </span>
                 ))}
@@ -234,9 +234,9 @@ export function WritingDesk() {
         </div>
       ) : (
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold text-gray-900">Free Writing</h1>
+          <h1 className="font-display text-xl font-bold text-warm-800">Free Writing</h1>
           {currentPass > 0 && (
-            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700">
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-sky/10 text-sky">
               Pass {currentPass}/4
             </span>
           )}
@@ -244,7 +244,7 @@ export function WritingDesk() {
       )}
 
       {error && (
-        <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3" role="alert">
+        <div className="bg-red-50 text-red-700 text-sm rounded-[10px] px-4 py-3 border-l-4 border-red-500" role="alert">
           {error}
         </div>
       )}
@@ -257,7 +257,7 @@ export function WritingDesk() {
             onChange={(e) => setContent(e.target.value)}
             disabled={isCompleted}
             placeholder="Start writing your story here... Let your imagination run wild!"
-            className="w-full h-80 lg:h-[500px] rounded-xl border border-gray-200 bg-white p-4 text-sm leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+            className="writing-paper w-full h-80 lg:h-[500px] rounded-[16px] border border-warm-200 p-6 font-handwriting text-xl leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-sky focus:border-transparent disabled:bg-warm-50 disabled:text-warm-400 text-warm-700"
             aria-label="Writing area"
           />
 
@@ -270,7 +270,7 @@ export function WritingDesk() {
                   type="button"
                   onClick={handleSave}
                   disabled={saving || !content.trim()}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-4 h-10 text-sm font-semibold rounded-[10px] border-2 border-warm-200 bg-white text-warm-700 hover:bg-warm-50 transition-colors disabled:opacity-50"
                 >
                   {saving ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -284,7 +284,7 @@ export function WritingDesk() {
                   type="button"
                   onClick={handleCoaching}
                   disabled={coaching || !content.trim() || currentPass >= 4}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-4 h-10 text-sm font-semibold rounded-[10px] bg-sky text-white hover:bg-sky-dark transition-colors disabled:opacity-50 shadow-sm shadow-sky/20"
                 >
                   {coaching ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -298,7 +298,7 @@ export function WritingDesk() {
                   type="button"
                   onClick={handleComplete}
                   disabled={completing || !content.trim()}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-4 h-10 text-sm font-semibold rounded-[10px] bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50"
                 >
                   {completing ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -314,13 +314,13 @@ export function WritingDesk() {
 
         {/* Coaching sidebar */}
         <div className="space-y-4">
-          <h2 className="font-semibold text-gray-800">Coaching Feedback</h2>
+          <h2 className="font-display text-lg font-semibold text-warm-800">Coaching Feedback</h2>
 
           {passes.length === 0 ? (
-            <div className="text-center py-8 text-gray-400 text-sm bg-white rounded-xl border border-gray-200 p-4">
-              <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              <p>No coaching feedback yet.</p>
-              <p className="mt-1">Write some words and click &quot;Get Coaching&quot; to begin!</p>
+            <div className="text-center py-8 text-warm-400 text-sm bg-white rounded-[16px] border border-warm-200 p-6">
+              <MessageSquare className="w-10 h-10 mx-auto mb-3 opacity-30" />
+              <p className="text-base">No coaching feedback yet.</p>
+              <p className="mt-1 text-sm">Write some words and click &quot;Get Coaching&quot; to begin!</p>
             </div>
           ) : (
             passes.map((pass, idx) => (

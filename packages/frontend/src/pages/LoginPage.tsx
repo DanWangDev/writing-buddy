@@ -33,28 +33,28 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-warm-50 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-indigo-600 rounded-2xl mb-4">
-            <PenLine className="w-7 h-7 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-sky rounded-2xl mb-4 shadow-lg shadow-sky/20">
+            <PenLine className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back!</h1>
-          <p className="text-gray-500 mt-1">Sign in to continue your writing journey</p>
+          <h1 className="font-display text-3xl font-bold text-warm-800">Welcome back!</h1>
+          <p className="text-warm-500 mt-2 text-base">Sign in to continue your writing journey</p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4"
+          className="bg-white rounded-2xl shadow-sm border border-warm-200 p-6 space-y-5"
         >
           {error && (
-            <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3" role="alert">
+            <div className="bg-red-50 text-red-700 text-sm rounded-[10px] px-4 py-3 border-l-4 border-red-500" role="alert">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-semibold text-warm-700 mb-1.5">
               Email or Username
             </label>
             <input
@@ -62,14 +62,14 @@ export function LoginPage() {
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full rounded-[10px] border border-warm-200 bg-warm-50 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-sky focus:border-transparent"
               placeholder="you@example.com or username"
               autoComplete="username"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-semibold text-warm-700 mb-1.5">
               Password
             </label>
             <input
@@ -77,7 +77,7 @@ export function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full rounded-[10px] border border-warm-200 bg-warm-50 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-sky focus:border-transparent"
               placeholder="Your password"
               autoComplete="current-password"
             />
@@ -86,16 +86,16 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white font-medium rounded-lg px-4 py-2.5 text-sm hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-sky text-white font-semibold rounded-[10px] px-4 h-12 text-base hover:bg-sky-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm shadow-sky/20"
           >
-            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {loading && <Loader2 className="w-5 h-5 animate-spin" />}
             Sign In
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="text-center text-base text-warm-500 mt-5">
           New here?{' '}
-          <Link to="/register" className="text-indigo-600 font-medium hover:underline">
+          <Link to="/register" className="text-sky font-semibold hover:underline">
             Create an account
           </Link>
         </p>

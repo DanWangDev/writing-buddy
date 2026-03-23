@@ -1,1 +1,50 @@
 @import 'tailwindcss';
+
+@theme {
+  /* Typography */
+  --font-display: 'Fredoka', sans-serif;
+  --font-body: 'Quicksand', sans-serif;
+  --font-handwriting: 'Caveat', cursive;
+
+  /* Core palette */
+  --color-sky: #0EA5E9;
+  --color-sky-light: #7DD3FC;
+  --color-sky-dark: #0284C7;
+  --color-coral: #F97316;
+  --color-coral-light: #FDBA74;
+  --color-coral-dark: #EA580C;
+  --color-gold: #FBBF24;
+  --color-gold-light: #FDE68A;
+  --color-gold-dark: #D97706;
+  --color-violet: #A78BFA;
+  --color-violet-light: #C4B5FD;
+  --color-violet-dark: #7C3AED;
+
+  /* Surface colors */
+  --color-paper: #FFFBEB;
+  --color-notebook-lines: rgba(147, 197, 253, 0.3);
+
+  /* Warm neutrals */
+  --color-warm-50: #FAFAF9;
+  --color-warm-100: #F5F5F4;
+  --color-warm-200: #E7E5E4;
+  --color-warm-300: #D6D3D1;
+  --color-warm-400: #A8A29E;
+  --color-warm-500: #78716C;
+  --color-warm-600: #57534E;
+  --color-warm-700: #44403C;
+  --color-warm-800: #292524;
+  --color-warm-900: #1C1917;
+}
+
+/* Writing area with notebook lines */
+.writing-paper {
+  background-color: var(--color-paper);
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 31px,
+    var(--color-notebook-lines) 31px,
+    var(--color-notebook-lines) 32px
+  );
+  background-position: 0 16px;
+}
