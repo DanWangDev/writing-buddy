@@ -5,6 +5,7 @@ import { env } from './env.js'
 import { logger } from '../services/logger.js'
 import { Migrator } from './migrator.js'
 import { migrations } from '../migrations/index.js'
+import { seedDatabase } from './seed.js'
 
 import type { Database as DatabaseType } from 'better-sqlite3'
 
@@ -22,6 +23,7 @@ export function initializeDatabase(): void {
   try {
     const migrator = new Migrator(db, migrations)
     migrator.migrate()
+    seedDatabase(db)
     logger.info('Database initialized successfully')
   } catch (error) {
     logger.error('Failed to initialize database', { error: String(error) })
