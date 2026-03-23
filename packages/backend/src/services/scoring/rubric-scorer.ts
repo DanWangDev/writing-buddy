@@ -53,8 +53,7 @@ function parseScoresFromResponse(responseContent: string): ParsedScores {
 }
 
 function calculateOverallScore(scores: ParsedScores): number {
-  const sum = scores.content + scores.organization + scores.vocabulary + scores.grammar + scores.spelling
-  return Math.round(sum / 5)
+  return scores.content + scores.organization + scores.vocabulary + scores.grammar + scores.spelling
 }
 
 export class RubricScorerService {

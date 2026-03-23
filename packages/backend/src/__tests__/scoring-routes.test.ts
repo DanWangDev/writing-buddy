@@ -86,7 +86,7 @@ describe('Scoring Routes', () => {
         vocabulary: 6,
         grammar: 9,
         spelling: 8,
-        overallScore: 8,
+        overallScore: 38,
         status: 'scored',
         llmModel: 'test-model',
         llmTokensUsed: 50,
