@@ -82,14 +82,14 @@ describe('RubricScorerService', () => {
     expect(scores.llmTokensUsed).toBe(50)
   })
 
-  it('calculates overall score as average of dimensions', async () => {
+  it('calculates overall score as sum of dimensions', async () => {
     const scores = await scorer.scoreSubmission(
       submissionId,
       'Some writing here.',
       'Write something.'
     )
 
-    const expected = Math.round((8 + 7 + 6 + 9 + 8) / 5)
+    const expected = 8 + 7 + 6 + 9 + 8
     expect(scores.overallScore).toBe(expected)
   })
 
