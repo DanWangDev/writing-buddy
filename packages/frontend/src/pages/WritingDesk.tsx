@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react'
 import * as api from '../services/api'
+import type { RubricCategory } from '../services/api'
 import type {
   Submission,
   Prompt,
@@ -64,6 +65,11 @@ export function WritingDesk() {
   // Inline diff preview state
   const [previewContent, setPreviewContent] = useState<string | null>(null)
   const [previewMode, setPreviewMode] = useState<string>('')
+
+  // Category suggestion state
+  const [activeCategory, setActiveCategory] = useState<RubricCategory | null>(null)
+  const [loadingCategory, setLoadingCategory] = useState<RubricCategory | null>(null)
+  const [categorySuggestion, setCategorySuggestion] = useState<string | null>(null)
 
   // Load existing submission
   useEffect(() => {
@@ -214,6 +220,46 @@ export function WritingDesk() {
     setPreviewMode('')
   }, [])
 
+  const handleToggleCategory = useCallback(async (category: RubricCategory) => {
+    // Toggle off if already active
+    if (activeCategory === category) {
+      setActiveCategory(null)
+      setCategorySuggestion(null)
+      return
+    }
+
+    if (!submission || !content.trim()) return
+
+    setActiveCategory(category)
+    setLoadingCategory(category)
+    setCategorySuggestion(null)
+    setError('')
+
+    try {
+      const result = await api.getCategorySuggestions(submission.id, content, category)
+      setCategorySuggestion(result.improvedContent)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to get suggestions.')
+      setActiveCategory(null)
+      setCategorySuggestion(null)
+    } finally {
+      setLoadingCategory(null)
+    }
+  }, [submission, content, activeCategory])
+
+  const handleAcceptCategorySuggestion = useCallback(() => {
+    if (categorySuggestion) {
+      setContent(categorySuggestion)
+      setActiveCategory(null)
+      setCategorySuggestion(null)
+    }
+  }, [categorySuggestion])
+
+  const handleRejectCategorySuggestion = useCallback(() => {
+    setActiveCategory(null)
+    setCategorySuggestion(null)
+  }, [])
+
   const wordCount = countWords(content)
   const isCompleted = submission?.status === 'completed'
   const currentPass = passes.length
@@ -300,20 +346,22 @@ export function WritingDesk() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Writing area */}
         <div className="lg:col-span-2 space-y-3">
-          {/* Preview mode: show inline diff */}
-          {previewContent ? (
+          {/* Preview mode: show inline diff (from apply suggestions or category toggle) */}
+          {previewContent || categorySuggestion ? (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-violet-dark bg-violet/10 px-3 py-1 rounded-full">
-                    Preview: {previewMode === 'grammar' ? 'Grammar Fix' : previewMode === 'vocabulary' ? 'Vocabulary Boost' : 'Applied Suggestions'}
+                  <span className="text-sm font-semibold text-sky-dark bg-sky/10 px-3 py-1 rounded-full">
+                    {categorySuggestion
+                      ? `${activeCategory ? activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1) : ''} Suggestions`
+                      : `Preview: ${previewMode === 'grammar' ? 'Grammar Fix' : previewMode === 'vocabulary' ? 'Vocabulary Boost' : 'Applied Suggestions'}`}
                   </span>
                   <span className="text-xs text-warm-400">Review changes before accepting</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={handleAcceptPreview}
+                    onClick={categorySuggestion ? handleAcceptCategorySuggestion : handleAcceptPreview}
                     className="inline-flex items-center gap-1 px-4 h-10 text-sm font-semibold rounded-[10px] bg-green-500 text-white hover:bg-green-600 transition-colors"
                   >
                     <Check className="w-4 h-4" />
@@ -321,7 +369,7 @@ export function WritingDesk() {
                   </button>
                   <button
                     type="button"
-                    onClick={handleRejectPreview}
+                    onClick={categorySuggestion ? handleRejectCategorySuggestion : handleRejectPreview}
                     className="inline-flex items-center gap-1 px-4 h-10 text-sm font-semibold rounded-[10px] border-2 border-warm-200 bg-white text-warm-700 hover:bg-warm-50 transition-colors"
                   >
                     <X className="w-4 h-4" />
@@ -329,8 +377,8 @@ export function WritingDesk() {
                   </button>
                 </div>
               </div>
-              <div className="writing-paper rounded-[16px] border-2 border-violet/30 p-6">
-                <InlineDiff oldText={content} newText={previewContent} />
+              <div className="writing-paper rounded-[16px] border-2 border-sky/30 p-6">
+                <InlineDiff oldText={content} newText={(categorySuggestion ?? previewContent)!} />
               </div>
             </div>
           ) : (
@@ -422,7 +470,12 @@ export function WritingDesk() {
 
           {scores && (
             <div className="mt-4">
-              <RubricChart scores={scores} />
+              <RubricChart
+                scores={scores}
+                activeCategory={activeCategory}
+                loadingCategory={loadingCategory}
+                onToggleCategory={content.trim() ? handleToggleCategory : undefined}
+              />
             </div>
           )}
         </div>

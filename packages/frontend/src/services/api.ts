@@ -256,6 +256,27 @@ export async function applySuggestions(
   })
 }
 
+// Category suggestions
+export type RubricCategory = 'content' | 'organization' | 'vocabulary' | 'grammar' | 'spelling'
+
+export interface CategorySuggestResult {
+  category: RubricCategory
+  originalContent: string
+  improvedContent: string
+  tokensUsed: number
+}
+
+export async function getCategorySuggestions(
+  submissionId: string,
+  content: string,
+  category: RubricCategory,
+): Promise<CategorySuggestResult> {
+  return request<CategorySuggestResult>(`/submissions/${submissionId}/category-suggest`, {
+    method: 'POST',
+    body: JSON.stringify({ content, category }),
+  })
+}
+
 // Scoring
 export async function getScores(
   submissionId: string,

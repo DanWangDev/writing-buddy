@@ -304,5 +304,121 @@ export function createCoachingRouter(
     }
   )
 
+  const categorySuggestSchema = z.object({
+    content: z.string().min(1),
+    category: z.enum(['content', 'organization', 'vocabulary', 'grammar', 'spelling']),
+  })
+
+  const categoryPrompts: Record<string, string> = {
+    content: [
+      'You are a creative writing coach for a student (age 10-11) preparing for 11+ exams.',
+      'Improve ONLY the content quality of this writing: ideas, creativity, depth of thought, and relevance.',
+      'Add sensory details, show-don\'t-tell techniques, and deeper emotional engagement.',
+      'Do NOT fix grammar, spelling, or reorganize the structure.',
+      'Keep the student\'s natural voice — don\'t make it sound adult.',
+      'Return ONLY the improved text. No explanations, no comments.',
+    ].join('\n'),
+    organization: [
+      'You are a writing structure coach for a student (age 10-11) preparing for 11+ exams.',
+      'Improve ONLY the organization: structure, flow, logical sequencing, and paragraphing.',
+      'Add paragraph breaks where needed, improve transitions between ideas, ensure a clear beginning/middle/end.',
+      'Do NOT change vocabulary, fix grammar, or add new content ideas.',
+      'Keep the student\'s natural voice — don\'t make it sound adult.',
+      'Return ONLY the improved text. No explanations, no comments.',
+    ].join('\n'),
+    vocabulary: [
+      'You are a vocabulary coach for a student (age 10-11) preparing for 11+ exams.',
+      'Improve ONLY the vocabulary: replace weak or overused words with more ambitious alternatives.',
+      'Focus on: replacing "said" with speech verbs, replacing "nice/good/bad" with specific adjectives, upgrading common verbs.',
+      'Do NOT fix grammar, reorganize structure, or add new content ideas.',
+      'Keep the student\'s natural voice — don\'t make it sound adult.',
+      'Return ONLY the improved text. No explanations, no comments.',
+    ].join('\n'),
+    grammar: [
+      'You are a grammar coach for a student (age 10-11).',
+      'Improve ONLY the grammar: sentence structure, subject-verb agreement, tense consistency, and punctuation.',
+      'Do NOT change vocabulary, reorganize structure, or add new content ideas.',
+      'Keep the student\'s natural voice — don\'t make it sound adult.',
+      'Return ONLY the corrected text. No explanations, no comments.',
+    ].join('\n'),
+    spelling: [
+      'You are a spelling coach for a student (age 10-11).',
+      'Fix ONLY spelling errors in this writing. Do not change anything else.',
+      'Do NOT fix grammar, change vocabulary, reorganize structure, or add content.',
+      'Return ONLY the corrected text. No explanations, no comments.',
+    ].join('\n'),
+  }
+
+  router.post(
+    '/:id/category-suggest',
+    requireAuth,
+    async (req: Request, res: Response) => {
+      try {
+        const submissionId = req.params.id as string
+        const userId = req.user!.sub
+
+        const submission = submissionRepo.findById(submissionId)
+        if (!submission) {
+          res.status(404).json({ success: false, error: 'Submission not found' })
+          return
+        }
+
+        if (submission.userId !== userId) {
+          res.status(403).json({ success: false, error: 'Access denied' })
+          return
+        }
+
+        const parsed = categorySuggestSchema.safeParse(req.body)
+        if (!parsed.success) {
+          const messages = parsed.error.errors.map(e => e.message)
+          res.status(400).json({ success: false, error: messages.join(', ') })
+          return
+        }
+
+        const { content, category } = parsed.data
+
+        const systemPrompt = categoryPrompts[category]
+        const userPrompt = `Student's writing:\n${content}`
+
+        const llmResponse = await provider.generateResponse(
+          systemPrompt,
+          userPrompt,
+          { maxTokens: 2000, temperature: 0.3 }
+        )
+
+        const improvedContent = llmResponse.content.trim()
+
+        const screening = await contentSafety.filterOutput(improvedContent)
+        if (!screening.safe) {
+          res.status(422).json({
+            success: false,
+            error: 'Suggestions could not be generated safely. Try again.',
+          })
+          return
+        }
+
+        res.json({
+          success: true,
+          data: {
+            category,
+            originalContent: content,
+            improvedContent,
+            tokensUsed: llmResponse.tokensUsed,
+          },
+        })
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        logger.error('Category suggest failed', { error: message })
+
+        if (message.includes('temporarily unavailable') || message.includes('API')) {
+          res.status(503).json({ success: false, error: 'AI is temporarily unavailable. Please try again.' })
+          return
+        }
+
+        res.status(500).json({ success: false, error: 'Failed to generate suggestions.' })
+      }
+    }
+  )
+
   return router
 }
