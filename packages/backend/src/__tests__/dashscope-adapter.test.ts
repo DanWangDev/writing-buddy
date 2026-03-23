@@ -90,6 +90,7 @@ describe('DashScopeAdapter', () => {
     expect(body).toEqual({
       model: 'qwen-plus',
       max_tokens: 500,
+      enable_thinking: false,
       temperature: 0.7,
       messages: [
         { role: 'system', content: 'You are helpful.' },
@@ -131,7 +132,7 @@ describe('DashScopeAdapter', () => {
     const adapter = new DashScopeAdapter('bad-key', 'qwen-plus', 'https://test.example.com/v1')
     await expect(
       adapter.generateResponse('System', 'User', { maxTokens: 500 })
-    ).rejects.toThrow('DashScope API error: Invalid API key')
+    ).rejects.toThrow('DashScope API error (401): Invalid API key')
   })
 
   it('throws on empty choices', async () => {

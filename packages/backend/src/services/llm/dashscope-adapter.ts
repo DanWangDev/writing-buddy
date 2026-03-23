@@ -48,9 +48,10 @@ export class DashScopeAdapter implements LLMProvider {
     userPrompt: string,
     options: LLMProviderOptions
   ): Promise<LLMResponse> {
-    const body = {
+    const body: Record<string, unknown> = {
       model: this.model,
       max_tokens: options.maxTokens,
+      enable_thinking: false,
       ...(options.temperature !== undefined && { temperature: options.temperature }),
       messages: [
         { role: 'system', content: systemPrompt },
@@ -58,13 +59,45 @@ export class DashScopeAdapter implements LLMProvider {
       ],
     }
 
-    logger.info('LLM request', {
-      model: this.model,
-      maxTokens: options.maxTokens,
-    })
-
     const url = `${this.baseUrl}/chat/completions`
+    const maxRetries = 2
+    let lastError: Error | null = null
 
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      if (attempt > 0) {
+        const delay = attempt * 1000
+        logger.info('LLM retry', { attempt, delay, model: this.model })
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+
+      logger.info('LLM request', {
+        model: this.model,
+        maxTokens: options.maxTokens,
+        attempt,
+      })
+
+      try {
+        const result = await this.doRequest(url, body)
+        return result
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error))
+        const isRetryable = lastError.message.includes('500')
+          || lastError.message.includes('502')
+          || lastError.message.includes('503')
+          || lastError.message.includes('system error')
+        if (!isRetryable || attempt === maxRetries) {
+          throw lastError
+        }
+      }
+    }
+
+    throw lastError ?? new Error('DashScope API request failed')
+  }
+
+  private async doRequest(
+    url: string,
+    body: Record<string, unknown>
+  ): Promise<LLMResponse> {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -89,7 +122,7 @@ export class DashScopeAdapter implements LLMProvider {
         message,
         url,
       })
-      throw new Error(`DashScope API error: ${message}`)
+      throw new Error(`DashScope API error (${response.status}): ${message}`)
     }
 
     if (!responseText) {
