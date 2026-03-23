@@ -21,8 +21,8 @@ Second app in the 11+ prep suite alongside vocab-master. Shares auth infrastruct
 writting-buddy/
 ├── packages/
 │   ├── shared/          # Shared TypeScript types
-│   ├── backend/         # Express API (port 3001)
-│   └── frontend/        # React SPA (port 5173 dev, 3000 prod)
+│   ├── backend/         # Express API (port 5050)
+│   └── frontend/        # React SPA (port 5179 dev, 5055 prod)
 ├── .github/workflows/   # CI pipeline
 ├── docker-compose.yml   # Production deployment
 └── deploy.sh            # One-command redeploy
@@ -55,7 +55,7 @@ npm run lint             # ESLint frontend
 ## Architecture Decisions
 
 - **Route prefix:** All backend routes under `/api/writing/...` (ready for single-process merge with vocab-master)
-- **LLM provider:** Interface-based (`LLMProvider`) with Claude-only implementation. Provider-agnostic.
+- **LLM provider:** Interface-based (`LLMProvider`) with DashScope adapter (Alibaba Cloud Model Studio, Qwen models). OpenAI-compatible API.
 - **Content safety:** Dedicated service, not inline. Input screening + output filtering.
 - **Revision summaries:** Hybrid — coaching pass feedback + diff-match-patch (no extra LLM calls)
 - **Rubric scoring:** Separate LLM call after Pass 4 (coaching and grading are different tones)

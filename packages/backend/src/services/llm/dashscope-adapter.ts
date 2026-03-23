@@ -2,38 +2,43 @@ import { env } from '../../config/env.js'
 import { logger } from '../logger.js'
 import type { LLMProvider, LLMProviderOptions, LLMResponse } from './provider.js'
 
-interface AnthropicMessageResponse {
+interface OpenAIChatResponse {
   readonly id: string
-  readonly type: string
-  readonly role: string
-  readonly content: ReadonlyArray<{ readonly type: string; readonly text: string }>
+  readonly object: string
   readonly model: string
+  readonly choices: ReadonlyArray<{
+    readonly index: number
+    readonly message: { readonly role: string; readonly content: string }
+    readonly finish_reason: string
+  }>
   readonly usage: {
-    readonly input_tokens: number
-    readonly output_tokens: number
+    readonly prompt_tokens: number
+    readonly completion_tokens: number
+    readonly total_tokens: number
   }
 }
 
-interface AnthropicErrorResponse {
+interface OpenAIErrorResponse {
   readonly error: {
-    readonly type: string
     readonly message: string
+    readonly type: string
+    readonly code: string
   }
 }
 
-export class ClaudeAdapter implements LLMProvider {
+export class DashScopeAdapter implements LLMProvider {
   private readonly apiKey: string
   private readonly model: string
   private readonly baseUrl: string
 
-  constructor(apiKey: string, model?: string) {
-    this.apiKey = apiKey
+  constructor(apiKey?: string, model?: string, baseUrl?: string) {
+    this.apiKey = apiKey ?? env.DASHSCOPE_API_KEY
     this.model = model ?? env.LLM_MODEL
-    this.baseUrl = 'https://api.anthropic.com/v1/messages'
+    this.baseUrl = baseUrl ?? env.LLM_BASE_URL
 
     if (!this.apiKey) {
       throw new Error(
-        'Anthropic API key is required. Pass it as a constructor argument.'
+        'DASHSCOPE_API_KEY is not configured. Set it in your .env file.'
       )
     }
   }
@@ -47,8 +52,10 @@ export class ClaudeAdapter implements LLMProvider {
       model: this.model,
       max_tokens: options.maxTokens,
       ...(options.temperature !== undefined && { temperature: options.temperature }),
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
     }
 
     logger.info('LLM request', {
@@ -56,33 +63,31 @@ export class ClaudeAdapter implements LLMProvider {
       maxTokens: options.maxTokens,
     })
 
-    const response = await fetch(this.baseUrl, {
+    const url = `${this.baseUrl}/chat/completions`
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'x-api-key': this.apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
     })
 
     if (!response.ok) {
-      const errorBody = (await response.json()) as AnthropicErrorResponse
+      const errorBody = (await response.json()) as OpenAIErrorResponse
       const message = errorBody?.error?.message ?? `HTTP ${response.status}`
       logger.error('LLM API error', {
         status: response.status,
         message,
       })
-      throw new Error(`Anthropic API error: ${message}`)
+      throw new Error(`DashScope API error: ${message}`)
     }
 
-    const data = (await response.json()) as AnthropicMessageResponse
-    const content = data.content
-      .filter((block) => block.type === 'text')
-      .map((block) => block.text)
-      .join('')
+    const data = (await response.json()) as OpenAIChatResponse
 
-    const tokensUsed = data.usage.input_tokens + data.usage.output_tokens
+    const content = data.choices[0]?.message?.content ?? ''
+    const tokensUsed = data.usage.total_tokens
 
     logger.info('LLM response received', {
       model: data.model,
