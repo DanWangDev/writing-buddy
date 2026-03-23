@@ -14,9 +14,24 @@ import type {
 } from '@writting-buddy/shared'
 
 const BASE_URL = '/api/writing'
+const ACCESS_TOKEN_KEY = 'wb_access_token'
+const REFRESH_TOKEN_KEY = 'wb_refresh_token'
 
-let accessToken: string | null = null
-let refreshToken: string | null = null
+let accessToken: string | null = localStorage.getItem(ACCESS_TOKEN_KEY)
+let refreshToken: string | null = localStorage.getItem(REFRESH_TOKEN_KEY)
+
+function persistTokens(): void {
+  if (accessToken) {
+    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
+  } else {
+    localStorage.removeItem(ACCESS_TOKEN_KEY)
+  }
+  if (refreshToken) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+  } else {
+    localStorage.removeItem(REFRESH_TOKEN_KEY)
+  }
+}
 
 export function getAccessToken(): string | null {
   return accessToken
@@ -25,6 +40,7 @@ export function getAccessToken(): string | null {
 export function setTokens(access: string | null, refresh: string | null): void {
   accessToken = access
   refreshToken = refresh
+  persistTokens()
 }
 
 interface AuthData {
@@ -49,6 +65,7 @@ async function refreshAccessToken(): Promise<boolean> {
     if (json.success && json.data) {
       accessToken = json.data.accessToken
       refreshToken = json.data.refreshToken
+      persistTokens()
       return true
     }
     return false
@@ -91,6 +108,7 @@ async function request<T>(
     }
     accessToken = null
     refreshToken = null
+    persistTokens()
     throw new Error('Session expired. Please log in again.')
   }
 
@@ -112,6 +130,7 @@ export async function login(
   })
   accessToken = data.accessToken
   refreshToken = data.refreshToken
+  persistTokens()
   return data.user
 }
 
@@ -127,6 +146,7 @@ export async function register(
   })
   accessToken = data.accessToken
   refreshToken = data.refreshToken
+  persistTokens()
   return data.user
 }
 
@@ -136,6 +156,7 @@ export async function logout(): Promise<void> {
   } finally {
     accessToken = null
     refreshToken = null
+    persistTokens()
   }
 }
 

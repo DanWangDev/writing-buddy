@@ -176,7 +176,15 @@ export function createCoachingRouter(
 
         const passes = coachingPassRepo.findBySubmissionId(submissionId)
 
-        res.json({ success: true, data: passes })
+        res.json({
+          success: true,
+          data: {
+            submissionId,
+            currentPass: passes.length,
+            passes,
+            isComplete: passes.length >= 4,
+          },
+        })
       } catch (error) {
         logger.error('Failed to get coaching passes', {
           error: String(error),

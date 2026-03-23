@@ -1,7 +1,18 @@
 import dotenv from 'dotenv'
 import path from 'path'
+import { existsSync } from 'fs'
 
-dotenv.config({ path: path.resolve(process.cwd(), '.env') })
+function findEnvFile(): string {
+  let dir = process.cwd()
+  while (dir !== path.dirname(dir)) {
+    const candidate = path.join(dir, '.env')
+    if (existsSync(candidate)) return candidate
+    dir = path.dirname(dir)
+  }
+  return path.resolve(process.cwd(), '.env')
+}
+
+dotenv.config({ path: findEnvFile(), override: true })
 
 export const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
@@ -17,4 +28,6 @@ export const env = {
   LLM_MODEL: process.env.LLM_MODEL || 'qwen-plus',
   DAILY_SPEND_CEILING: parseFloat(process.env.DAILY_SPEND_CEILING || '50'),
   FREE_TIER_DAILY_SESSIONS: parseInt(process.env.FREE_TIER_DAILY_SESSIONS || '3', 10),
+  ADMIN_EMAIL: process.env.ADMIN_EMAIL || '',
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || '',
 } as const
