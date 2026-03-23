@@ -149,10 +149,10 @@ export function Dashboard() {
               >
                 <div>
                   <p className="text-base font-semibold text-warm-700">
-                    Submission #{sub.id.slice(0, 8)}
+                    {(sub as unknown as { promptTitle?: string }).promptTitle ?? `Submission #${sub.id.slice(0, 8)}`}
                   </p>
                   <p className="text-sm text-warm-400">
-                    {sub.wordCount} words &middot; {new Date(sub.startedAt).toLocaleDateString()}
+                    {sub.wordCount} words &middot; {new Date(sub.startedAt).toLocaleDateString()} {new Date(sub.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
                 <StatusBadge status={sub.status} />

@@ -113,4 +113,15 @@ export class SqliteSubmissionRepository implements ISubmissionRepository {
 
     return this.findById(id)
   }
+
+  delete(id: string): boolean {
+    const deleteAll = this.db.transaction(() => {
+      this.db.prepare('DELETE FROM rubric_scores WHERE submission_id = ?').run(id)
+      this.db.prepare('DELETE FROM coaching_passes WHERE submission_id = ?').run(id)
+      this.db.prepare('DELETE FROM revisions WHERE submission_id = ?').run(id)
+      const result = this.db.prepare('DELETE FROM submissions WHERE id = ?').run(id)
+      return result.changes > 0
+    })
+    return deleteAll()
+  }
 }
