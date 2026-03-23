@@ -13,39 +13,41 @@ vi.mock('../config/env.js', () => ({
 }))
 
 function createSuccessResponse(content: string, model = 'qwen-plus') {
+  const body = {
+    id: 'chatcmpl-test',
+    object: 'chat.completion',
+    model,
+    choices: [
+      {
+        index: 0,
+        message: { role: 'assistant', content },
+        finish_reason: 'stop',
+      },
+    ],
+    usage: {
+      prompt_tokens: 100,
+      completion_tokens: 50,
+      total_tokens: 150,
+    },
+  }
   return {
     ok: true,
-    json: async () => ({
-      id: 'chatcmpl-test',
-      object: 'chat.completion',
-      model,
-      choices: [
-        {
-          index: 0,
-          message: { role: 'assistant', content },
-          finish_reason: 'stop',
-        },
-      ],
-      usage: {
-        prompt_tokens: 100,
-        completion_tokens: 50,
-        total_tokens: 150,
-      },
-    }),
+    text: async () => JSON.stringify(body),
   }
 }
 
 function createErrorResponse(status: number, message: string) {
+  const body = {
+    error: {
+      message,
+      type: 'invalid_request_error',
+      code: 'invalid_api_key',
+    },
+  }
   return {
     ok: false,
     status,
-    json: async () => ({
-      error: {
-        message,
-        type: 'invalid_request_error',
-        code: 'invalid_api_key',
-      },
-    }),
+    text: async () => JSON.stringify(body),
   }
 }
 
@@ -132,25 +134,23 @@ describe('DashScopeAdapter', () => {
     ).rejects.toThrow('DashScope API error: Invalid API key')
   })
 
-  it('handles empty choices gracefully', async () => {
+  it('throws on empty choices', async () => {
+    const body = {
+      id: 'chatcmpl-test',
+      object: 'chat.completion',
+      model: 'qwen-plus',
+      choices: [],
+      usage: { prompt_tokens: 10, completion_tokens: 0, total_tokens: 10 },
+    }
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({
-        id: 'chatcmpl-test',
-        object: 'chat.completion',
-        model: 'qwen-plus',
-        choices: [],
-        usage: { prompt_tokens: 10, completion_tokens: 0, total_tokens: 10 },
-      }),
+      text: async () => JSON.stringify(body),
     })
 
     const adapter = new DashScopeAdapter('test-key', 'qwen-plus', 'https://test.example.com/v1')
-    const result = await adapter.generateResponse('System', 'User', {
-      maxTokens: 500,
-    })
-
-    expect(result.content).toBe('')
-    expect(result.tokensUsed).toBe(10)
+    await expect(
+      adapter.generateResponse('System', 'User', { maxTokens: 500 })
+    ).rejects.toThrow('DashScope API returned no choices')
   })
 
   it('uses default env values when no constructor args', async () => {

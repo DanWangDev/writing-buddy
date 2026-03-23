@@ -85,7 +85,7 @@ export class SqliteCoachingPassRepository implements ICoachingPassRepository {
   countTodayByUserId(userId: string): number {
     const row = this.db
       .prepare(
-        `SELECT COUNT(*) as count
+        `SELECT COUNT(DISTINCT cp.submission_id) as count
          FROM coaching_passes cp
          JOIN submissions s ON cp.submission_id = s.id
          WHERE s.user_id = ?

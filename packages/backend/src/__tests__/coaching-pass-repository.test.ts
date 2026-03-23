@@ -119,7 +119,7 @@ describe('SqliteCoachingPassRepository', () => {
       })
 
       const count = repo.countTodayByUserId(userId)
-      expect(count).toBe(2)
+      expect(count).toBe(1)
     })
 
     it('returns 0 for user with no passes', () => {

@@ -155,11 +155,13 @@ export class AiCoachService {
         }
       }
     } catch (error) {
-      logger.error('LLM call failed, using fallback', {
+      logger.error('LLM call failed', {
         error: String(error),
         submissionId,
       })
-      feedback = FALLBACK_FEEDBACK
+      throw new Error(
+        'Our AI coach is temporarily unavailable. Please try again in a moment.'
+      )
     }
 
     const coachingPass = this.coachingPassRepo.create({

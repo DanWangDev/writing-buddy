@@ -136,7 +136,7 @@ export function createCoachingRouter(
           return
         }
 
-        if (message.includes('temporarily unavailable')) {
+        if (message.includes('temporarily unavailable') || message.includes('AI coach is temporarily')) {
           res.status(503).json({ success: false, error: message })
           return
         }
