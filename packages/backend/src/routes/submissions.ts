@@ -188,5 +188,34 @@ export function createSubmissionRouter(db: Database): Router {
     }
   })
 
+  router.delete('/:id', requireAuth, (req: Request, res: Response) => {
+    try {
+      const id = req.params.id as string
+      const submission = submissionRepo.findById(id)
+
+      if (!submission) {
+        res.status(404).json({ success: false, error: 'Submission not found' })
+        return
+      }
+
+      if (submission.userId !== req.user!.sub) {
+        res.status(403).json({ success: false, error: 'Access denied' })
+        return
+      }
+
+      if (submission.status === 'completed') {
+        res.status(400).json({ success: false, error: 'Cannot delete a completed submission' })
+        return
+      }
+
+      submissionRepo.delete(id)
+
+      res.json({ success: true, data: null })
+    } catch (error) {
+      logger.error('Failed to delete submission', { error: String(error) })
+      res.status(500).json({ success: false, error: 'Internal server error' })
+    }
+  })
+
   return router
 }

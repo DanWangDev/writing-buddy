@@ -484,6 +484,7 @@ export function WritingDesk() {
                 onApply={handleApply}
                 applying={applying}
                 isCompleted={isCompleted}
+                defaultExpanded={idx === passes.length - 1}
               />
             ))
           )}

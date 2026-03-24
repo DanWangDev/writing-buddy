@@ -210,7 +210,7 @@ export function SubmissionDetail() {
             <p className="text-sm text-warm-400">No coaching feedback yet.</p>
           ) : (
             passes.map((pass, idx) => (
-              <CoachingFeedback key={pass.id} pass={pass} passNumber={idx + 1} />
+              <CoachingFeedback key={pass.id} pass={pass} passNumber={idx + 1} defaultExpanded={idx === passes.length - 1} />
             ))
           )}
 

@@ -204,6 +204,14 @@ export async function getSubmission(
   return request(`/submissions/${id}`)
 }
 
+export async function deleteSubmission(
+  submissionId: string,
+): Promise<void> {
+  await request<null>(`/submissions/${submissionId}`, {
+    method: 'DELETE',
+  })
+}
+
 export async function createRevision(
   submissionId: string,
   content: string,

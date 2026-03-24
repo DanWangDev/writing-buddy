@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Loader2, FileText } from 'lucide-react'
+import { Loader2, FileText, Trash2 } from 'lucide-react'
 import { InkwellSleeping, MarginDoodles } from '../components/inkwell'
 import * as api from '../services/api'
 import type { Submission } from '@writting-buddy/shared'
@@ -21,6 +21,24 @@ export function Portfolio() {
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [deleting, setDeleting] = useState<string | null>(null)
+
+  const handleDelete = useCallback(async (e: React.MouseEvent, sub: Submission) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!window.confirm('Delete this draft? This cannot be undone.')) return
+
+    setDeleting(sub.id)
+    try {
+      await api.deleteSubmission(sub.id)
+      setSubmissions((prev) => prev.filter((s) => s.id !== sub.id))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete submission.')
+    } finally {
+      setDeleting(null)
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -104,13 +122,30 @@ export function Portfolio() {
                   </p>
                 </div>
               </div>
-              <span
-                className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                  STATUS_STYLES[sub.status] ?? STATUS_STYLES.draft
-                }`}
-              >
-                {STATUS_LABELS[sub.status] ?? sub.status}
-              </span>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                    STATUS_STYLES[sub.status] ?? STATUS_STYLES.draft
+                  }`}
+                >
+                  {STATUS_LABELS[sub.status] ?? sub.status}
+                </span>
+                {sub.status !== 'completed' && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleDelete(e, sub)}
+                    disabled={deleting === sub.id}
+                    className="p-1.5 rounded-lg text-warm-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                    aria-label="Delete draft"
+                  >
+                    {deleting === sub.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </button>
+                )}
+              </div>
             </Link>
           ))}
         </div>
