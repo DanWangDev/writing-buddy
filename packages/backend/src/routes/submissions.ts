@@ -147,7 +147,11 @@ export function createSubmissionRouter(db: Database): Router {
 
       const revision = revisionRepo.create(id, content)
 
-      progressService.recordRevisionActivity(req.user!.sub, wordCount)
+      const newWords = Math.max(0, wordCount - submission.wordCount)
+      if (newWords > 0) {
+        progressService.recordRevisionActivity(req.user!.sub, newWords)
+      }
+      submissionRepo.updateWordCount(id, wordCount)
 
       res.status(201).json({ success: true, data: revision })
     } catch (error) {
