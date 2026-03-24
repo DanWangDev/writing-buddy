@@ -4,6 +4,7 @@ import { CoachingFeedback } from '../components/CoachingFeedback'
 import { RubricChart } from '../components/RubricChart'
 import { WordCounter } from '../components/WordCounter'
 import { InlineDiff } from '../components/InlineDiff'
+import { MarginDoodles } from '../components/inkwell'
 import { ArrowLeft, Loader2, FileText, PenLine, GitCompareArrows } from 'lucide-react'
 import * as api from '../services/api'
 import type {
@@ -93,7 +94,8 @@ export function SubmissionDetail() {
   const canResume = submission.status !== 'completed'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      <MarginDoodles variant="portal" />
       {/* Header */}
       <div className="flex items-center gap-3">
         <button

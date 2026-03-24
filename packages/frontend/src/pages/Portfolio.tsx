@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Loader2, FileText } from 'lucide-react'
+import { InkwellSleeping, MarginDoodles } from '../components/inkwell'
 import * as api from '../services/api'
 import type { Submission } from '@writting-buddy/shared'
 
@@ -52,7 +53,8 @@ export function Portfolio() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      <MarginDoodles variant="portal" />
       <div>
         <h1 className="font-display text-2xl font-bold text-warm-800">My Writing</h1>
         <p className="text-warm-500 mt-1 text-base">All your stories and submissions</p>
@@ -66,8 +68,8 @@ export function Portfolio() {
 
       {submissions.length === 0 ? (
         <div className="text-center py-20">
-          <FileText className="w-12 h-12 mx-auto mb-3 text-warm-300" />
-          <p className="text-warm-400 text-base">No writing yet. Go browse some prompts and start your first story!</p>
+          <InkwellSleeping className="mx-auto mb-2 opacity-60" width={160} height={144} />
+          <p className="text-warm-400 text-base">Inkwell is snoozing... Wake them up with your first story!</p>
           <Link
             to="/prompts"
             className="inline-flex mt-4 px-5 h-12 items-center bg-sky text-white text-base font-semibold rounded-[10px] hover:bg-sky-dark transition-colors shadow-sm shadow-sky/20"

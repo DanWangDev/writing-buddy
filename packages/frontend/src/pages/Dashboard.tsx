@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { StreakBadge } from '../components/StreakBadge'
+import { InkwellWriting, InkwellSleeping, MarginDoodles } from '../components/inkwell'
 import { PenLine, Trophy, Clock, ArrowRight, Loader2 } from 'lucide-react'
 import * as api from '../services/api'
 import type { Submission, WritingProgress } from '@writting-buddy/shared'
@@ -58,11 +59,13 @@ export function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      <MarginDoodles variant="default" />
+
       {/* Welcome */}
-      <div className="bg-white rounded-2xl border border-warm-200 p-6">
+      <div className="bg-white rounded-2xl border border-warm-200 p-6 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
+          <div className="relative z-10">
             <h1 className="font-display text-2xl font-bold text-warm-800">
               Welcome back, {user?.displayName ?? 'Writer'}!
             </h1>
@@ -70,12 +73,13 @@ export function Dashboard() {
           </div>
           <Link
             to="/write"
-            className="inline-flex items-center gap-2 bg-sky text-white font-semibold rounded-[10px] px-5 h-12 text-base hover:bg-sky-dark transition-colors shrink-0 shadow-sm shadow-sky/20"
+            className="inline-flex items-center gap-2 bg-sky text-white font-semibold rounded-[10px] px-5 h-12 text-base hover:bg-sky-dark transition-colors shrink-0 shadow-sm shadow-sky/20 relative z-10"
           >
             <PenLine className="w-5 h-5" />
             Start Writing
           </Link>
         </div>
+        <InkwellWriting className="absolute -right-2 -bottom-4 opacity-[0.08] hidden sm:block" width={140} height={154} />
       </div>
 
       {error && (
@@ -131,7 +135,8 @@ export function Dashboard() {
 
         {recentSubmissions.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-warm-400 text-base">No stories yet — time to start your first adventure!</p>
+            <InkwellSleeping className="mx-auto mb-2 opacity-60" width={140} height={126} />
+            <p className="text-warm-400 text-base">Inkwell is waiting for your first story!</p>
             <Link
               to="/prompts"
               className="inline-flex items-center gap-2 mt-4 bg-sky text-white font-semibold rounded-[10px] px-5 h-12 text-base hover:bg-sky-dark transition-colors"
