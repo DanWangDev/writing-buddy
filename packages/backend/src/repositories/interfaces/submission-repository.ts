@@ -11,4 +11,5 @@ export interface ISubmissionRepository {
   updateStatus(id: string, status: SubmissionStatus): Submission | null
   updateWordCount(id: string, wordCount: number): Submission | null
   complete(id: string, xpEarned: number): Submission | null
+  delete(id: string): boolean
 }

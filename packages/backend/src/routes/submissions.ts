@@ -69,7 +69,12 @@ export function createSubmissionRouter(db: Database): Router {
       const userId = req.user!.sub
       const submissions = submissionRepo.findByUserId(userId, parsed.data)
 
-      res.json({ success: true, data: submissions })
+      const enriched = submissions.map((sub) => {
+        const prompt = sub.promptId ? promptRepo.findById(sub.promptId) : null
+        return { ...sub, promptTitle: prompt?.title ?? null }
+      })
+
+      res.json({ success: true, data: enriched })
     } catch (error) {
       logger.error('Failed to list submissions', { error: String(error) })
       res.status(500).json({ success: false, error: 'Internal server error' })
@@ -184,6 +189,34 @@ export function createSubmissionRouter(db: Database): Router {
       res.json({ success: true, data: completed })
     } catch (error) {
       logger.error('Failed to complete submission', { error: String(error) })
+      res.status(500).json({ success: false, error: 'Internal server error' })
+    }
+  })
+
+  router.delete('/:id', requireAuth, (req: Request, res: Response) => {
+    try {
+      const id = req.params.id as string
+      const submission = submissionRepo.findById(id)
+
+      if (!submission) {
+        res.status(404).json({ success: false, error: 'Submission not found' })
+        return
+      }
+
+      if (submission.userId !== req.user!.sub) {
+        res.status(403).json({ success: false, error: 'Access denied' })
+        return
+      }
+
+      const deleted = submissionRepo.delete(id)
+      if (!deleted) {
+        res.status(500).json({ success: false, error: 'Failed to delete submission' })
+        return
+      }
+
+      res.json({ success: true, data: { id } })
+    } catch (error) {
+      logger.error('Failed to delete submission', { error: String(error) })
       res.status(500).json({ success: false, error: 'Internal server error' })
     }
   })
