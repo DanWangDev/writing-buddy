@@ -208,6 +208,11 @@ export function createSubmissionRouter(db: Database): Router {
         return
       }
 
+      if (submission.status === 'completed') {
+        res.status(400).json({ success: false, error: 'Cannot delete a completed submission' })
+        return
+      }
+
       const deleted = submissionRepo.delete(id)
       if (!deleted) {
         res.status(500).json({ success: false, error: 'Failed to delete submission' })

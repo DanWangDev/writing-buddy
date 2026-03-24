@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PromptCard } from '../components/PromptCard'
+import { MarginDoodles } from '../components/inkwell'
 import { Loader2, Search } from 'lucide-react'
 import * as api from '../services/api'
 import type { Prompt, PromptGenre, PromptDifficulty } from '@writting-buddy/shared'
@@ -70,7 +71,8 @@ export function PromptBrowser() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      <MarginDoodles variant="prompts" />
       <div>
         <h1 className="font-display text-2xl font-bold text-warm-800">Browse Prompts</h1>
         <p className="text-warm-500 mt-1 text-base">Pick a prompt and start your story!</p>

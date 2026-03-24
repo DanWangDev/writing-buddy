@@ -5,6 +5,7 @@ import { CoachingFeedback } from '../components/CoachingFeedback'
 import type { ApplyMode } from '../components/CoachingFeedback'
 import { RubricChart } from '../components/RubricChart'
 import { InlineDiff } from '../components/InlineDiff'
+import { MarginDoodles } from '../components/inkwell'
 import {
   Save,
   MessageSquare,
@@ -290,7 +291,8 @@ export function WritingDesk() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      <MarginDoodles variant="writing" />
       {/* Back button */}
       <button
         type="button"
@@ -482,6 +484,7 @@ export function WritingDesk() {
                 onApply={handleApply}
                 applying={applying}
                 isCompleted={isCompleted}
+                defaultExpanded={idx === passes.length - 1}
               />
             ))
           )}

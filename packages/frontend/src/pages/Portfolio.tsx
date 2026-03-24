@@ -1,12 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Loader2, FileText, Trash2 } from 'lucide-react'
+import { InkwellSleeping, MarginDoodles } from '../components/inkwell'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import * as api from '../services/api'
 import type { Submission } from '@writting-buddy/shared'
-
-interface SubmissionWithTitle extends Submission {
-  promptTitle?: string | null
-}
 
 const STATUS_STYLES: Record<string, string> = {
   draft: 'bg-warm-100 text-warm-600',
@@ -22,14 +20,37 @@ const STATUS_LABELS: Record<string, string> = {
 
 function formatDateTime(iso: string): string {
   const d = new Date(iso)
-  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
 }
 
 export function Portfolio() {
-  const [submissions, setSubmissions] = useState<SubmissionWithTitle[]>([])
+  const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Submission | null>(null)
+
+  const openDeleteDialog = useCallback((e: React.MouseEvent, sub: Submission) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDeleteTarget(sub)
+  }, [])
+
+  const confirmDelete = useCallback(async () => {
+    if (!deleteTarget) return
+
+    const sub = deleteTarget
+    setDeleteTarget(null)
+    setDeleting(sub.id)
+    try {
+      await api.deleteSubmission(sub.id)
+      setSubmissions((prev) => prev.filter((s) => s.id !== sub.id))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete submission.')
+    } finally {
+      setDeleting(null)
+    }
+  }, [deleteTarget])
 
   useEffect(() => {
     let cancelled = false
@@ -37,7 +58,7 @@ export function Portfolio() {
     api
       .getSubmissions()
       .then((data) => {
-        if (!cancelled) setSubmissions(data as SubmissionWithTitle[])
+        if (!cancelled) setSubmissions(data)
       })
       .catch((err) => {
         if (!cancelled) {
@@ -53,24 +74,6 @@ export function Portfolio() {
     }
   }, [])
 
-  const handleDelete = useCallback(async (e: React.MouseEvent, id: string, title: string) => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    if (!window.confirm(`Delete "${title}"? This cannot be undone.`)) return
-
-    setDeleting(id)
-    setError('')
-    try {
-      await api.deleteSubmission(id)
-      setSubmissions((prev) => prev.filter((s) => s.id !== id))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete.')
-    } finally {
-      setDeleting(null)
-    }
-  }, [])
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -80,7 +83,8 @@ export function Portfolio() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      <MarginDoodles variant="portal" />
       <div>
         <h1 className="font-display text-2xl font-bold text-warm-800">My Writing</h1>
         <p className="text-warm-500 mt-1 text-base">All your stories and submissions</p>
@@ -94,8 +98,8 @@ export function Portfolio() {
 
       {submissions.length === 0 ? (
         <div className="text-center py-20">
-          <FileText className="w-12 h-12 mx-auto mb-3 text-warm-300" />
-          <p className="text-warm-400 text-base">No writing yet. Go browse some prompts and start your first story!</p>
+          <InkwellSleeping className="mx-auto mb-2 opacity-60" width={160} height={144} />
+          <p className="text-warm-400 text-base">Inkwell is snoozing... Wake them up with your first story!</p>
           <Link
             to="/prompts"
             className="inline-flex mt-4 px-5 h-12 items-center bg-sky text-white text-base font-semibold rounded-[10px] hover:bg-sky-dark transition-colors shadow-sm shadow-sky/20"
@@ -106,7 +110,7 @@ export function Portfolio() {
       ) : (
         <div className="bg-white rounded-2xl border border-warm-200 divide-y divide-warm-100">
           {submissions.map((sub) => {
-            const displayTitle = sub.promptTitle ?? `Submission #${sub.id.slice(0, 8)}`
+            const displayTitle = sub.promptTitle ?? `Free Writing #${sub.id.slice(0, 8)}`
 
             return (
               <div key={sub.id} className="flex items-center justify-between p-4 hover:bg-warm-50 transition-colors group">
@@ -140,25 +144,38 @@ export function Portfolio() {
                   >
                     {STATUS_LABELS[sub.status] ?? sub.status}
                   </span>
-                  <button
-                    type="button"
-                    onClick={(e) => handleDelete(e, sub.id, displayTitle)}
-                    disabled={deleting === sub.id}
-                    className="p-2 rounded-lg text-warm-300 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
-                    aria-label={`Delete ${displayTitle}`}
-                  >
-                    {deleting === sub.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
-                  </button>
+                  {sub.status !== 'completed' && (
+                    <button
+                      type="button"
+                      onClick={(e) => openDeleteDialog(e, sub)}
+                      disabled={deleting === sub.id}
+                      className="p-2 rounded-lg text-warm-300 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                      aria-label={`Delete ${displayTitle}`}
+                    >
+                      {deleting === sub.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             )
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Delete this draft?"
+        message="This will remove the story and all its coaching feedback. You won't be able to get it back."
+        confirmLabel="Yes, delete it"
+        cancelLabel="No, keep it!"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

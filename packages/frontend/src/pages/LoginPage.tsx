@@ -2,7 +2,8 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { PenLine, Loader2 } from 'lucide-react'
+import { InkwellWriting, MarginDoodles } from '../components/inkwell'
+import { Loader2 } from 'lucide-react'
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -33,12 +34,11 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-warm-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-warm-50 flex items-center justify-center px-4 relative overflow-hidden">
+      <MarginDoodles />
+      <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-sky rounded-2xl mb-4 shadow-lg shadow-sky/20">
-            <PenLine className="w-8 h-8 text-white" />
-          </div>
+          <InkwellWriting className="mx-auto mb-2" width={120} height={132} />
           <h1 className="font-display text-3xl font-bold text-warm-800">Welcome back!</h1>
           <p className="text-warm-500 mt-2 text-base">Sign in to continue your writing journey</p>
         </div>

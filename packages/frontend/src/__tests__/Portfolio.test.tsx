@@ -57,8 +57,8 @@ describe('Portfolio', () => {
     renderPortfolio()
 
     await waitFor(() => {
-      expect(screen.getByText('Submission #sub-aaaa')).toBeInTheDocument()
-      expect(screen.getByText('Submission #sub-cccc')).toBeInTheDocument()
+      expect(screen.getByText('Free Writing #sub-aaaa')).toBeInTheDocument()
+      expect(screen.getByText('Free Writing #sub-cccc')).toBeInTheDocument()
     })
     expect(screen.getByText('Completed')).toBeInTheDocument()
     expect(screen.getByText('Draft')).toBeInTheDocument()
@@ -70,7 +70,7 @@ describe('Portfolio', () => {
     renderPortfolio()
 
     await waitFor(() => {
-      expect(screen.getByText(/No writing yet/)).toBeInTheDocument()
+      expect(screen.getByText(/Inkwell is snoozing/)).toBeInTheDocument()
     })
   })
 
