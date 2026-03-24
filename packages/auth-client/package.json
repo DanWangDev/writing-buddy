@@ -3,20 +3,20 @@
   "version": "1.0.0",
   "description": "OIDC client SDK for 11plus-hub authentication",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
     },
     "./browser": {
-      "types": "./dist/browser.d.ts",
-      "import": "./dist/browser.js"
+      "types": "./src/browser.ts",
+      "import": "./src/browser.ts"
     },
     "./test-helpers": {
-      "types": "./dist/test-helpers.d.ts",
-      "import": "./dist/test-helpers.js"
+      "types": "./src/test-helpers.ts",
+      "import": "./src/test-helpers.ts"
     }
   },
   "files": [
@@ -24,7 +24,23 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./browser": {
+        "types": "./dist/browser.d.ts",
+        "import": "./dist/browser.js"
+      },
+      "./test-helpers": {
+        "types": "./dist/test-helpers.d.ts",
+        "import": "./dist/test-helpers.js"
+      }
+    }
   },
   "repository": {
     "type": "git",
