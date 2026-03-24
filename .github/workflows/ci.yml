@@ -25,6 +25,8 @@ jobs:
         run: npm ci
       - name: TypeScript check (shared)
         run: npm run typecheck -w packages/shared
+      - name: TypeScript check (auth-client)
+        run: npx tsc --noEmit -p packages/auth-client/tsconfig.json
       - name: TypeScript check (backend)
         run: npx tsc --noEmit -p packages/backend/tsconfig.json
       - name: TypeScript check (frontend)

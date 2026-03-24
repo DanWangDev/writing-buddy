@@ -1,5 +1,4 @@
 import { createRemoteJWKSet, jwtVerify } from 'jose'
-import type { JWTVerifyResult, KeyLike } from 'jose'
 import type { HubTokenClaims, AuthClientConfig } from './types.js'
 
 /**
@@ -20,9 +19,9 @@ export class JwtVerifier {
   }
 
   async verify(token: string): Promise<HubTokenClaims> {
-    const result: JWTVerifyResult<Record<string, unknown>> = await jwtVerify(
+    const result = await jwtVerify(
       token,
-      this.jwks as (protectedHeader: unknown, token: unknown) => Promise<KeyLike | Uint8Array>,
+      this.jwks,
       {
         issuer: this.issuer,
       },
