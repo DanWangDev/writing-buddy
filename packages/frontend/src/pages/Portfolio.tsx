@@ -18,6 +18,11 @@ const STATUS_LABELS: Record<string, string> = {
   completed: 'Completed',
 }
 
+function formatDateTime(iso: string): string {
+  const d = new Date(iso)
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+}
+
 export function Portfolio() {
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
@@ -104,58 +109,60 @@ export function Portfolio() {
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-warm-200 divide-y divide-warm-100">
-          {submissions.map((sub) => (
-            <Link
-              key={sub.id}
-              to={
-                sub.status === 'completed'
-                  ? `/portfolio/${sub.id}`
-                  : `/write/${sub.id}`
-              }
-              className="flex items-center justify-between p-4 hover:bg-warm-50 transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-[10px] bg-sky/10 flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-sky" />
-                </div>
-                <div>
-                  <p className="text-base font-semibold text-warm-700">
-                    {sub.promptTitle ?? `Free Writing #${sub.id.slice(0, 8)}`}
-                  </p>
-                  <p className="text-sm text-warm-400">
-                    {sub.wordCount} words &middot;{' '}
-                    {new Date(sub.startedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}{' '}
-                    {new Date(sub.startedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} &middot;{' '}
-                    {sub.xpEarned} XP
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                    STATUS_STYLES[sub.status] ?? STATUS_STYLES.draft
-                  }`}
+          {submissions.map((sub) => {
+            const displayTitle = sub.promptTitle ?? `Free Writing #${sub.id.slice(0, 8)}`
+
+            return (
+              <div key={sub.id} className="flex items-center justify-between p-4 hover:bg-warm-50 transition-colors group">
+                <Link
+                  to={
+                    sub.status === 'completed'
+                      ? `/portfolio/${sub.id}`
+                      : `/write/${sub.id}`
+                  }
+                  className="flex items-center gap-4 flex-1 min-w-0"
                 >
-                  {STATUS_LABELS[sub.status] ?? sub.status}
-                </span>
-                {sub.status !== 'completed' && (
-                  <button
-                    type="button"
-                    onClick={(e) => openDeleteDialog(e, sub)}
-                    disabled={deleting === sub.id}
-                    className="p-1.5 rounded-lg text-warm-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
-                    aria-label="Delete draft"
+                  <div className="w-12 h-12 rounded-[10px] bg-sky/10 flex items-center justify-center shrink-0">
+                    <FileText className="w-5 h-5 text-sky" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-base font-semibold text-warm-700 truncate">
+                      {displayTitle}
+                    </p>
+                    <p className="text-sm text-warm-400">
+                      {sub.wordCount} words &middot;{' '}
+                      {formatDateTime(sub.startedAt)} &middot;{' '}
+                      {sub.xpEarned} XP
+                    </p>
+                  </div>
+                </Link>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span
+                    className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                      STATUS_STYLES[sub.status] ?? STATUS_STYLES.draft
+                    }`}
                   >
-                    {deleting === sub.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
-                  </button>
-                )}
+                    {STATUS_LABELS[sub.status] ?? sub.status}
+                  </span>
+                  {sub.status !== 'completed' && (
+                    <button
+                      type="button"
+                      onClick={(e) => openDeleteDialog(e, sub)}
+                      disabled={deleting === sub.id}
+                      className="p-2 rounded-lg text-warm-300 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                      aria-label={`Delete ${displayTitle}`}
+                    >
+                      {deleting === sub.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
-            </Link>
-          ))}
+            )
+          })}
         </div>
       )}
 

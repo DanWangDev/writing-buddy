@@ -207,7 +207,7 @@ export async function getSubmission(
 export async function deleteSubmission(
   submissionId: string,
 ): Promise<void> {
-  await request<null>(`/submissions/${submissionId}`, {
+  await request<{ id: string }>(`/submissions/${submissionId}`, {
     method: 'DELETE',
   })
 }

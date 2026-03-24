@@ -71,7 +71,7 @@ export function createSubmissionRouter(db: Database): Router {
 
       const enriched = submissions.map((sub) => {
         const prompt = sub.promptId ? promptRepo.findById(sub.promptId) : null
-        return { ...sub, promptTitle: prompt?.title }
+        return { ...sub, promptTitle: prompt?.title ?? null }
       })
 
       res.json({ success: true, data: enriched })
@@ -213,9 +213,13 @@ export function createSubmissionRouter(db: Database): Router {
         return
       }
 
-      submissionRepo.delete(id)
+      const deleted = submissionRepo.delete(id)
+      if (!deleted) {
+        res.status(500).json({ success: false, error: 'Failed to delete submission' })
+        return
+      }
 
-      res.json({ success: true, data: null })
+      res.json({ success: true, data: { id } })
     } catch (error) {
       logger.error('Failed to delete submission', { error: String(error) })
       res.status(500).json({ success: false, error: 'Internal server error' })
