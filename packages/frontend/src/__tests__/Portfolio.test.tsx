@@ -70,7 +70,7 @@ describe('Portfolio', () => {
     renderPortfolio()
 
     await waitFor(() => {
-      expect(screen.getByText(/No writing yet/)).toBeInTheDocument()
+      expect(screen.getByText(/Inkwell is snoozing/)).toBeInTheDocument()
     })
   })
 

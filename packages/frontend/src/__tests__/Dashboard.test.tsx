@@ -101,7 +101,7 @@ describe('Dashboard', () => {
     renderDashboard()
 
     await waitFor(() => {
-      expect(screen.getByText(/No stories yet/)).toBeInTheDocument()
+      expect(screen.getByText(/Inkwell is waiting/)).toBeInTheDocument()
     })
   })
 })
