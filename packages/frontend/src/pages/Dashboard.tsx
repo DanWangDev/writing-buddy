@@ -79,7 +79,7 @@ export function Dashboard() {
             Start Writing
           </Link>
         </div>
-        <InkwellWriting className="absolute -right-2 -bottom-4 opacity-[0.08] hidden sm:block" width={140} height={154} />
+        <InkwellWriting className="absolute -right-2 -bottom-4 opacity-[0.18] hidden sm:block" width={140} height={154} />
       </div>
 
       {error && (
