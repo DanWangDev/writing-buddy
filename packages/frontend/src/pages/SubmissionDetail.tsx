@@ -108,10 +108,11 @@ export function SubmissionDetail() {
         </button>
         <div className="flex-1">
           <h1 className="font-display text-xl font-bold text-warm-800">
-            {prompt ? prompt.title : `Submission #${submission.id.slice(0, 8)}`}
+            {prompt ? prompt.title : `Free Writing #${submission.id.slice(0, 8)}`}
           </h1>
           <p className="text-sm text-warm-500">
-            {new Date(submission.startedAt).toLocaleDateString()} &middot;{' '}
+            {new Date(submission.startedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}{' '}
+            {new Date(submission.startedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} &middot;{' '}
             {submission.xpEarned} XP earned
           </p>
         </div>

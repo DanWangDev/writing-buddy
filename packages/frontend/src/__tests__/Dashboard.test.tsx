@@ -88,7 +88,7 @@ describe('Dashboard', () => {
     renderDashboard()
 
     await waitFor(() => {
-      expect(screen.getByText('Submission #sub-1234')).toBeInTheDocument()
+      expect(screen.getByText('Free Writing #sub-1234')).toBeInTheDocument()
       expect(screen.getByText('Draft')).toBeInTheDocument()
     })
   })

@@ -4,6 +4,7 @@ export interface Submission {
   id: string
   userId: string
   promptId?: string
+  promptTitle?: string
   currentRevision: number
   status: SubmissionStatus
   wordCount: number

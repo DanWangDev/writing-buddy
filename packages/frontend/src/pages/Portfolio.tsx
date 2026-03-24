@@ -120,11 +120,12 @@ export function Portfolio() {
                 </div>
                 <div>
                   <p className="text-base font-semibold text-warm-700">
-                    Submission #{sub.id.slice(0, 8)}
+                    {sub.promptTitle ?? `Free Writing #${sub.id.slice(0, 8)}`}
                   </p>
                   <p className="text-sm text-warm-400">
                     {sub.wordCount} words &middot;{' '}
-                    {new Date(sub.startedAt).toLocaleDateString()} &middot;{' '}
+                    {new Date(sub.startedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}{' '}
+                    {new Date(sub.startedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} &middot;{' '}
                     {sub.xpEarned} XP
                   </p>
                 </div>

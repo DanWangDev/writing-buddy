@@ -69,7 +69,12 @@ export function createSubmissionRouter(db: Database): Router {
       const userId = req.user!.sub
       const submissions = submissionRepo.findByUserId(userId, parsed.data)
 
-      res.json({ success: true, data: submissions })
+      const enriched = submissions.map((sub) => {
+        const prompt = sub.promptId ? promptRepo.findById(sub.promptId) : null
+        return { ...sub, promptTitle: prompt?.title }
+      })
+
+      res.json({ success: true, data: enriched })
     } catch (error) {
       logger.error('Failed to list submissions', { error: String(error) })
       res.status(500).json({ success: false, error: 'Internal server error' })
