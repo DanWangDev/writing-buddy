@@ -1,4 +1,4 @@
-import type { Submission, SubmissionStatus } from '@writting-buddy/shared'
+import type { Submission, SubmissionStatus } from '@writing-buddy/shared'
 
 export interface SubmissionFilters {
   readonly status?: SubmissionStatus

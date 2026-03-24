@@ -13,7 +13,7 @@ import type {
   Prompt,
   CoachingPass,
   RubricScores,
-} from '@writting-buddy/shared'
+} from '@writing-buddy/shared'
 
 export function SubmissionDetail() {
   const { id } = useParams<{ id: string }>()

@@ -1,4 +1,4 @@
-import type { PassType, FocusDimension } from '@writting-buddy/shared'
+import type { PassType, FocusDimension } from '@writing-buddy/shared'
 
 interface PromptContext {
   readonly passType: PassType

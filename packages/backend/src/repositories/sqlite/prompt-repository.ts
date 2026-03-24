@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import type { Database } from 'better-sqlite3'
-import type { Prompt } from '@writting-buddy/shared'
+import type { Prompt } from '@writing-buddy/shared'
 import type { IPromptRepository, PromptFilters } from '../interfaces/prompt-repository.js'
 
 interface PromptRow {

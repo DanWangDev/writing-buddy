@@ -1,4 +1,4 @@
-import type { Prompt, PromptGenre, PromptDifficulty } from '@writting-buddy/shared'
+import type { Prompt, PromptGenre, PromptDifficulty } from '@writing-buddy/shared'
 
 export interface PromptFilters {
   readonly genre?: PromptGenre

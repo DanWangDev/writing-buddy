@@ -1,4 +1,4 @@
-import type { Revision, CoachingPass } from '@writting-buddy/shared'
+import type { Revision, CoachingPass } from '@writing-buddy/shared'
 import { logger } from '../logger.js'
 
 interface RevisionSummary {

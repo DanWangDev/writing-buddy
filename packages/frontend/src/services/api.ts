@@ -11,7 +11,7 @@ import type {
   WritingProgress,
   ApiResponse,
   UserRole,
-} from '@writting-buddy/shared'
+} from '@writing-buddy/shared'
 
 const BASE_URL = '/api/writing'
 const ACCESS_TOKEN_KEY = 'wb_access_token'

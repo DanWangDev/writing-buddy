@@ -1,4 +1,4 @@
-import type { RubricScores } from '@writting-buddy/shared'
+import type { RubricScores } from '@writing-buddy/shared'
 import type { RubricCategory } from '../services/api'
 import { AlertTriangle, Loader2 } from 'lucide-react'
 

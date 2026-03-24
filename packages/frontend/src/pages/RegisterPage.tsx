@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { InkwellCelebration, MarginDoodles } from '../components/inkwell'
 import { Loader2 } from 'lucide-react'
-import type { UserRole } from '@writting-buddy/shared'
+import type { UserRole } from '@writing-buddy/shared'
 
 const ROLES: { value: UserRole; label: string; emoji: string }[] = [
   { value: 'student', label: 'Student', emoji: '✏️' },

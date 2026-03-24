@@ -4,7 +4,7 @@ import { Loader2, FileText, Trash2 } from 'lucide-react'
 import { InkwellSleeping, MarginDoodles } from '../components/inkwell'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import * as api from '../services/api'
-import type { Submission } from '@writting-buddy/shared'
+import type { Submission } from '@writing-buddy/shared'
 
 const STATUS_STYLES: Record<string, string> = {
   draft: 'bg-warm-100 text-warm-600',

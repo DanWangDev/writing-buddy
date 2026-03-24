@@ -1,5 +1,5 @@
 import { createContext } from 'react'
-import type { PublicUser, UserRole } from '@writting-buddy/shared'
+import type { PublicUser, UserRole } from '@writing-buddy/shared'
 
 export interface AuthContextValue {
   user: PublicUser | null

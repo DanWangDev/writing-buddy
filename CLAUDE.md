@@ -18,7 +18,7 @@ Second app in the 11+ prep suite alongside vocab-master. Shares auth infrastruct
 ## Project Structure
 
 ```
-writting-buddy/
+writing-buddy/
 ├── packages/
 │   ├── shared/          # Shared TypeScript types
 │   ├── backend/         # Express API (port 5050)

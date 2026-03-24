@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import type { Database } from 'better-sqlite3'
-import type { Submission, SubmissionStatus } from '@writting-buddy/shared'
+import type { Submission, SubmissionStatus } from '@writing-buddy/shared'
 import type { ISubmissionRepository, SubmissionFilters } from '../interfaces/submission-repository.js'
 
 interface SubmissionRow {

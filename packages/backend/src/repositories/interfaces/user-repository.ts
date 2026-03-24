@@ -1,4 +1,4 @@
-import type { User, CreateUserDto } from '@writting-buddy/shared'
+import type { User, CreateUserDto } from '@writing-buddy/shared'
 
 export interface IUserRepository {
   findById(id: string): User | null

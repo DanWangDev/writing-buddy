@@ -1,4 +1,4 @@
-import type { WritingProgress } from '@writting-buddy/shared'
+import type { WritingProgress } from '@writing-buddy/shared'
 
 export interface UpsertProgressDto {
   readonly userId: string

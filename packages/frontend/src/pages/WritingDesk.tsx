@@ -24,7 +24,7 @@ import type {
   Prompt,
   CoachingPass,
   RubricScores,
-} from '@writting-buddy/shared'
+} from '@writing-buddy/shared'
 
 function countWords(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length

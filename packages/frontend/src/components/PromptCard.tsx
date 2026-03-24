@@ -1,4 +1,4 @@
-import type { Prompt } from '@writting-buddy/shared'
+import type { Prompt } from '@writing-buddy/shared'
 import { BookOpen } from 'lucide-react'
 
 const GENRE_STYLES: Record<string, { badge: string; accent: string }> = {

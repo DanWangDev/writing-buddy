@@ -1,5 +1,5 @@
 {
-  "name": "writting-buddy",
+  "name": "writing-buddy",
   "private": true,
   "workspaces": [
     "packages/*"

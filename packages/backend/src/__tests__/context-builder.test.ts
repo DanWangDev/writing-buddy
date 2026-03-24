@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { Revision, CoachingPass } from '@writting-buddy/shared'
+import type { Revision, CoachingPass } from '@writing-buddy/shared'
 import { buildContext } from '../services/coaching/context-builder.js'
 
 function makeRevision(overrides: Partial<Revision> = {}): Revision {

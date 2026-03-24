@@ -1,4 +1,4 @@
-import type { CoachingPass } from '@writting-buddy/shared'
+import type { CoachingPass } from '@writing-buddy/shared'
 
 export interface CreateCoachingPassDto {
   readonly submissionId: string

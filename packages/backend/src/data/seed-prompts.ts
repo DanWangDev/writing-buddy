@@ -1,4 +1,4 @@
-import type { Prompt, PromptGenre, PromptDifficulty } from '@writting-buddy/shared'
+import type { Prompt, PromptGenre, PromptDifficulty } from '@writing-buddy/shared'
 
 type SeedPrompt = Omit<Prompt, 'id' | 'createdAt'>
 

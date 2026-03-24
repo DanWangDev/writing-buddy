@@ -11,7 +11,7 @@ services:
       - .env
     environment:
       - NODE_ENV=production
-      - DATABASE_PATH=/app/data/writting-buddy.db
+      - DATABASE_PATH=/app/data/writing-buddy.db
     restart: unless-stopped
 
   frontend:

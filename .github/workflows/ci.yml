@@ -8,8 +8,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  BACKEND_IMAGE: ghcr.io/danwangdev/writting-buddy-backend
-  FRONTEND_IMAGE: ghcr.io/danwangdev/writting-buddy-frontend
+  BACKEND_IMAGE: ghcr.io/danwangdev/writing-buddy-backend
+  FRONTEND_IMAGE: ghcr.io/danwangdev/writing-buddy-frontend
 
 jobs:
   lint-and-typecheck:

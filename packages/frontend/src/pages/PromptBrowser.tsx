@@ -4,7 +4,7 @@ import { PromptCard } from '../components/PromptCard'
 import { MarginDoodles } from '../components/inkwell'
 import { Loader2, Search } from 'lucide-react'
 import * as api from '../services/api'
-import type { Prompt, PromptGenre, PromptDifficulty } from '@writting-buddy/shared'
+import type { Prompt, PromptGenre, PromptDifficulty } from '@writing-buddy/shared'
 
 const GENRES: { value: PromptGenre | 'all'; label: string }[] = [
   { value: 'all', label: 'All' },

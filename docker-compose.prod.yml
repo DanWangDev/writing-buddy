@@ -1,6 +1,6 @@
 services:
   backend:
-    image: ghcr.io/danwangdev/writting-buddy-backend:latest
+    image: ghcr.io/danwangdev/writing-buddy-backend:latest
     ports:
       - "5050:5050"
     volumes:
@@ -9,11 +9,11 @@ services:
       - .env
     environment:
       - NODE_ENV=production
-      - DATABASE_PATH=/app/data/writting-buddy.db
+      - DATABASE_PATH=/app/data/writing-buddy.db
     restart: unless-stopped
 
   frontend:
-    image: ghcr.io/danwangdev/writting-buddy-frontend:latest
+    image: ghcr.io/danwangdev/writing-buddy-frontend:latest
     ports:
       - "5055:80"
     depends_on:

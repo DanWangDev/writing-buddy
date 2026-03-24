@@ -4,7 +4,7 @@ import {
   useCallback,
 } from 'react'
 import type { ReactNode } from 'react'
-import type { UserRole } from '@writting-buddy/shared'
+import type { UserRole } from '@writing-buddy/shared'
 import { AuthContext } from './auth-context-value'
 import * as api from '../services/api'
 

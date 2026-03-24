@@ -1,4 +1,4 @@
-import type { RubricScores } from '@writting-buddy/shared'
+import type { RubricScores } from '@writing-buddy/shared'
 import type { LLMProvider } from '../llm/provider.js'
 import type { IRubricScoresRepository } from '../../repositories/interfaces/rubric-scores-repository.js'
 import { logger } from '../logger.js'

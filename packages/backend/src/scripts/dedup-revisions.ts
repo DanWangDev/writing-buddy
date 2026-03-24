@@ -8,7 +8,7 @@
 import Database from 'better-sqlite3'
 import path from 'path'
 
-const dbPath = process.env.DATABASE_PATH ?? path.resolve(process.cwd(), 'packages/backend/data/writting-buddy.db')
+const dbPath = process.env.DATABASE_PATH ?? path.resolve(process.cwd(), 'packages/backend/data/writing-buddy.db')
 const db = new Database(dbPath)
 db.pragma('journal_mode = WAL')
 db.pragma('foreign_keys = ON')

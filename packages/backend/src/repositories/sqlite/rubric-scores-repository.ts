@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import type { Database } from 'better-sqlite3'
-import type { RubricScores } from '@writting-buddy/shared'
+import type { RubricScores } from '@writing-buddy/shared'
 import type {
   IRubricScoresRepository,
   CreateRubricScoresDto,

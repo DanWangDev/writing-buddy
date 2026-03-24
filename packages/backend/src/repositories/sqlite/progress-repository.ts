@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import type { Database } from 'better-sqlite3'
-import type { WritingProgress } from '@writting-buddy/shared'
+import type { WritingProgress } from '@writing-buddy/shared'
 import type {
   IWritingProgressRepository,
   UpsertProgressDto,

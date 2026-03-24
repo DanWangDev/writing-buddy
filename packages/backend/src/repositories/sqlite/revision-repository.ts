@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import type { Database } from 'better-sqlite3'
-import type { Revision } from '@writting-buddy/shared'
+import type { Revision } from '@writing-buddy/shared'
 import type { IRevisionRepository } from '../interfaces/revision-repository.js'
 
 interface RevisionRow {

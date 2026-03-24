@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import type { Database } from 'better-sqlite3'
-import type { CoachingPass, PassType, FocusDimension } from '@writting-buddy/shared'
+import type { CoachingPass, PassType, FocusDimension } from '@writing-buddy/shared'
 import type {
   ICoachingPassRepository,
   CreateCoachingPassDto,

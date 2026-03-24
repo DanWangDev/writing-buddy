@@ -17,7 +17,7 @@ dotenv.config({ path: findEnvFile(), override: true })
 export const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: parseInt(process.env.PORT || '5050', 10),
-  DATABASE_PATH: process.env.DATABASE_PATH || path.join(__dirname, '../../data/writting-buddy.db'),
+  DATABASE_PATH: process.env.DATABASE_PATH || path.join(__dirname, '../../data/writing-buddy.db'),
   JWT_SECRET: process.env.JWT_SECRET || 'dev-secret-change-in-production',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '15m',
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || '7d',

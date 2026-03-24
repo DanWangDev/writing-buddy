@@ -1,4 +1,4 @@
-import type { Revision } from '@writting-buddy/shared'
+import type { Revision } from '@writing-buddy/shared'
 
 export interface IRevisionRepository {
   findBySubmissionId(submissionId: string): Revision[]

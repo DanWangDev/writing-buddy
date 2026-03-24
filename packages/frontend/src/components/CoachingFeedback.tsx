@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { CoachingPass, PassType } from '@writting-buddy/shared'
+import type { CoachingPass, PassType } from '@writing-buddy/shared'
 import { MessageCircle, HelpCircle, Lightbulb, Sparkles, Wand2, SpellCheck, BookA, Loader2, ChevronDown } from 'lucide-react'
 
 const PASS_CONFIG: Record<

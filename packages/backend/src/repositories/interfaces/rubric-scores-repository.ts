@@ -1,4 +1,4 @@
-import type { RubricScores } from '@writting-buddy/shared'
+import type { RubricScores } from '@writing-buddy/shared'
 
 export interface CreateRubricScoresDto {
   readonly submissionId: string

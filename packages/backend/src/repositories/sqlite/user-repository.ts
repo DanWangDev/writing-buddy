@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import type { Database } from 'better-sqlite3'
-import type { User, CreateUserDto } from '@writting-buddy/shared'
+import type { User, CreateUserDto } from '@writing-buddy/shared'
 import type { IUserRepository } from '../interfaces/user-repository.js'
 
 interface UserRow {

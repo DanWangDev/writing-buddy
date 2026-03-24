@@ -5,7 +5,7 @@ import { StreakBadge } from '../components/StreakBadge'
 import { InkwellWriting, InkwellSleeping, MarginDoodles } from '../components/inkwell'
 import { PenLine, Trophy, Clock, ArrowRight, Loader2 } from 'lucide-react'
 import * as api from '../services/api'
-import type { Submission, WritingProgress } from '@writting-buddy/shared'
+import type { Submission, WritingProgress } from '@writing-buddy/shared'
 
 export function Dashboard() {
   const { user } = useAuth()

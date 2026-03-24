@@ -1,4 +1,4 @@
-import type { CoachingPass } from '@writting-buddy/shared'
+import type { CoachingPass } from '@writing-buddy/shared'
 import type { LLMProvider } from '../llm/provider.js'
 import type { ICoachingPassRepository } from '../../repositories/interfaces/coaching-pass-repository.js'
 import type { ISubmissionRepository } from '../../repositories/interfaces/submission-repository.js'

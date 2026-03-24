@@ -5,7 +5,7 @@ import { AuthService } from '../services/auth-service.js'
 import { requireAuth } from '../middleware/auth.js'
 import db from '../config/database.js'
 import { logger } from '../services/logger.js'
-import type { PublicUser } from '@writting-buddy/shared'
+import type { PublicUser } from '@writing-buddy/shared'
 
 export const authRouter = Router()
 
