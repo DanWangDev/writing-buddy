@@ -7,7 +7,8 @@
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./browser": "./src/browser.ts"
+    "./browser": "./src/browser.ts",
+    "./src/test-helpers.js": "./src/test-helpers.ts"
   },
   "scripts": {
     "build": "tsc",
