@@ -1,73 +1,48 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import express from 'express'
-import type { Request, Response, NextFunction } from 'express'
 import cookieParser from 'cookie-parser'
 import request from 'supertest'
 import Database from 'better-sqlite3'
 import type { Database as DatabaseType } from 'better-sqlite3'
 import { Migrator } from '../config/migrator.js'
 import { migrations } from '../migrations/index.js'
-import { AuthService } from '../services/auth-service.js'
+import { createTestToken, initTestAuth } from './test-auth-helper.js'
 import { SqliteProgressRepository } from '../repositories/sqlite/progress-repository.js'
 import { createProgressRouter } from '../routes/progress.js'
 
-async function registerAndGetToken(
-  authService: AuthService,
-  email: string = 'progress-route@example.com'
-): Promise<string> {
-  const { tokens } = await authService.register(email, 'ProgressUser', 'password123', 'student')
-  return tokens.accessToken
-}
-
 function buildTestApp(db: DatabaseType) {
-  const authService = new AuthService(db)
+  initTestAuth(db)
 
   const app = express()
   app.use(express.json())
   app.use(cookieParser())
 
-  function testAuth(req: Request, res: Response, next: NextFunction): void {
-    const token = req.headers.authorization?.slice(7)
-    if (!token) {
-      res.status(401).json({ success: false, error: 'Authentication required' })
-      return
-    }
-    try {
-      const payload = authService.verifyAccessToken(token)
-      req.user = payload
-      next()
-    } catch {
-      res.status(401).json({ success: false, error: 'Invalid token' })
-    }
-  }
-
   const progressRouter = createProgressRouter(db)
   app.use('/api/writing/progress', progressRouter)
 
-  return { app, authService }
+  return app
 }
 
 describe('Progress Routes', () => {
   let db: DatabaseType
   let app: express.Express
-  let authService: AuthService
   let token: string
-  let userId: string
+  const userId = '1'
 
-  beforeEach(async () => {
+  beforeEach(() => {
     db = new Database(':memory:')
     db.pragma('foreign_keys = ON')
     const migrator = new Migrator(db, migrations)
     migrator.migrate()
 
-    const built = buildTestApp(db)
-    app = built.app
-    authService = built.authService
+    app = buildTestApp(db)
 
-    token = await registerAndGetToken(authService)
+    const testUser = createTestToken({ sub: userId, email: 'progress-route@example.com', displayName: 'ProgressUser' })
+    token = testUser.token
+  })
 
-    const payload = authService.verifyAccessToken(token)
-    userId = payload.sub
+  afterEach(() => {
+    db.close()
   })
 
   describe('GET /api/writing/progress', () => {

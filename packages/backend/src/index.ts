@@ -6,6 +6,9 @@ import { env } from './config/env.js'
 import { initializeDatabase, closeDatabase } from './config/database.js'
 import { logger } from './services/logger.js'
 import { writingRouter } from './routes/index.js'
+import { requireHubAuth } from './routes/auth-setup.js'
+import { initAuth } from './middleware/auth.js'
+import db from './config/database.js'
 
 const app = express()
 
@@ -29,6 +32,10 @@ app.use(cors({
 }))
 app.use(express.json({ limit: '1mb' }))
 app.use(cookieParser())
+
+// Initialize hub auth middleware before routes
+const hubAuth = requireHubAuth(db)
+initAuth(hubAuth.requireAuth, hubAuth.optionalAuth)
 
 app.use('/api/writing', writingRouter)
 

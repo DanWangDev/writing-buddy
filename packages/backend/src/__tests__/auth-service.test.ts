@@ -1,142 +1,92 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import Database from 'better-sqlite3'
 import type { Database as DatabaseType } from 'better-sqlite3'
 import { Migrator } from '../config/migrator.js'
 import { migrations } from '../migrations/index.js'
-import { AuthService } from '../services/auth-service.js'
+import { SqliteAppUserRepository } from '../repositories/sqlite/app-user-repository.js'
+import { createUserSync } from '../services/user-sync.js'
+import { mockHubClaims } from '@labf/auth-client/src/test-helpers.js'
 
-describe('AuthService', () => {
+describe('User Sync Service', () => {
   let db: DatabaseType
-  let authService: AuthService
+  let appUserRepo: SqliteAppUserRepository
 
   beforeEach(() => {
     db = new Database(':memory:')
     db.pragma('foreign_keys = ON')
     const migrator = new Migrator(db, migrations)
     migrator.migrate()
-    authService = new AuthService(db)
+    appUserRepo = new SqliteAppUserRepository(db)
   })
 
-  describe('register', () => {
-    it('creates a new user and returns tokens', async () => {
-      const result = await authService.register(
-        'test@example.com',
-        'Test User',
-        'password123',
-        'student',
-      )
-
-      expect(result.user.email).toBe('test@example.com')
-      expect(result.user.displayName).toBe('Test User')
-      expect(result.user.role).toBe('student')
-      expect(result.tokens.accessToken).toBeDefined()
-      expect(result.tokens.refreshToken).toBeDefined()
-    })
-
-    it('throws on duplicate email', async () => {
-      await authService.register('dup@example.com', 'User 1', 'password123', 'student')
-
-      await expect(
-        authService.register('dup@example.com', 'User 2', 'password456', 'student')
-      ).rejects.toThrow('Email already registered')
-    })
-
-    it('throws on invalid email', async () => {
-      await expect(
-        authService.register('not-an-email', 'User', 'password123', 'student')
-      ).rejects.toThrow()
-    })
-
-    it('throws on short password', async () => {
-      await expect(
-        authService.register('test@example.com', 'User', 'short', 'student')
-      ).rejects.toThrow()
-    })
+  afterEach(() => {
+    db.close()
   })
 
-  describe('login', () => {
-    it('returns user and tokens on valid credentials', async () => {
-      await authService.register('login@example.com', 'Login User', 'password123', 'student')
-
-      const result = await authService.login('login@example.com', 'password123')
-
-      expect(result.user.email).toBe('login@example.com')
-      expect(result.tokens.accessToken).toBeDefined()
-      expect(result.tokens.refreshToken).toBeDefined()
+  it('creates app_users record from hub claims', () => {
+    const syncUser = createUserSync(appUserRepo)
+    const claims = mockHubClaims({
+      sub: '42',
+      email: 'sync@example.com',
+      displayName: 'Sync User',
+      role: 'student',
     })
 
-    it('throws on wrong password', async () => {
-      await authService.register('login@example.com', 'User', 'password123', 'student')
+    syncUser(claims)
 
-      await expect(
-        authService.login('login@example.com', 'wrongpassword')
-      ).rejects.toThrow('Invalid email or password')
-    })
-
-    it('throws on nonexistent email', async () => {
-      await expect(
-        authService.login('nope@example.com', 'password123')
-      ).rejects.toThrow('Invalid email or password')
-    })
+    const user = appUserRepo.findByHubUserId('42')
+    expect(user).not.toBeNull()
+    expect(user!.displayName).toBe('Sync User')
+    expect(user!.email).toBe('sync@example.com')
+    expect(user!.role).toBe('student')
   })
 
-  describe('refreshToken', () => {
-    it('returns new tokens and rotates refresh token', async () => {
-      const { tokens: originalTokens } = await authService.register(
-        'refresh@example.com', 'User', 'password123', 'student',
-      )
+  it('updates existing record on re-sync', () => {
+    const syncUser = createUserSync(appUserRepo)
 
-      const result = authService.refreshToken(originalTokens.refreshToken)
+    syncUser(mockHubClaims({ sub: '42', displayName: 'Original' }))
+    syncUser(mockHubClaims({ sub: '42', displayName: 'Updated' }))
 
-      expect(result.user.email).toBe('refresh@example.com')
-      expect(result.tokens.accessToken).toBeDefined()
-      expect(result.tokens.refreshToken).not.toBe(originalTokens.refreshToken)
-    })
+    const user = appUserRepo.findByHubUserId('42')
+    expect(user!.displayName).toBe('Updated')
+  })
+})
 
-    it('throws on invalid refresh token', () => {
-      expect(() => authService.refreshToken('invalid-token')).toThrow('Invalid refresh token')
-    })
+describe('AppUser Repository', () => {
+  let db: DatabaseType
+  let repo: SqliteAppUserRepository
 
-    it('throws on reuse of rotated refresh token', async () => {
-      const { tokens } = await authService.register(
-        'rotate@example.com', 'User', 'password123', 'student',
-      )
-
-      authService.refreshToken(tokens.refreshToken)
-
-      expect(() => authService.refreshToken(tokens.refreshToken)).toThrow('Invalid refresh token')
-    })
+  beforeEach(() => {
+    db = new Database(':memory:')
+    db.pragma('foreign_keys = ON')
+    const migrator = new Migrator(db, migrations)
+    migrator.migrate()
+    repo = new SqliteAppUserRepository(db)
   })
 
-  describe('logout', () => {
-    it('deletes the refresh token', async () => {
-      const { tokens } = await authService.register(
-        'logout@example.com', 'User', 'password123', 'student',
-      )
-
-      authService.logout(tokens.refreshToken)
-
-      expect(() => authService.refreshToken(tokens.refreshToken)).toThrow('Invalid refresh token')
-    })
+  afterEach(() => {
+    db.close()
   })
 
-  describe('verifyAccessToken', () => {
-    it('returns payload for valid token', async () => {
-      const { tokens } = await authService.register(
-        'verify@example.com', 'User', 'password123', 'student',
-      )
+  it('returns null for nonexistent user', () => {
+    expect(repo.findByHubUserId('999')).toBeNull()
+  })
 
-      const payload = authService.verifyAccessToken(tokens.accessToken)
+  it('upserts and retrieves user', () => {
+    const user = repo.upsert('1', 'Alice', 'alice@example.com', 'student')
+    expect(user.hubUserId).toBe('1')
+    expect(user.displayName).toBe('Alice')
+    expect(user.preferences).toEqual({})
+  })
 
-      expect(payload.email).toBe('verify@example.com')
-      expect(payload.role).toBe('student')
-      expect(payload.plan).toBe('free')
-      expect(payload.apps).toEqual(['writing'])
-      expect(payload.features).toEqual([])
-    })
+  it('updates preferences', () => {
+    repo.upsert('1', 'Alice', 'alice@example.com', 'student')
+    const updated = repo.updatePreferences('1', { theme: 'dark' })
+    expect(updated!.preferences).toEqual({ theme: 'dark' })
+  })
 
-    it('throws on invalid token', () => {
-      expect(() => authService.verifyAccessToken('invalid')).toThrow()
-    })
+  it('returns null when updating preferences for nonexistent user', () => {
+    const result = repo.updatePreferences('999', { theme: 'dark' })
+    expect(result).toBeNull()
   })
 })

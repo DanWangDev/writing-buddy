@@ -10,12 +10,11 @@ import type {
   RubricScores,
   WritingProgress,
   ApiResponse,
-  UserRole,
 } from '@writing-buddy/shared'
 
 const BASE_URL = '/api/writing'
-const ACCESS_TOKEN_KEY = 'wb_access_token'
-const REFRESH_TOKEN_KEY = 'wb_refresh_token'
+const ACCESS_TOKEN_KEY = 'labf_oidc_access_token'
+const REFRESH_TOKEN_KEY = 'labf_oidc_refresh_token'
 
 let accessToken: string | null = localStorage.getItem(ACCESS_TOKEN_KEY)
 let refreshToken: string | null = localStorage.getItem(REFRESH_TOKEN_KEY)
@@ -43,32 +42,46 @@ export function setTokens(access: string | null, refresh: string | null): void {
   persistTokens()
 }
 
-interface AuthData {
-  user: PublicUser
-  accessToken: string
-  refreshToken: string
+function getOidcConfig() {
+  const issuer = import.meta.env.VITE_OIDC_ISSUER || 'http://localhost:3000'
+  const clientId = import.meta.env.VITE_OIDC_CLIENT_ID || 'writing-buddy'
+  return { issuer, clientId }
 }
 
 async function refreshAccessToken(): Promise<boolean> {
   if (!refreshToken) return false
 
+  const { issuer, clientId } = getOidcConfig()
+
   try {
-    const res = await fetch(`${BASE_URL}/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken }),
+    const body = new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+      client_id: clientId,
     })
 
-    if (!res.ok) return false
+    const res = await fetch(`${issuer}/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString(),
+    })
 
-    const json: ApiResponse<AuthData> = await res.json()
-    if (json.success && json.data) {
-      accessToken = json.data.accessToken
-      refreshToken = json.data.refreshToken
-      persistTokens()
-      return true
+    if (!res.ok) {
+      clearTokens()
+      return false
     }
-    return false
+
+    const data = await res.json() as {
+      access_token: string
+      refresh_token?: string
+    }
+
+    accessToken = data.access_token
+    if (data.refresh_token) {
+      refreshToken = data.refresh_token
+    }
+    persistTokens()
+    return true
   } catch {
     return false
   }
@@ -120,48 +133,18 @@ async function request<T>(
 }
 
 // Auth
-export async function login(
-  email: string,
-  password: string,
-): Promise<PublicUser> {
-  const data = await request<AuthData>('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-  })
-  accessToken = data.accessToken
-  refreshToken = data.refreshToken
-  persistTokens()
-  return data.user
-}
-
-export async function register(
-  email: string,
-  displayName: string,
-  password: string,
-  role: UserRole,
-): Promise<PublicUser> {
-  const data = await request<AuthData>('/auth/register', {
-    method: 'POST',
-    body: JSON.stringify({ email, displayName, password, role }),
-  })
-  accessToken = data.accessToken
-  refreshToken = data.refreshToken
-  persistTokens()
-  return data.user
-}
-
-export async function logout(): Promise<void> {
-  try {
-    await request<void>('/auth/logout', { method: 'POST' })
-  } finally {
-    accessToken = null
-    refreshToken = null
-    persistTokens()
-  }
-}
-
 export async function getMe(): Promise<PublicUser> {
   return request<PublicUser>('/auth/me')
+}
+
+export function clearTokens(): void {
+  accessToken = null
+  refreshToken = null
+  localStorage.removeItem(ACCESS_TOKEN_KEY)
+  localStorage.removeItem(REFRESH_TOKEN_KEY)
+  localStorage.removeItem('labf_oidc_id_token')
+  sessionStorage.removeItem('labf_oidc_code_verifier')
+  sessionStorage.removeItem('labf_oidc_state')
 }
 
 // Prompts

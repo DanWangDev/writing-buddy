@@ -1,63 +1,58 @@
 import type { Request, Response, NextFunction } from 'express'
-import type { JwtPayload } from '../services/auth-service.js'
-import { AuthService } from '../services/auth-service.js'
-import db from '../config/database.js'
-import { logger } from '../services/logger.js'
+import type { HubTokenClaims } from '@labf/auth-client'
+
+/**
+ * Re-exports for backward compatibility with domain routes.
+ *
+ * The actual auth middleware is created lazily using the database
+ * instance, since domain routes need the same middleware with
+ * lazy user sync. See `initAuth()` below.
+ */
 
 declare global {
   namespace Express {
     interface Request {
-      user?: JwtPayload
+      user?: HubTokenClaims
     }
   }
 }
 
-function extractToken(req: Request): string | null {
-  const authHeader = req.headers.authorization
-  if (authHeader?.startsWith('Bearer ')) {
-    return authHeader.slice(7)
-  }
+type AuthMiddleware = (req: Request, res: Response, next: NextFunction) => void | Promise<void>
 
-  const cookieToken = req.cookies?.accessToken as string | undefined
-  if (cookieToken) {
-    return cookieToken
-  }
+let _requireAuth: AuthMiddleware | null = null
+let _optionalAuth: AuthMiddleware | null = null
 
-  return null
+/**
+ * Initialize the auth middleware with the hub auth functions.
+ * Must be called once at app startup before routes handle requests.
+ */
+export function initAuth(
+  requireAuth: AuthMiddleware,
+  optionalAuth: AuthMiddleware,
+): void {
+  _requireAuth = requireAuth
+  _optionalAuth = optionalAuth
 }
 
+/**
+ * Middleware that requires a valid hub JWT.
+ * Sets req.user to HubTokenClaims.
+ */
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
-  const token = extractToken(req)
-  if (!token) {
-    res.status(401).json({ success: false, error: 'Authentication required' })
+  if (!_requireAuth) {
+    res.status(500).json({ success: false, error: 'Auth middleware not initialized' })
     return
   }
-
-  try {
-    const authService = new AuthService(db)
-    const payload = authService.verifyAccessToken(token)
-    req.user = payload
-    next()
-  } catch (error) {
-    logger.warn('Invalid token', { error: String(error) })
-    res.status(401).json({ success: false, error: 'Invalid or expired token' })
-  }
+  void _requireAuth(req, res, next)
 }
 
+/**
+ * Middleware that optionally attaches hub JWT claims if present.
+ */
 export function optionalAuth(req: Request, res: Response, next: NextFunction): void {
-  const token = extractToken(req)
-  if (!token) {
+  if (!_optionalAuth) {
     next()
     return
   }
-
-  try {
-    const authService = new AuthService(db)
-    const payload = authService.verifyAccessToken(token)
-    req.user = payload
-  } catch (error) {
-    logger.debug('Optional auth failed', { error: String(error) })
-  }
-
-  next()
+  void _optionalAuth(req, res, next)
 }

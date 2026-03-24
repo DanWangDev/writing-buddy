@@ -1,5 +1,6 @@
 export type { ApiResponse } from './types/api-response.js'
 export type {
+  AppUser,
   User,
   UserRole,
   CreateUserDto,

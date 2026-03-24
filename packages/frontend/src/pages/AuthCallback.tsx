@@ -1,0 +1,130 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { setTokens } from '../services/api'
+import { Loader2 } from 'lucide-react'
+
+function getOidcConfig() {
+  const issuer = import.meta.env.VITE_OIDC_ISSUER || 'http://localhost:3000'
+  const clientId = import.meta.env.VITE_OIDC_CLIENT_ID || 'writing-buddy'
+  const redirectUri = `${window.location.origin}/auth/callback`
+  return { issuer, clientId, redirectUri }
+}
+
+export function AuthCallback() {
+  const navigate = useNavigate()
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function handleCallback() {
+      const url = new URL(window.location.href)
+      const code = url.searchParams.get('code')
+      const state = url.searchParams.get('state')
+      const errorParam = url.searchParams.get('error')
+
+      if (errorParam) {
+        const description = url.searchParams.get('error_description') ?? errorParam
+        setError(`Authentication error: ${description}`)
+        return
+      }
+
+      if (!code) {
+        setError('No authorization code received')
+        return
+      }
+
+      const savedState = sessionStorage.getItem('labf_oidc_state')
+      if (state !== savedState) {
+        setError('State mismatch. Please try logging in again.')
+        return
+      }
+
+      const codeVerifier = sessionStorage.getItem('labf_oidc_code_verifier')
+      if (!codeVerifier) {
+        setError('Login flow interrupted. Please try again.')
+        return
+      }
+
+      const { issuer, clientId, redirectUri } = getOidcConfig()
+
+      const body = new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: redirectUri,
+        client_id: clientId,
+        code_verifier: codeVerifier,
+      })
+
+      try {
+        const response = await fetch(`${issuer}/token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body.toString(),
+        })
+
+        if (!response.ok) {
+          const errorBody = await response.text()
+          setError(`Token exchange failed: ${errorBody}`)
+          return
+        }
+
+        const data = await response.json() as {
+          access_token: string
+          refresh_token?: string
+          id_token?: string
+        }
+
+        // Clean up PKCE state
+        sessionStorage.removeItem('labf_oidc_code_verifier')
+        sessionStorage.removeItem('labf_oidc_state')
+
+        // Store tokens
+        setTokens(data.access_token, data.refresh_token ?? null)
+        if (data.id_token) {
+          localStorage.setItem('labf_oidc_id_token', data.id_token)
+        }
+
+        if (!cancelled) {
+          navigate('/', { replace: true })
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to complete authentication')
+        }
+      }
+    }
+
+    handleCallback()
+
+    return () => {
+      cancelled = true
+    }
+  }, [navigate])
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-warm-50">
+        <div className="bg-white rounded-2xl shadow-sm border border-warm-200 p-6 max-w-md">
+          <h1 className="font-display text-xl font-bold text-warm-800 mb-2">Authentication Failed</h1>
+          <p className="text-warm-600 text-sm mb-4">{error}</p>
+          <button
+            onClick={() => navigate('/login', { replace: true })}
+            className="bg-sky text-white font-semibold rounded-[10px] px-4 h-10 text-sm hover:bg-sky-dark transition-colors"
+          >
+            Back to Login
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-warm-50">
+      <div className="flex flex-col items-center gap-3">
+        <Loader2 className="w-8 h-8 text-sky animate-spin" />
+        <p className="text-warm-500 text-sm">Completing sign in...</p>
+      </div>
+    </div>
+  )
+}

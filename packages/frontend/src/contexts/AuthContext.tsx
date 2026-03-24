@@ -4,12 +4,34 @@ import {
   useCallback,
 } from 'react'
 import type { ReactNode } from 'react'
-import type { UserRole } from '@writing-buddy/shared'
 import { AuthContext } from './auth-context-value'
 import * as api from '../services/api'
 
 export { AuthContext } from './auth-context-value'
 export type { AuthContextValue } from './auth-context-value'
+
+function getOidcConfig() {
+  const issuer = import.meta.env.VITE_OIDC_ISSUER || 'http://localhost:3000'
+  const clientId = import.meta.env.VITE_OIDC_CLIENT_ID || 'writing-buddy'
+  const redirectUri = `${window.location.origin}/auth/callback`
+  return { issuer, clientId, redirectUri }
+}
+
+function generateCodeVerifier(): string {
+  const array = new Uint8Array(32)
+  crypto.getRandomValues(array)
+  return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('')
+}
+
+async function generateCodeChallenge(verifier: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(verifier)
+  const digest = await crypto.subtle.digest('SHA-256', data)
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<ReturnType<typeof api.getMe> extends Promise<infer U> ? U | null : never>(null)
@@ -33,27 +55,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const login = useCallback(async (email: string, password: string) => {
-    const u = await api.login(email, password)
-    setUser(u)
+  const login = useCallback(() => {
+    const { issuer, clientId, redirectUri } = getOidcConfig()
+    const codeVerifier = generateCodeVerifier()
+    const state = generateCodeVerifier().slice(0, 16)
+
+    sessionStorage.setItem('labf_oidc_code_verifier', codeVerifier)
+    sessionStorage.setItem('labf_oidc_state', state)
+
+    generateCodeChallenge(codeVerifier).then((codeChallenge) => {
+      const params = new URLSearchParams({
+        response_type: 'code',
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        scope: 'openid profile email hub',
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256',
+        state,
+      })
+
+      window.location.href = `${issuer}/auth?${params.toString()}`
+    })
   }, [])
 
-  const register = useCallback(
-    async (
-      email: string,
-      displayName: string,
-      password: string,
-      role: UserRole,
-    ) => {
-      const u = await api.register(email, displayName, password, role)
-      setUser(u)
-    },
-    [],
-  )
-
-  const logout = useCallback(async () => {
-    await api.logout()
+  const logout = useCallback(() => {
+    const { issuer } = getOidcConfig()
+    const idToken = localStorage.getItem('labf_oidc_id_token')
+    api.clearTokens()
     setUser(null)
+
+    const params = new URLSearchParams()
+    if (idToken) {
+      params.set('id_token_hint', idToken)
+    }
+    params.set('post_logout_redirect_uri', window.location.origin)
+
+    window.location.href = `${issuer}/session/end?${params.toString()}`
   }, [])
 
   const value = {
@@ -61,7 +98,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: user !== null,
     isLoading,
     login,
-    register,
     logout,
   }
 

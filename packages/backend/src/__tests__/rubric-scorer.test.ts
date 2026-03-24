@@ -5,7 +5,6 @@ import { Migrator } from '../config/migrator.js'
 import { migrations } from '../migrations/index.js'
 import { SqliteRubricScoresRepository } from '../repositories/sqlite/rubric-scores-repository.js'
 import { SqliteSubmissionRepository } from '../repositories/sqlite/submission-repository.js'
-import { SqliteUserRepository } from '../repositories/sqlite/user-repository.js'
 import { RubricScorerService } from '../services/scoring/rubric-scorer.js'
 import type { LLMProvider, LLMProviderOptions, LLMResponse } from '../services/llm/provider.js'
 
@@ -46,17 +45,8 @@ describe('RubricScorerService', () => {
     const migrator = new Migrator(db, migrations)
     migrator.migrate()
 
-    const userRepo = new SqliteUserRepository(db)
-    const user = userRepo.create({
-      email: 'scorer@example.com',
-      displayName: 'Scorer',
-      password: 'pass123',
-      role: 'student',
-      passwordHash: 'hashed',
-    })
-
     const submissionRepo = new SqliteSubmissionRepository(db)
-    const submission = submissionRepo.create(user.id)
+    const submission = submissionRepo.create('hub-user-1')
     submissionId = submission.id
 
     rubricScoresRepo = new SqliteRubricScoresRepository(db)

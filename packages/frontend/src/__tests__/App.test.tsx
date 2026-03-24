@@ -18,7 +18,7 @@ describe('App', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Welcome back!')).toBeInTheDocument()
+      expect(screen.getByText('Welcome to Writing Buddy!')).toBeInTheDocument()
     })
   })
 
@@ -31,19 +31,20 @@ describe('App', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByText('Welcome back!')).toBeInTheDocument()
-    expect(screen.getByText(/Sign in to continue/)).toBeInTheDocument()
+    expect(screen.getByText('Welcome to Writing Buddy!')).toBeInTheDocument()
+    expect(screen.getByText(/Sign in with your 11\+ Hub account/)).toBeInTheDocument()
   })
 
-  it('renders register page at /register', async () => {
+  it('renders callback page at /auth/callback', async () => {
     mockedApi.getMe.mockRejectedValueOnce(new Error('no token'))
 
     render(
-      <MemoryRouter initialEntries={['/register']}>
+      <MemoryRouter initialEntries={['/auth/callback']}>
         <App />
       </MemoryRouter>,
     )
 
-    expect(screen.getByText('Join Writing Buddy!')).toBeInTheDocument()
+    // Callback page shows error (no code parameter in test URL)
+    expect(screen.getByText('Authentication Failed')).toBeInTheDocument()
   })
 })

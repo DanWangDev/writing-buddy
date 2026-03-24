@@ -18,53 +18,10 @@ beforeEach(() => {
 })
 
 describe('api service', () => {
-  describe('login', () => {
-    it('stores tokens and returns user', async () => {
-      const user = { id: '1', email: 'a@b.com', displayName: 'Test', role: 'student', subscriptionPlan: 'free', createdAt: '2025-01-01' }
-      mockFetch.mockReturnValueOnce(
-        jsonResponse({ success: true, data: { user, accessToken: 'at', refreshToken: 'rt' } }),
-      )
-
-      const result = await api.login('a@b.com', 'pass123')
-
-      expect(result).toEqual(user)
-      expect(api.getAccessToken()).toBe('at')
-      expect(mockFetch).toHaveBeenCalledWith(
-        '/api/writing/auth/login',
-        expect.objectContaining({ method: 'POST' }),
-      )
-    })
-  })
-
-  describe('register', () => {
-    it('stores tokens and returns user', async () => {
-      const user = { id: '2', email: 'b@c.com', displayName: 'New', role: 'student', subscriptionPlan: 'free', createdAt: '2025-01-01' }
-      mockFetch.mockReturnValueOnce(
-        jsonResponse({ success: true, data: { user, accessToken: 'at2', refreshToken: 'rt2' } }),
-      )
-
-      const result = await api.register('b@c.com', 'New', 'password1', 'student')
-
-      expect(result).toEqual(user)
-      expect(api.getAccessToken()).toBe('at2')
-    })
-  })
-
-  describe('logout', () => {
-    it('clears tokens', async () => {
-      api.setTokens('tok', 'ref')
-      mockFetch.mockReturnValueOnce(jsonResponse({ success: true }))
-
-      await api.logout()
-
-      expect(api.getAccessToken()).toBeNull()
-    })
-  })
-
   describe('getMe', () => {
     it('sends authorization header', async () => {
       api.setTokens('mytoken', null)
-      const user = { id: '1', email: 'a@b.com', displayName: 'Test', role: 'student', subscriptionPlan: 'free', createdAt: '2025-01-01' }
+      const user = { id: '1', email: 'a@b.com', displayName: 'Test', role: 'student', plan: 'free', createdAt: '2025-01-01' }
       mockFetch.mockReturnValueOnce(
         jsonResponse({ success: true, data: user }),
       )
@@ -76,18 +33,32 @@ describe('api service', () => {
     })
   })
 
+  describe('clearTokens', () => {
+    it('clears all stored tokens', () => {
+      api.setTokens('tok', 'ref')
+      expect(api.getAccessToken()).toBe('tok')
+
+      api.clearTokens()
+      expect(api.getAccessToken()).toBeNull()
+    })
+  })
+
   describe('token refresh on 401', () => {
-    it('retries with new token after refresh', async () => {
+    it('retries with new token after OIDC refresh', async () => {
       api.setTokens('old', 'refresh-tok')
 
       // First call returns 401
       mockFetch.mockReturnValueOnce(jsonResponse({ success: false, error: 'Unauthorized' }, 401))
-      // Refresh call succeeds
+      // Refresh call succeeds (OIDC token endpoint)
       mockFetch.mockReturnValueOnce(
-        jsonResponse({ success: true, data: { accessToken: 'new-at', refreshToken: 'new-rt', user: {} } }),
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve({ access_token: 'new-at', refresh_token: 'new-rt' }),
+        }),
       )
       // Retry call succeeds
-      const user = { id: '1', email: 'a@b.com', displayName: 'Test', role: 'student', subscriptionPlan: 'free', createdAt: '2025-01-01' }
+      const user = { id: '1', email: 'a@b.com', displayName: 'Test', role: 'student', plan: 'free', createdAt: '2025-01-01' }
       mockFetch.mockReturnValueOnce(jsonResponse({ success: true, data: user }))
 
       const result = await api.getMe()
@@ -101,7 +72,14 @@ describe('api service', () => {
       api.setTokens('old', 'bad-refresh')
 
       mockFetch.mockReturnValueOnce(jsonResponse({ success: false }, 401))
-      mockFetch.mockReturnValueOnce(jsonResponse({ success: false }, 401))
+      // Refresh fails
+      mockFetch.mockReturnValueOnce(
+        Promise.resolve({
+          ok: false,
+          status: 401,
+          json: () => Promise.resolve({ error: 'invalid_grant' }),
+        }),
+      )
 
       await expect(api.getMe()).rejects.toThrow('Session expired')
       expect(api.getAccessToken()).toBeNull()
