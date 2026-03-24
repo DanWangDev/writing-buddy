@@ -72,6 +72,11 @@ export function WritingDesk() {
   const [loadingCategory, setLoadingCategory] = useState<RubricCategory | null>(null)
   const [categorySuggestion, setCategorySuggestion] = useState<string | null>(null)
 
+  // LLM result caches — keyed by (passId+mode) and (category), invalidated when content changes
+  const applyCacheRef = useRef<Map<string, string>>(new Map())
+  const categoryCacheRef = useRef<Map<string, string>>(new Map())
+  const cachedContentRef = useRef<string>('')
+
   // Load existing submission
   useEffect(() => {
     if (!id) return
@@ -193,12 +198,31 @@ export function WritingDesk() {
     }
   }, [submission, content])
 
-  const handleApply = useCallback(async (feedback: string, mode: ApplyMode) => {
+  const handleApply = useCallback(async (feedback: string, mode: ApplyMode, passId?: string) => {
     if (!submission) return
+
+    // Invalidate caches if content changed since last LLM call
+    if (content !== cachedContentRef.current) {
+      applyCacheRef.current.clear()
+      categoryCacheRef.current.clear()
+      cachedContentRef.current = content
+    }
+
+    // Return cached result if available
+    const cacheKey = `${passId ?? 'unknown'}:${mode}`
+    const cached = applyCacheRef.current.get(cacheKey)
+    if (cached) {
+      setPreviewContent(cached)
+      setPreviewMode(mode)
+      return
+    }
+
     setError('')
     setApplying(true)
     try {
       const result = await api.applySuggestions(submission.id, content, feedback, mode)
+      applyCacheRef.current.set(cacheKey, result.improvedContent)
+      cachedContentRef.current = content
       setPreviewContent(result.improvedContent)
       setPreviewMode(mode)
     } catch (err) {
@@ -213,6 +237,9 @@ export function WritingDesk() {
       setContent(previewContent)
       setPreviewContent(null)
       setPreviewMode('')
+      // Invalidate caches since content changed
+      applyCacheRef.current.clear()
+      categoryCacheRef.current.clear()
     }
   }, [previewContent])
 
@@ -231,6 +258,21 @@ export function WritingDesk() {
 
     if (!submission || !content.trim()) return
 
+    // Invalidate caches if content changed
+    if (content !== cachedContentRef.current) {
+      applyCacheRef.current.clear()
+      categoryCacheRef.current.clear()
+      cachedContentRef.current = content
+    }
+
+    // Return cached result if available
+    const cached = categoryCacheRef.current.get(category)
+    if (cached) {
+      setActiveCategory(category)
+      setCategorySuggestion(cached)
+      return
+    }
+
     setActiveCategory(category)
     setLoadingCategory(category)
     setCategorySuggestion(null)
@@ -238,6 +280,8 @@ export function WritingDesk() {
 
     try {
       const result = await api.getCategorySuggestions(submission.id, content, category)
+      categoryCacheRef.current.set(category, result.improvedContent)
+      cachedContentRef.current = content
       setCategorySuggestion(result.improvedContent)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to get suggestions.')
@@ -253,6 +297,9 @@ export function WritingDesk() {
       setContent(categorySuggestion)
       setActiveCategory(null)
       setCategorySuggestion(null)
+      // Invalidate caches since content changed
+      applyCacheRef.current.clear()
+      categoryCacheRef.current.clear()
     }
   }, [categorySuggestion])
 

@@ -41,7 +41,7 @@ export type ApplyMode = 'grammar' | 'vocabulary' | 'improve'
 interface CoachingFeedbackProps {
   pass: CoachingPass
   passNumber: number
-  onApply?: (feedback: string, mode: ApplyMode) => void
+  onApply?: (feedback: string, mode: ApplyMode, passId?: string) => void
   applying?: boolean
   isCompleted?: boolean
   defaultExpanded?: boolean
@@ -77,7 +77,7 @@ export function CoachingFeedback({ pass, passNumber, onApply, applying, isComple
             <div className="mt-3 pt-3 border-t border-warm-200/50 flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={() => onApply(pass.feedback, 'improve')}
+                onClick={() => onApply(pass.feedback, 'improve', pass.id)}
                 disabled={applying}
                 className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-violet/10 text-violet-dark hover:bg-violet/20 transition-colors disabled:opacity-50"
               >
@@ -86,7 +86,7 @@ export function CoachingFeedback({ pass, passNumber, onApply, applying, isComple
               </button>
               <button
                 type="button"
-                onClick={() => onApply(pass.feedback, 'grammar')}
+                onClick={() => onApply(pass.feedback, 'grammar', pass.id)}
                 disabled={applying}
                 className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-sky/10 text-sky-dark hover:bg-sky/20 transition-colors disabled:opacity-50"
               >
@@ -95,7 +95,7 @@ export function CoachingFeedback({ pass, passNumber, onApply, applying, isComple
               </button>
               <button
                 type="button"
-                onClick={() => onApply(pass.feedback, 'vocabulary')}
+                onClick={() => onApply(pass.feedback, 'vocabulary', pass.id)}
                 disabled={applying}
                 className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-gold/10 text-gold-dark hover:bg-gold/20 transition-colors disabled:opacity-50"
               >
