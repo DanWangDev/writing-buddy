@@ -19,6 +19,27 @@ import { env } from '../config/env.js'
 import { logger } from '../services/logger.js'
 import type { LLMProvider, LLMProviderOptions, LLMResponse } from '../services/llm/provider.js'
 
+// Simple per-user daily counter for suggestion endpoints (apply + category-suggest)
+const suggestionCounts = new Map<string, { count: number; date: string }>()
+
+function getTodayUTC(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function checkSuggestionLimit(userId: string, limit: number): boolean {
+  const today = getTodayUTC()
+  const entry = suggestionCounts.get(userId)
+  if (!entry || entry.date !== today) {
+    suggestionCounts.set(userId, { count: 1, date: today })
+    return true
+  }
+  if (entry.count >= limit) {
+    return false
+  }
+  entry.count += 1
+  return true
+}
+
 function createDefaultProvider(): LLMProvider {
   if (!env.DASHSCOPE_API_KEY) {
     logger.warn('DASHSCOPE_API_KEY not set — coaching will use a no-op LLM provider')
@@ -233,6 +254,14 @@ export function createCoachingRouter(
 
         const { content, feedback, mode } = parsed.data
 
+        if (!checkSuggestionLimit(userId, env.DAILY_SUGGESTION_LIMIT)) {
+          res.status(429).json({
+            success: false,
+            error: `You've used all your AI suggestions for today (${env.DAILY_SUGGESTION_LIMIT}). Come back tomorrow!`,
+          })
+          return
+        }
+
         const modePrompts: Record<string, string> = {
           grammar: [
             'You are a careful copy editor for a student (age 10-11).',
@@ -376,6 +405,14 @@ export function createCoachingRouter(
         }
 
         const { content, category } = parsed.data
+
+        if (!checkSuggestionLimit(userId, env.DAILY_SUGGESTION_LIMIT)) {
+          res.status(429).json({
+            success: false,
+            error: `You've used all your AI suggestions for today (${env.DAILY_SUGGESTION_LIMIT}). Come back tomorrow!`,
+          })
+          return
+        }
 
         const systemPrompt = categoryPrompts[category]
         const userPrompt = `Student's writing:\n${content}`

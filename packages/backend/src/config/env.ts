@@ -28,6 +28,7 @@ export const env = {
   LLM_MODEL: process.env.LLM_MODEL || 'qwen-plus',
   DAILY_SPEND_CEILING: parseFloat(process.env.DAILY_SPEND_CEILING || '50'),
   FREE_TIER_DAILY_SESSIONS: parseInt(process.env.FREE_TIER_DAILY_SESSIONS || '3', 10),
+  DAILY_SUGGESTION_LIMIT: parseInt(process.env.DAILY_SUGGESTION_LIMIT || '20', 10),
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || '',
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || '',
 } as const
