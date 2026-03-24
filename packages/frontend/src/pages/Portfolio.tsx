@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Loader2, FileText, Trash2 } from 'lucide-react'
 import { InkwellSleeping, MarginDoodles } from '../components/inkwell'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import * as api from '../services/api'
 import type { Submission } from '@writting-buddy/shared'
 
@@ -22,13 +23,19 @@ export function Portfolio() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Submission | null>(null)
 
-  const handleDelete = useCallback(async (e: React.MouseEvent, sub: Submission) => {
+  const openDeleteDialog = useCallback((e: React.MouseEvent, sub: Submission) => {
     e.preventDefault()
     e.stopPropagation()
+    setDeleteTarget(sub)
+  }, [])
 
-    if (!window.confirm('Delete this draft? This cannot be undone.')) return
+  const confirmDelete = useCallback(async () => {
+    if (!deleteTarget) return
 
+    const sub = deleteTarget
+    setDeleteTarget(null)
     setDeleting(sub.id)
     try {
       await api.deleteSubmission(sub.id)
@@ -38,7 +45,7 @@ export function Portfolio() {
     } finally {
       setDeleting(null)
     }
-  }, [])
+  }, [deleteTarget])
 
   useEffect(() => {
     let cancelled = false
@@ -133,7 +140,7 @@ export function Portfolio() {
                 {sub.status !== 'completed' && (
                   <button
                     type="button"
-                    onClick={(e) => handleDelete(e, sub)}
+                    onClick={(e) => openDeleteDialog(e, sub)}
                     disabled={deleting === sub.id}
                     className="p-1.5 rounded-lg text-warm-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
                     aria-label="Delete draft"
@@ -150,6 +157,17 @@ export function Portfolio() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Delete this draft?"
+        message="This will remove the story and all its coaching feedback. You won't be able to get it back."
+        confirmLabel="Yes, delete it"
+        cancelLabel="No, keep it!"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }
