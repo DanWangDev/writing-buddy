@@ -6,7 +6,8 @@ COPY packages/shared/package.json packages/shared/
 COPY packages/backend/package.json packages/backend/
 COPY package.json package-lock.json .npmrc ./
 
-RUN npm ci --workspace=packages/backend --workspace=packages/shared
+ARG NODE_AUTH_TOKEN
+RUN NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN} npm ci --workspace=packages/backend --workspace=packages/shared
 
 COPY packages/shared/ packages/shared/
 COPY packages/backend/ packages/backend/
