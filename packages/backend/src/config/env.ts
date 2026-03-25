@@ -20,8 +20,12 @@ export const env = {
   DATABASE_PATH: process.env.DATABASE_PATH || path.join(__dirname, '../../data/writing-buddy.db'),
 
   // Hub OIDC configuration
-  OIDC_ISSUER: process.env.OIDC_ISSUER || 'http://localhost:3000',
-  OIDC_CLIENT_ID: process.env.OIDC_CLIENT_ID || 'writing-buddy',
+  // OIDC_ISSUER: public issuer URL (must match JWT `iss` claim)
+  // OIDC_INTERNAL_ISSUER: used for discovery/JWKS fetch when the public URL
+  //   isn't reachable (e.g. inside Docker, use http://host.docker.internal:3009)
+  OIDC_ISSUER: process.env.OIDC_ISSUER || 'http://localhost:3009',
+  OIDC_INTERNAL_ISSUER: process.env.OIDC_INTERNAL_ISSUER || process.env.OIDC_ISSUER || 'http://localhost:3009',
+  OIDC_CLIENT_ID: process.env.OIDC_CLIENT_ID || 'writing-buddy-client',
   OIDC_CLIENT_SECRET: process.env.OIDC_CLIENT_SECRET || '',
   OIDC_REDIRECT_URI: process.env.OIDC_REDIRECT_URI || 'http://localhost:5179/auth/callback',
 

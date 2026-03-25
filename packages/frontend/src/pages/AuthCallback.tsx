@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { setTokens } from '../services/api'
 import { Loader2 } from 'lucide-react'
 
 function getOidcConfig() {
-  const issuer = import.meta.env.VITE_OIDC_ISSUER || 'http://localhost:3000'
-  const clientId = import.meta.env.VITE_OIDC_CLIENT_ID || 'writing-buddy'
+  const issuer = import.meta.env.VITE_OIDC_ISSUER || 'http://localhost:3009'
+  const clientId = import.meta.env.VITE_OIDC_CLIENT_ID || 'writing-buddy-client'
   const redirectUri = `${window.location.origin}/auth/callback`
   return { issuer, clientId, redirectUri }
 }
@@ -13,9 +13,11 @@ function getOidcConfig() {
 export function AuthCallback() {
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
+  const exchangeStarted = useRef(false)
 
   useEffect(() => {
-    let cancelled = false
+    if (exchangeStarted.current) return
+    exchangeStarted.current = true
 
     async function handleCallback() {
       const url = new URL(window.location.href)
@@ -57,7 +59,7 @@ export function AuthCallback() {
       })
 
       try {
-        const response = await fetch(`${issuer}/token`, {
+        const response = await fetch(`${issuer}/oidc/token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: body.toString(),
@@ -79,27 +81,27 @@ export function AuthCallback() {
         sessionStorage.removeItem('labf_oidc_code_verifier')
         sessionStorage.removeItem('labf_oidc_state')
 
-        // Store tokens
-        setTokens(data.access_token, data.refresh_token ?? null)
+        // Store tokens — use id_token as Bearer token for the backend
+        // (hub issues opaque access tokens; the id_token is a JWT with user claims)
+        const bearerToken = data.id_token ?? data.access_token
+        setTokens(bearerToken, data.refresh_token ?? null)
         if (data.id_token) {
           localStorage.setItem('labf_oidc_id_token', data.id_token)
         }
+        // Keep opaque access token for hub API calls (e.g. refresh)
+        localStorage.setItem('labf_oidc_hub_token', data.access_token)
 
-        if (!cancelled) {
-          navigate('/', { replace: true })
-        }
+        // Full page reload so AuthProvider re-initializes with the new token.
+        // Not guarded by `cancelled` — exchangeStarted ref already prevents
+        // double execution, and StrictMode cleanup sets cancelled=true before
+        // this async code resolves.
+        window.location.href = '/'
       } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to complete authentication')
-        }
+        setError(err instanceof Error ? err.message : 'Failed to complete authentication')
       }
     }
 
     handleCallback()
-
-    return () => {
-      cancelled = true
-    }
   }, [navigate])
 
   if (error) {

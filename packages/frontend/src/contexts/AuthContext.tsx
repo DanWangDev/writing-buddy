@@ -11,8 +11,8 @@ export { AuthContext } from './auth-context-value'
 export type { AuthContextValue } from './auth-context-value'
 
 function getOidcConfig() {
-  const issuer = import.meta.env.VITE_OIDC_ISSUER || 'http://localhost:3000'
-  const clientId = import.meta.env.VITE_OIDC_CLIENT_ID || 'writing-buddy'
+  const issuer = import.meta.env.VITE_OIDC_ISSUER || 'http://localhost:3009'
+  const clientId = import.meta.env.VITE_OIDC_CLIENT_ID || 'writing-buddy-client'
   const redirectUri = `${window.location.origin}/auth/callback`
   return { issuer, clientId, redirectUri }
 }
@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         state,
       })
 
-      window.location.href = `${issuer}/auth?${params.toString()}`
+      window.location.href = `${issuer}/oidc/auth?${params.toString()}`
     })
   }, [])
 
@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     params.set('post_logout_redirect_uri', window.location.origin)
 
-    window.location.href = `${issuer}/session/end?${params.toString()}`
+    window.location.href = `${issuer}/oidc/session/end?${params.toString()}`
   }, [])
 
   const value = {

@@ -43,8 +43,8 @@ export function setTokens(access: string | null, refresh: string | null): void {
 }
 
 function getOidcConfig() {
-  const issuer = import.meta.env.VITE_OIDC_ISSUER || 'http://localhost:3000'
-  const clientId = import.meta.env.VITE_OIDC_CLIENT_ID || 'writing-buddy'
+  const issuer = import.meta.env.VITE_OIDC_ISSUER || 'http://localhost:3009'
+  const clientId = import.meta.env.VITE_OIDC_CLIENT_ID || 'writing-buddy-client'
   return { issuer, clientId }
 }
 
@@ -60,7 +60,7 @@ async function refreshAccessToken(): Promise<boolean> {
       client_id: clientId,
     })
 
-    const res = await fetch(`${issuer}/token`, {
+    const res = await fetch(`${issuer}/oidc/token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: body.toString(),
