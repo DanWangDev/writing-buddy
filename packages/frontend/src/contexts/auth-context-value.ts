@@ -5,6 +5,7 @@ export interface AuthContextValue {
   user: PublicUser | null
   isAuthenticated: boolean
   isLoading: boolean
+  isAccessDenied: boolean
   login: () => void
   logout: () => void
 }

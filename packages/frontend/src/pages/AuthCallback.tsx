@@ -26,6 +26,13 @@ export function AuthCallback() {
       const errorParam = url.searchParams.get('error')
 
       if (errorParam) {
+        if (errorParam === 'access_denied') {
+          // Hub denied entitlement — redirect to home with access_denied flag
+          sessionStorage.removeItem('labf_oidc_code_verifier')
+          sessionStorage.removeItem('labf_oidc_state')
+          window.location.href = '/?error=access_denied'
+          return
+        }
         const description = url.searchParams.get('error_description') ?? errorParam
         setError(`Authentication error: ${description}`)
         return
