@@ -1,5 +1,5 @@
 import type { Database } from 'better-sqlite3'
-import { JwtVerifier } from '@labf/auth-client/server'
+import { JwtVerifier } from '@danwangdev/auth-client/server'
 import { createHubAuth } from '../middleware/hub-auth.js'
 import { SqliteAppUserRepository } from '../repositories/sqlite/app-user-repository.js'
 import { createUserSync } from '../services/user-sync.js'
@@ -7,7 +7,7 @@ import { env } from '../config/env.js'
 
 /**
  * Creates hub auth middleware with lazy user sync configured.
- * Uses the JwtVerifier from @labf/auth-client to verify hub JWTs
+ * Uses the JwtVerifier from @danwangdev/auth-client to verify hub JWTs
  * and syncs user data into the local app_users table.
  */
 export function requireHubAuth(db: Database) {

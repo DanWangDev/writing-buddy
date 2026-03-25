@@ -30,7 +30,7 @@ The 10x version isn't just an auth gateway — it's the platform brain. It knows
 - Auth UI (login, register, Google OAuth, password reset)
 - App Dashboard (user's entitled apps launcher)
 - Subscription types + feature-gating (free/writing/vocab/bundle/family)
-- `@labf/auth-client` SDK on GitHub Packages
+- `@danwangdev/auth-client` SDK on GitHub Packages
 - PostgreSQL (hub's own container)
 - Cloudflare Tunnel for HTTPS
 
@@ -73,7 +73,7 @@ The 10x version isn't just an auth gateway — it's the platform brain. It knows
         ▼                  ▼                  ▼
   vocab-master       writing-buddy        future apps
   (SQLite, own)      (SQLite/PG, own)     (whatever)
-  @labf/auth-client  @labf/auth-client    @labf/auth-client
+  @danwangdev/auth-client  @danwangdev/auth-client    @danwangdev/auth-client
 ```
 
 ## Key Decisions (from eng review)
@@ -83,7 +83,7 @@ The 10x version isn't just an auth gateway — it's the platform brain. It knows
 - OIDC: full OIDC provider via `oidc-provider` (panva). Note: this package has 100+ config knobs and requires a custom PostgreSQL adapter for session/token persistence — time-box adapter work or find a reference implementation
 - Google OAuth: lives only in hub (federated IdP). Cutover: run parallel (hub + vocab-master both accept Google) during migration, then remove from vocab-master. Existing Google OAuth client IDs must be updated to point at hub's callback URL
 - SSO mechanism: apps send OIDC authorize request with `prompt=none`; if hub session cookie (Domain=.labf.app) is valid, token is returned without user interaction; if expired, redirect to hub login page
-- Auth client: `@labf/auth-client` SDK published on GitHub Packages under the `@DanWangDev` scope (or `@labf` if org is created)
+- Auth client: `@danwangdev/auth-client` SDK published on GitHub Packages under the `@DanWangDev` scope (or `@labf` if org is created)
 - Local user sync: each child app stores a local `app_users` table with `hub_user_id` (FK by convention) + app-specific preferences. Identity data (name, email) is read from JWT claims only, never duplicated
 - OIDC signing keys: stored as env secret (`OIDC_SIGNING_KEY`). Key rotation strategy deferred — will be needed before multi-instance deployment
 - Hub session cookie: `Domain=.labf.app`, HttpOnly, Secure, SameSite=Lax — must be configured from day one
@@ -193,11 +193,11 @@ password_reset_tokens (
 )
 ```
 
-## SDK Contract (@labf/auth-client)
+## SDK Contract (@danwangdev/auth-client)
 
 ```typescript
 // Express middleware
-import { createAuthMiddleware, requireAuth, optionalAuth } from '@labf/auth-client'
+import { createAuthMiddleware, requireAuth, optionalAuth } from '@danwangdev/auth-client'
 
 // Initialize — call once at app startup
 const auth = createAuthMiddleware({
@@ -222,7 +222,7 @@ app.get('/api/me', auth.requireAuth(), (req, res) => {
 })
 
 // Frontend helper
-import { getLoginUrl, getLogoutUrl, isAuthenticated } from '@labf/auth-client/browser'
+import { getLoginUrl, getLogoutUrl, isAuthenticated } from '@danwangdev/auth-client/browser'
 ```
 
 **SDK internals:** The SDK stores the OIDC access token + refresh token in an encrypted httpOnly session cookie on the app's own domain. On each `requireAuth()` call, it validates the access token locally (JWT signature check using the hub's JWKS). When the 15-min access token expires, the SDK automatically uses the refresh token to get a new one from the hub's `/token` endpoint (transparent to the route handler). If the refresh also fails, it returns 401 and the frontend redirects to hub login. OIDC scopes requested: `openid profile email`. Custom claims (`plan`, `apps`, `features`) are included via oidc-provider's `claims` configuration.
@@ -281,8 +281,8 @@ Hub aggregates stats from all registered apps with a `stats_api_url`.
 3. **Import into hub PostgreSQL** — Script inserts users, preserving IDs. All users get `plan: 'free'` subscription
 4. **Invalidate all refresh tokens** — Force re-login on both apps. Clean cutover, no stale session complexity
 5. **Parallel Google OAuth run** — Hub AND vocab-master both accept Google sign-in during migration window. Hub creates user if new; vocab-master continues working. This prevents a broken-Google-login window
-6. **Migrate vocab-master** — Install `@labf/auth-client`, remove local auth. Google OAuth client config updated to hub callback URL
-7. **Migrate writing-buddy** — Install `@labf/auth-client`, remove local auth. Clean schema reset (no prod data)
+6. **Migrate vocab-master** — Install `@danwangdev/auth-client`, remove local auth. Google OAuth client config updated to hub callback URL
+7. **Migrate writing-buddy** — Install `@danwangdev/auth-client`, remove local auth. Clean schema reset (no prod data)
 8. **Remove Google OAuth from vocab-master** — After confirming hub handles all Google logins
 9. **Cleanup** — Delete old auth code from both apps
 
@@ -295,7 +295,7 @@ Hub aggregates stats from all registered apps with a `stats_api_url`.
 - Turnstile bot protection (on registration + login)
 - Application registry (admin registers apps)
 - App dashboard (user's entitled apps)
-- `@labf/auth-client` SDK published
+- `@danwangdev/auth-client` SDK published
 - Hub's own GitHub Actions CI/CD + Cloudflare Tunnel
 
 **Phase B: App Migrations (after Phase A)**

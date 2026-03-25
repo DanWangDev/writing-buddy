@@ -16,31 +16,31 @@
   - Auth UI: login (email/password + Google OAuth), registration, password reset
   - App dashboard: shows user's entitled apps, links to each
   - Subscriptions: plan types (free/writing/vocab/bundle/family), feature entitlements in JWT claims
-  - Publishes `@labf/auth-client` SDK to GitHub Packages (~100-line OIDC client wrapper)
+  - Publishes `@danwangdev/auth-client` SDK to GitHub Packages (~100-line OIDC client wrapper)
   - Google OAuth + Turnstile move here from vocab-master (hub is the only place that talks to Google)
   - SSO is a side effect: hub session cookie on .labf.app → silent auth when visiting second app
   - User model: adopts vocab-master's existing schema (INTEGER IDs, username-based)
 
 ### P1: Migrate Vocab-Master to Hub Auth
-- **What:** Strip auth code from vocab-master, install `@labf/auth-client` SDK, redirect to hub for login. Keep SQLite for domain data.
+- **What:** Strip auth code from vocab-master, install `@danwangdev/auth-client` SDK, redirect to hub for login. Keep SQLite for domain data.
 - **Why:** Vocab-master becomes a pure domain app — no auth maintenance burden. Single account across all apps.
 - **Effort:** S (human: ~2 days / CC: ~30 min)
 - **Depends on:** P0 (hub app must exist)
 - **Context:**
   - Delete: authService, googleAuthService, auth middleware, turnstile middleware, auth routes, userRepository, tokenRepository, passwordResetRepository
-  - Add: `@labf/auth-client` SDK middleware, lightweight `app_users` table (hub_user_id + app-specific prefs)
+  - Add: `@danwangdev/auth-client` SDK middleware, lightweight `app_users` table (hub_user_id + app-specific prefs)
   - Lazy user sync: valid JWT → check if local app_users record exists → create if not
   - All existing domain tests must pass with hub JWT instead of local auth
   - Run full test suite before merging — this is a high-risk change to a production app
 
 ### P1: Migrate Writing-Buddy to Hub Auth
-- **What:** Strip standalone auth, install `@labf/auth-client` SDK, recreate DB schema with hub_user_id references. Clean slate (no production data).
+- **What:** Strip standalone auth, install `@danwangdev/auth-client` SDK, recreate DB schema with hub_user_id references. Clean slate (no production data).
 - **Why:** Writing-buddy stops maintaining its own auth. Same login works across all apps.
 - **Effort:** S (human: ~1 day / CC: ~20 min)
 - **Depends on:** P0 (hub app must exist)
 - **Context:**
   - Delete: auth-service.ts, auth middleware, auth routes, user-repository.ts
-  - Add: `@labf/auth-client` SDK middleware, `app_users` table (hub_user_id + app prefs)
+  - Add: `@danwangdev/auth-client` SDK middleware, `app_users` table (hub_user_id + app prefs)
   - Clean slate: recreate DB schema (no migration needed, zero prod data)
   - user_id columns in domain tables (submissions, progress, etc.) reference hub_user_id
   - All existing domain tests must pass with hub JWT

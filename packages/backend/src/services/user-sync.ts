@@ -1,4 +1,4 @@
-import type { HubTokenClaims } from '@labf/auth-client/types'
+import type { HubTokenClaims } from '@danwangdev/auth-client/types'
 import type { IAppUserRepository } from '../repositories/interfaces/app-user-repository.js'
 import { logger } from './logger.js'
 

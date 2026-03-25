@@ -3,18 +3,15 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 
 COPY packages/shared/package.json packages/shared/
-COPY packages/auth-client/package.json packages/auth-client/
 COPY packages/backend/package.json packages/backend/
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json .npmrc ./
 
-RUN npm ci --workspace=packages/backend --workspace=packages/shared --workspace=packages/auth-client
+RUN npm ci --workspace=packages/backend --workspace=packages/shared
 
 COPY packages/shared/ packages/shared/
-COPY packages/auth-client/ packages/auth-client/
 COPY packages/backend/ packages/backend/
 
 RUN npm run build -w packages/shared
-RUN npm run build -w packages/auth-client
 RUN npm run build -w packages/backend
 
 FROM node:22-alpine

@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express'
-import type { HubTokenClaims } from '@labf/auth-client/types'
+import type { HubTokenClaims } from '@danwangdev/auth-client/types'
 import { logger } from '../services/logger.js'
 
 /**

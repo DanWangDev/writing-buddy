@@ -5,7 +5,7 @@ import { Migrator } from '../config/migrator.js'
 import { migrations } from '../migrations/index.js'
 import { SqliteAppUserRepository } from '../repositories/sqlite/app-user-repository.js'
 import { createUserSync } from '../services/user-sync.js'
-import { mockHubClaims } from '@labf/auth-client/test-helpers'
+import { mockHubClaims } from '@danwangdev/auth-client/test-helpers'
 
 describe('User Sync Service', () => {
   let db: DatabaseType

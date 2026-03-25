@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 import type { Database } from 'better-sqlite3'
-import type { HubTokenClaims } from '@labf/auth-client/types'
+import type { HubTokenClaims } from '@danwangdev/auth-client/types'
 import { createHubAuth } from '../middleware/hub-auth.js'
 import { SqliteAppUserRepository } from '../repositories/sqlite/app-user-repository.js'
 import { createUserSync } from '../services/user-sync.js'
