@@ -4,9 +4,10 @@ WORKDIR /app
 
 COPY packages/shared/package.json packages/shared/
 COPY packages/backend/package.json packages/backend/
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json .npmrc ./
 
-RUN npm ci --workspace=packages/backend --workspace=packages/shared
+ARG NODE_AUTH_TOKEN
+RUN NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN} npm ci --workspace=packages/backend --workspace=packages/shared
 
 COPY packages/shared/ packages/shared/
 COPY packages/backend/ packages/backend/
@@ -25,7 +26,7 @@ COPY --from=builder /app/node_modules ./node_modules
 RUN mkdir -p /app/data
 
 ENV NODE_ENV=production
-ENV DATABASE_PATH=/app/data/writting-buddy.db
+ENV DATABASE_PATH=/app/data/writing-buddy.db
 
 EXPOSE 5050
 

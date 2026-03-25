@@ -4,13 +4,12 @@ import type { Database as DatabaseType } from 'better-sqlite3'
 import { Migrator } from '../config/migrator.js'
 import { migrations } from '../migrations/index.js'
 import { SqliteSubmissionRepository } from '../repositories/sqlite/submission-repository.js'
-import { SqliteUserRepository } from '../repositories/sqlite/user-repository.js'
 import { SqlitePromptRepository } from '../repositories/sqlite/prompt-repository.js'
 
 describe('SqliteSubmissionRepository', () => {
   let db: DatabaseType
   let repo: SqliteSubmissionRepository
-  let userId: string
+  const userId = 'hub-user-1'
   let promptId: string
 
   beforeEach(() => {
@@ -20,16 +19,6 @@ describe('SqliteSubmissionRepository', () => {
     migrator.migrate()
 
     repo = new SqliteSubmissionRepository(db)
-
-    const userRepo = new SqliteUserRepository(db)
-    const user = userRepo.create({
-      email: 'test@example.com',
-      displayName: 'Test User',
-      password: 'password123',
-      role: 'student',
-      passwordHash: 'hashed',
-    })
-    userId = user.id
 
     const promptRepo = new SqlitePromptRepository(db)
     const prompt = promptRepo.create({

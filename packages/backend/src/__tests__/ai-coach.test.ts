@@ -7,6 +7,7 @@ import { SqliteCoachingPassRepository } from '../repositories/sqlite/coaching-pa
 import { SqliteSubmissionRepository } from '../repositories/sqlite/submission-repository.js'
 import { SqliteRevisionRepository } from '../repositories/sqlite/revision-repository.js'
 import { SqliteUserRepository } from '../repositories/sqlite/user-repository.js'
+import { SqliteAppUserRepository } from '../repositories/sqlite/app-user-repository.js'
 import { SqlitePromptRepository } from '../repositories/sqlite/prompt-repository.js'
 import { AiCoachService } from '../services/coaching/ai-coach.js'
 import { ContentSafetyService } from '../services/content-safety.js'
@@ -52,15 +53,12 @@ describe('AiCoachService', () => {
     const migrator = new Migrator(db, migrations)
     migrator.migrate()
 
+    // Create app_users record (hub auth: users are synced from hub JWT)
+    const appUserRepo = new SqliteAppUserRepository(db)
+    const appUser = appUserRepo.upsert('1', 'Test Writer', 'coach@example.com', 'student')
+    userId = appUser.hubUserId
+
     userRepo = new SqliteUserRepository(db)
-    const user = userRepo.create({
-      email: 'coach@example.com',
-      displayName: 'Test Writer',
-      password: 'pass123',
-      role: 'student',
-      passwordHash: 'hashed',
-    })
-    userId = user.id
 
     submissionRepo = new SqliteSubmissionRepository(db)
     const submission = submissionRepo.create(userId)

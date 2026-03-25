@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import express from 'express'
-import type { Request, Response, NextFunction } from 'express'
 import cookieParser from 'cookie-parser'
 import request from 'supertest'
 import Database from 'better-sqlite3'
 import type { Database as DatabaseType } from 'better-sqlite3'
 import { Migrator } from '../config/migrator.js'
 import { migrations } from '../migrations/index.js'
-import { AuthService } from '../services/auth-service.js'
+import { createTestToken, initTestAuth } from './test-auth-helper.js'
 import { SqliteSubmissionRepository } from '../repositories/sqlite/submission-repository.js'
 import { SqliteRevisionRepository } from '../repositories/sqlite/revision-repository.js'
+import { SqliteAppUserRepository } from '../repositories/sqlite/app-user-repository.js'
 import { createCoachingRouter } from '../routes/coaching.js'
 import type { LLMProvider, LLMProviderOptions, LLMResponse } from '../services/llm/provider.js'
 
@@ -27,82 +27,44 @@ class MockLLMProvider implements LLMProvider {
   }
 }
 
-async function registerAndGetToken(
-  authService: AuthService,
-  email: string = 'writer@example.com'
-): Promise<string> {
-  const { tokens } = await authService.register(email, 'Writer', 'password123', 'student')
-  return tokens.accessToken
-}
-
 function buildTestApp(db: DatabaseType, llmProvider: LLMProvider) {
-  const authService = new AuthService(db)
+  initTestAuth(db)
 
   const app = express()
   app.use(express.json())
   app.use(cookieParser())
 
-  function testAuth(req: Request, res: Response, next: NextFunction): void {
-    const token = req.headers.authorization?.slice(7)
-    if (!token) {
-      res.status(401).json({ success: false, error: 'Authentication required' })
-      return
-    }
-    try {
-      const payload = authService.verifyAccessToken(token)
-      req.user = payload
-      next()
-    } catch {
-      res.status(401).json({ success: false, error: 'Invalid token' })
-    }
-  }
-
-  // Monkey-patch requireAuth for tests
   const coachingRouter = createCoachingRouter(db, llmProvider)
-
-  // We need to mount using our own auth middleware
-  const testRouter = express.Router()
-
-  testRouter.post('/:id/coach', testAuth, async (req: Request, res: Response, next: NextFunction) => {
-    // Forward to coaching router
-    next()
-  })
-  testRouter.get('/:id/coaching', testAuth, (req: Request, res: Response, next: NextFunction) => {
-    next()
-  })
-
   app.use('/api/writing/submissions', coachingRouter)
 
-  return { app, authService }
+  return app
 }
 
 describe('Coaching Routes', () => {
   let db: DatabaseType
   let app: express.Express
-  let authService: AuthService
   let token: string
   let submissionId: string
   let mockLLM: MockLLMProvider
 
-  beforeEach(async () => {
+  beforeEach(() => {
     db = new Database(':memory:')
     db.pragma('foreign_keys = ON')
     const migrator = new Migrator(db, migrations)
     migrator.migrate()
 
     mockLLM = new MockLLMProvider()
-    const built = buildTestApp(db, mockLLM)
-    app = built.app
-    authService = built.authService
+    app = buildTestApp(db, mockLLM)
 
-    token = await registerAndGetToken(authService)
+    const testUser = createTestToken({ sub: '1', email: 'writer@example.com', displayName: 'Writer' })
+    token = testUser.token
 
-    // Decode token to get userId
-    const payload = authService.verifyAccessToken(token)
-    const userId = payload.sub
+    // Create an app_users record so the coaching service can find the user
+    const appUserRepo = new SqliteAppUserRepository(db)
+    appUserRepo.upsert('1', 'Writer', 'writer@example.com', 'student')
 
     const submissionRepo = new SqliteSubmissionRepository(db)
-    const submission = submissionRepo.create(userId)
+    const submission = submissionRepo.create('1')
     submissionId = submission.id
 
     const revisionRepo = new SqliteRevisionRepository(db)
@@ -110,6 +72,10 @@ describe('Coaching Routes', () => {
       submissionId,
       'The brave knight rode through the dark forest searching for the lost treasure. The trees whispered secrets as the wind blew through their ancient branches. She knew this quest would change everything.'
     )
+  })
+
+  afterEach(() => {
+    db.close()
   })
 
   describe('POST /api/writing/submissions/:id/coach', () => {
@@ -140,7 +106,7 @@ describe('Coaching Routes', () => {
     })
 
     it('returns 403 for submission owned by another user', async () => {
-      const otherToken = await registerAndGetToken(authService, 'other@example.com')
+      const { token: otherToken } = createTestToken({ sub: '2', email: 'other@example.com', displayName: 'Other' })
 
       const res = await request(app)
         .post(`/api/writing/submissions/${submissionId}/coach`)
@@ -152,7 +118,6 @@ describe('Coaching Routes', () => {
 
   describe('GET /api/writing/submissions/:id/coaching', () => {
     it('returns coaching passes for a submission', async () => {
-      // First create a coaching pass
       await request(app)
         .post(`/api/writing/submissions/${submissionId}/coach`)
         .set('Authorization', `Bearer ${token}`)
@@ -185,7 +150,7 @@ describe('Coaching Routes', () => {
     })
 
     it('returns 403 for submission owned by another user', async () => {
-      const otherToken = await registerAndGetToken(authService, 'other2@example.com')
+      const { token: otherToken } = createTestToken({ sub: '2', email: 'other2@example.com', displayName: 'Other' })
 
       const res = await request(app)
         .get(`/api/writing/submissions/${submissionId}/coaching`)

@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: packages/backend/Dockerfile
+      args:
+        NODE_AUTH_TOKEN: ${NODE_AUTH_TOKEN}
     ports:
       - "5050:5050"
     volumes:
@@ -12,6 +14,11 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_PATH=/app/data/writing-buddy.db
+      - OIDC_ISSUER=${OIDC_ISSUER:-http://localhost:3009}
+      - OIDC_INTERNAL_ISSUER=${OIDC_INTERNAL_ISSUER:-http://hub-app:3009}
+    networks:
+      - default
+      - hub
     restart: unless-stopped
 
   frontend:
@@ -19,12 +26,18 @@ services:
       context: .
       dockerfile: packages/frontend/Dockerfile
       args:
+        NODE_AUTH_TOKEN: ${NODE_AUTH_TOKEN}
         VITE_API_URL: /api
     ports:
       - "5055:80"
     depends_on:
       - backend
     restart: unless-stopped
+
+networks:
+  hub:
+    external: true
+    name: 11plus-hub_default
 
 volumes:
   db-data:

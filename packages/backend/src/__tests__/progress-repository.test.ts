@@ -4,28 +4,17 @@ import type { Database as DatabaseType } from 'better-sqlite3'
 import { Migrator } from '../config/migrator.js'
 import { migrations } from '../migrations/index.js'
 import { SqliteProgressRepository } from '../repositories/sqlite/progress-repository.js'
-import { SqliteUserRepository } from '../repositories/sqlite/user-repository.js'
 
 describe('SqliteProgressRepository', () => {
   let db: DatabaseType
   let progressRepo: SqliteProgressRepository
-  let userId: string
+  const userId = 'hub-user-1'
 
   beforeEach(() => {
     db = new Database(':memory:')
     db.pragma('foreign_keys = ON')
     const migrator = new Migrator(db, migrations)
     migrator.migrate()
-
-    const userRepo = new SqliteUserRepository(db)
-    const user = userRepo.create({
-      email: 'progress@example.com',
-      displayName: 'Progress User',
-      password: 'pass123',
-      role: 'student',
-      passwordHash: 'hashed',
-    })
-    userId = user.id
 
     progressRepo = new SqliteProgressRepository(db)
   })

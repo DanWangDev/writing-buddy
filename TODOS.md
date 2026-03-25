@@ -4,13 +4,13 @@
 
 ### P1: Migrate Writing-Buddy to Hub Auth
 - **Status:** IN PROGRESS (branch: `feat/hub-auth-migration`)
-- **What:** Strip standalone auth, install `@labf/auth-client` SDK, recreate DB schema with hub_user_id references. Clean slate (no production data).
+- **What:** Strip standalone auth, install `@danwangdev/auth-client` SDK, recreate DB schema with hub_user_id references. Clean slate (no production data).
 - **Why:** Writing-buddy stops maintaining its own auth. Same login works across all apps.
 - **Effort:** S (human: ~1 day / CC: ~20 min)
 - **Depends on:** Hub app (11plus-hub) Phase A must be complete
 - **Context:**
   - Delete: auth-service.ts, auth middleware, auth routes, user-repository.ts
-  - Add: `@labf/auth-client` SDK middleware, `app_users` table (hub_user_id + app prefs)
+  - Add: `@danwangdev/auth-client` SDK middleware, `app_users` table (hub_user_id + app prefs)
   - Clean slate: recreate DB schema (no migration needed, zero prod data)
   - user_id columns in domain tables (submissions, progress, etc.) reference hub_user_id
   - All existing domain tests must pass with hub JWT

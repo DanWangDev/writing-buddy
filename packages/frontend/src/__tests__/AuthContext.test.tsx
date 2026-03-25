@@ -9,13 +9,12 @@ vi.mock('../services/api')
 const mockedApi = vi.mocked(api)
 
 function TestConsumer() {
-  const { user, isAuthenticated, isLoading, login, logout } = useAuth()
+  const { user, isAuthenticated, isLoading, logout } = useAuth()
   return (
     <div>
       <span data-testid="loading">{String(isLoading)}</span>
       <span data-testid="authed">{String(isAuthenticated)}</span>
       <span data-testid="name">{user?.displayName ?? 'none'}</span>
-      <button onClick={() => login('a@b.com', 'pass')}>Login</button>
       <button onClick={() => logout()}>Logout</button>
     </div>
   )
@@ -26,7 +25,7 @@ const mockUser = {
   email: 'a@b.com',
   displayName: 'Alice',
   role: 'student' as const,
-  subscriptionPlan: 'free',
+  plan: 'free',
   createdAt: '2025-01-01',
 }
 
@@ -66,31 +65,20 @@ describe('AuthContext', () => {
     expect(screen.getByTestId('authed').textContent).toBe('true')
   })
 
-  it('login sets user', async () => {
-    mockedApi.getMe.mockRejectedValueOnce(new Error('no token'))
-    mockedApi.login.mockResolvedValueOnce(mockUser)
-    const user = userEvent.setup()
-
-    render(
-      <AuthProvider>
-        <TestConsumer />
-      </AuthProvider>,
-    )
-
-    await waitFor(() => {
-      expect(screen.getByTestId('loading').textContent).toBe('false')
-    })
-
-    await user.click(screen.getByText('Login'))
-
-    await waitFor(() => {
-      expect(screen.getByTestId('name').textContent).toBe('Alice')
-    })
-  })
-
   it('logout clears user', async () => {
     mockedApi.getMe.mockResolvedValueOnce(mockUser)
-    mockedApi.logout.mockResolvedValueOnce(undefined)
+    mockedApi.clearTokens.mockImplementation(() => {})
+    // Mock window.location.href assignment
+    const hrefSetter = vi.fn()
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, href: '', origin: 'http://localhost' },
+      writable: true,
+    })
+    Object.defineProperty(window.location, 'href', {
+      set: hrefSetter,
+      get: () => 'http://localhost',
+    })
+
     const user = userEvent.setup()
 
     render(
@@ -105,8 +93,7 @@ describe('AuthContext', () => {
 
     await user.click(screen.getByText('Logout'))
 
-    await waitFor(() => {
-      expect(screen.getByTestId('authed').textContent).toBe('false')
-    })
+    // Logout redirects to hub, so user state gets cleared
+    expect(mockedApi.clearTokens).toHaveBeenCalled()
   })
 })

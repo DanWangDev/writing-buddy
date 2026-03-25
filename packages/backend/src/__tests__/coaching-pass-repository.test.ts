@@ -5,13 +5,12 @@ import { Migrator } from '../config/migrator.js'
 import { migrations } from '../migrations/index.js'
 import { SqliteCoachingPassRepository } from '../repositories/sqlite/coaching-pass-repository.js'
 import { SqliteSubmissionRepository } from '../repositories/sqlite/submission-repository.js'
-import { SqliteUserRepository } from '../repositories/sqlite/user-repository.js'
 
 describe('SqliteCoachingPassRepository', () => {
   let db: DatabaseType
   let repo: SqliteCoachingPassRepository
   let submissionId: string
-  let userId: string
+  const userId = 'hub-user-1'
 
   beforeEach(() => {
     db = new Database(':memory:')
@@ -20,16 +19,6 @@ describe('SqliteCoachingPassRepository', () => {
     migrator.migrate()
 
     repo = new SqliteCoachingPassRepository(db)
-
-    const userRepo = new SqliteUserRepository(db)
-    const user = userRepo.create({
-      email: 'coach-test@example.com',
-      displayName: 'Coach Tester',
-      password: 'password123',
-      role: 'student',
-      passwordHash: 'hashed',
-    })
-    userId = user.id
 
     const submissionRepo = new SqliteSubmissionRepository(db)
     const submission = submissionRepo.create(userId)

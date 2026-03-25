@@ -1,79 +1,54 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import express from 'express'
-import type { Request, Response, NextFunction } from 'express'
 import cookieParser from 'cookie-parser'
 import request from 'supertest'
 import Database from 'better-sqlite3'
 import type { Database as DatabaseType } from 'better-sqlite3'
 import { Migrator } from '../config/migrator.js'
 import { migrations } from '../migrations/index.js'
-import { AuthService } from '../services/auth-service.js'
+import { createTestToken, initTestAuth } from './test-auth-helper.js'
 import { SqliteSubmissionRepository } from '../repositories/sqlite/submission-repository.js'
 import { SqliteRubricScoresRepository } from '../repositories/sqlite/rubric-scores-repository.js'
 import { createScoringRouter } from '../routes/scoring.js'
 
-async function registerAndGetToken(
-  authService: AuthService,
-  email: string = 'scorer@example.com'
-): Promise<string> {
-  const { tokens } = await authService.register(email, 'Scorer', 'password123', 'student')
-  return tokens.accessToken
-}
-
 function buildTestApp(db: DatabaseType) {
-  const authService = new AuthService(db)
+  initTestAuth(db)
 
   const app = express()
   app.use(express.json())
   app.use(cookieParser())
 
-  function testAuth(req: Request, res: Response, next: NextFunction): void {
-    const token = req.headers.authorization?.slice(7)
-    if (!token) {
-      res.status(401).json({ success: false, error: 'Authentication required' })
-      return
-    }
-    try {
-      const payload = authService.verifyAccessToken(token)
-      req.user = payload
-      next()
-    } catch {
-      res.status(401).json({ success: false, error: 'Invalid token' })
-    }
-  }
-
   const scoringRouter = createScoringRouter(db)
   app.use('/api/writing/submissions', scoringRouter)
 
-  return { app, authService }
+  return app
 }
 
 describe('Scoring Routes', () => {
   let db: DatabaseType
   let app: express.Express
-  let authService: AuthService
   let token: string
   let submissionId: string
-  let userId: string
+  const userId = '1'
 
-  beforeEach(async () => {
+  beforeEach(() => {
     db = new Database(':memory:')
     db.pragma('foreign_keys = ON')
     const migrator = new Migrator(db, migrations)
     migrator.migrate()
 
-    const built = buildTestApp(db)
-    app = built.app
-    authService = built.authService
+    app = buildTestApp(db)
 
-    token = await registerAndGetToken(authService)
-
-    const payload = authService.verifyAccessToken(token)
-    userId = payload.sub
+    const testUser = createTestToken({ sub: userId, email: 'scorer@example.com', displayName: 'Scorer' })
+    token = testUser.token
 
     const submissionRepo = new SqliteSubmissionRepository(db)
     const submission = submissionRepo.create(userId)
     submissionId = submission.id
+  })
+
+  afterEach(() => {
+    db.close()
   })
 
   describe('GET /api/writing/submissions/:id/scores', () => {
@@ -120,7 +95,7 @@ describe('Scoring Routes', () => {
     })
 
     it('returns 403 for submission owned by another user', async () => {
-      const otherToken = await registerAndGetToken(authService, 'other@example.com')
+      const { token: otherToken } = createTestToken({ sub: '2', email: 'other@example.com', displayName: 'Other' })
 
       const res = await request(app)
         .get(`/api/writing/submissions/${submissionId}/scores`)

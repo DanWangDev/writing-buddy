@@ -5,7 +5,6 @@ import { Migrator } from '../config/migrator.js'
 import { migrations } from '../migrations/index.js'
 import { SqliteRevisionRepository } from '../repositories/sqlite/revision-repository.js'
 import { SqliteSubmissionRepository } from '../repositories/sqlite/submission-repository.js'
-import { SqliteUserRepository } from '../repositories/sqlite/user-repository.js'
 
 describe('SqliteRevisionRepository', () => {
   let db: DatabaseType
@@ -20,17 +19,8 @@ describe('SqliteRevisionRepository', () => {
 
     repo = new SqliteRevisionRepository(db)
 
-    const userRepo = new SqliteUserRepository(db)
-    const user = userRepo.create({
-      email: 'test@example.com',
-      displayName: 'Test User',
-      password: 'password123',
-      role: 'student',
-      passwordHash: 'hashed',
-    })
-
     const subRepo = new SqliteSubmissionRepository(db)
-    const submission = subRepo.create(user.id)
+    const submission = subRepo.create('hub-user-1')
     submissionId = submission.id
   })
 

@@ -15,7 +15,7 @@ beforeEach(() => {
     email: 'a@b.com',
     displayName: 'Alice',
     role: 'student',
-    subscriptionPlan: 'free',
+    plan: 'free',
     createdAt: '2025-01-01',
   })
 })

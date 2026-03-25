@@ -1,8 +1,14 @@
-import type { User, CreateUserDto } from '@writing-buddy/shared'
+/**
+ * User lookup interface used by domain services (e.g., coaching).
+ * After hub auth migration, this reads from app_users table.
+ */
+export interface UserInfo {
+  readonly id: string
+  readonly displayName: string
+  readonly email: string
+  readonly role: string
+}
 
 export interface IUserRepository {
-  findById(id: string): User | null
-  findByEmail(email: string): User | null
-  create(dto: CreateUserDto & { passwordHash: string }): User
-  updateSubscription(userId: string, plan: string, status: string): User | null
+  findById(id: string): UserInfo | null
 }

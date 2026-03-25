@@ -13,7 +13,7 @@ const mockUser = {
   email: 'a@b.com',
   displayName: 'Alice',
   role: 'student' as const,
-  subscriptionPlan: 'free',
+  plan: 'free',
   createdAt: '2025-01-01',
 }
 

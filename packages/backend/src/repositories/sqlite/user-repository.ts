@@ -1,36 +1,17 @@
-import crypto from 'crypto'
 import type { Database } from 'better-sqlite3'
-import type { User, CreateUserDto } from '@writing-buddy/shared'
-import type { IUserRepository } from '../interfaces/user-repository.js'
+import type { UserInfo, IUserRepository } from '../interfaces/user-repository.js'
 
-interface UserRow {
-  id: string
-  email: string
+interface AppUserRow {
+  hub_user_id: string
   display_name: string
-  password_hash: string
-  role: 'student' | 'parent' | 'tutor'
-  parent_id: string | null
-  subscription_plan: string
-  subscription_status: string
-  created_at: string
-  updated_at: string
+  email: string
+  role: string
 }
 
-function rowToUser(row: UserRow): User {
-  return {
-    id: row.id,
-    email: row.email,
-    displayName: row.display_name,
-    passwordHash: row.password_hash,
-    role: row.role,
-    parentId: row.parent_id ?? undefined,
-    subscriptionPlan: row.subscription_plan,
-    subscriptionStatus: row.subscription_status,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  }
-}
-
+/**
+ * Reads user info from the app_users table.
+ * Used by domain services that need display name / role for context.
+ */
 export class SqliteUserRepository implements IUserRepository {
   private readonly db: Database
 
@@ -38,49 +19,20 @@ export class SqliteUserRepository implements IUserRepository {
     this.db = db
   }
 
-  findById(id: string): User | null {
+  findById(id: string): UserInfo | null {
     const row = this.db.prepare(
-      'SELECT * FROM users WHERE id = ?'
-    ).get(id) as UserRow | undefined
+      'SELECT hub_user_id, display_name, email, role FROM app_users WHERE hub_user_id = ?',
+    ).get(id) as AppUserRow | undefined
 
-    return row ? rowToUser(row) : null
-  }
-
-  findByEmail(email: string): User | null {
-    const row = this.db.prepare(
-      'SELECT * FROM users WHERE email = ?'
-    ).get(email) as UserRow | undefined
-
-    return row ? rowToUser(row) : null
-  }
-
-  create(dto: CreateUserDto & { passwordHash: string }): User {
-    const id = crypto.randomUUID()
-    const now = new Date().toISOString()
-
-    this.db.prepare(`
-      INSERT INTO users (id, email, display_name, password_hash, role, parent_id, subscription_plan, subscription_status, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, 'free', 'trial', ?, ?)
-    `).run(id, dto.email, dto.displayName, dto.passwordHash, dto.role, dto.parentId ?? null, now, now)
-
-    const user = this.findById(id)
-    if (!user) {
-      throw new Error('Failed to create user')
-    }
-    return user
-  }
-
-  updateSubscription(userId: string, plan: string, status: string): User | null {
-    const now = new Date().toISOString()
-
-    const result = this.db.prepare(`
-      UPDATE users SET subscription_plan = ?, subscription_status = ?, updated_at = ? WHERE id = ?
-    `).run(plan, status, now, userId)
-
-    if (result.changes === 0) {
+    if (!row) {
       return null
     }
 
-    return this.findById(userId)
+    return {
+      id: row.hub_user_id,
+      displayName: row.display_name,
+      email: row.email,
+      role: row.role,
+    }
   }
 }

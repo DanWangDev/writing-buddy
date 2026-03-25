@@ -8,21 +8,15 @@ import type { Database as DatabaseType } from 'better-sqlite3'
 import { z } from 'zod'
 import { Migrator } from '../config/migrator.js'
 import { migrations } from '../migrations/index.js'
-import { AuthService } from '../services/auth-service.js'
+import { createTestToken, initTestAuth } from './test-auth-helper.js'
 import { SqliteSubmissionRepository } from '../repositories/sqlite/submission-repository.js'
 import { SqliteRevisionRepository } from '../repositories/sqlite/revision-repository.js'
 import { SqlitePromptRepository } from '../repositories/sqlite/prompt-repository.js'
-
-async function registerAndGetToken(
-  authService: AuthService,
-  email: string = 'writer@example.com'
-): Promise<string> {
-  const { tokens } = await authService.register(email, 'Writer', 'password123', 'student')
-  return tokens.accessToken
-}
+import { requireAuth } from '../middleware/auth.js'
 
 function buildTestApp(db: DatabaseType) {
-  const authService = new AuthService(db)
+  initTestAuth(db)
+
   const submissionRepo = new SqliteSubmissionRepository(db)
   const revisionRepo = new SqliteRevisionRepository(db)
 
@@ -30,24 +24,9 @@ function buildTestApp(db: DatabaseType) {
   app.use(express.json())
   app.use(cookieParser())
 
-  function testAuth(req: Request, res: Response, next: NextFunction): void {
-    const token = req.headers.authorization?.slice(7)
-    if (!token) {
-      res.status(401).json({ success: false, error: 'Authentication required' })
-      return
-    }
-    try {
-      const payload = authService.verifyAccessToken(token)
-      req.user = payload
-      next()
-    } catch {
-      res.status(401).json({ success: false, error: 'Invalid token' })
-    }
-  }
-
   const router = express.Router()
 
-  router.post('/', testAuth, (req: Request, res: Response) => {
+  router.post('/', requireAuth, (req: Request, res: Response) => {
     try {
       const schema = z.object({ promptId: z.string().uuid().optional() })
       const parsed = schema.safeParse(req.body)
@@ -62,7 +41,7 @@ function buildTestApp(db: DatabaseType) {
     }
   })
 
-  router.get('/', testAuth, (req: Request, res: Response) => {
+  router.get('/', requireAuth, (req: Request, res: Response) => {
     try {
       const schema = z.object({ status: z.enum(['draft', 'in_coaching', 'completed']).optional() })
       const parsed = schema.safeParse(req.query)
@@ -77,7 +56,7 @@ function buildTestApp(db: DatabaseType) {
     }
   })
 
-  router.get('/:id', testAuth, (req: Request, res: Response) => {
+  router.get('/:id', requireAuth, (req: Request, res: Response) => {
     try {
       const submission = submissionRepo.findById(req.params.id)
       if (!submission) {
@@ -95,7 +74,7 @@ function buildTestApp(db: DatabaseType) {
     }
   })
 
-  router.post('/:id/revisions', testAuth, (req: Request, res: Response) => {
+  router.post('/:id/revisions', requireAuth, (req: Request, res: Response) => {
     try {
       const submission = submissionRepo.findById(req.params.id)
       if (!submission) {
@@ -129,7 +108,7 @@ function buildTestApp(db: DatabaseType) {
     }
   })
 
-  router.patch('/:id/complete', testAuth, (req: Request, res: Response) => {
+  router.patch('/:id/complete', requireAuth, (req: Request, res: Response) => {
     try {
       const submission = submissionRepo.findById(req.params.id)
       if (!submission) {
@@ -160,19 +139,19 @@ function buildTestApp(db: DatabaseType) {
 describe('Submission Routes', () => {
   let db: DatabaseType
   let app: express.Express
-  let authService: AuthService
   let token: string
   let promptId: string
 
-  beforeEach(async () => {
+  beforeEach(() => {
     db = new Database(':memory:')
     db.pragma('foreign_keys = ON')
     const migrator = new Migrator(db, migrations)
     migrator.migrate()
 
-    authService = new AuthService(db)
     app = buildTestApp(db)
-    token = await registerAndGetToken(authService)
+
+    const testUser = createTestToken({ sub: '1', email: 'writer@example.com', displayName: 'Writer' })
+    token = testUser.token
 
     const promptRepo = new SqlitePromptRepository(db)
     const prompt = promptRepo.create({
