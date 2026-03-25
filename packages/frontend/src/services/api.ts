@@ -42,28 +42,14 @@ export function setTokens(access: string | null, refresh: string | null): void {
   persistTokens()
 }
 
-function getOidcConfig() {
-  const issuer = import.meta.env.VITE_OIDC_ISSUER || 'http://localhost:3009'
-  const clientId = import.meta.env.VITE_OIDC_CLIENT_ID || 'writing-buddy-client'
-  return { issuer, clientId }
-}
-
 async function refreshAccessToken(): Promise<boolean> {
   if (!refreshToken) return false
 
-  const { issuer, clientId } = getOidcConfig()
-
   try {
-    const body = new URLSearchParams({
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
-      client_id: clientId,
-    })
-
-    const res = await fetch(`${issuer}/oidc/token`, {
+    const res = await fetch(`${BASE_URL}/auth/refresh`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString(),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken }),
     })
 
     if (!res.ok) {
@@ -74,9 +60,11 @@ async function refreshAccessToken(): Promise<boolean> {
     const data = await res.json() as {
       access_token: string
       refresh_token?: string
+      id_token?: string
     }
 
-    accessToken = data.access_token
+    // Use id_token as Bearer token (hub issues opaque access tokens)
+    accessToken = data.id_token ?? data.access_token
     if (data.refresh_token) {
       refreshToken = data.refresh_token
     }

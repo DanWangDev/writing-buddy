@@ -19,7 +19,7 @@ export function requireHubAuth(db: Database) {
     // Use internal URL for discovery (reachable from Docker), public URL for JWT issuer validation.
     // The discovered jwks_uri uses the public issuer hostname which may be unreachable from Docker,
     // so rewrite it to use the internal hostname when they differ.
-    const metadata = await discoverOidc(env.OIDC_INTERNAL_ISSUER)
+    const metadata = await discoverOidc(env.OIDC_ISSUER, env.OIDC_INTERNAL_ISSUER)
     const jwksUri = env.OIDC_INTERNAL_ISSUER !== env.OIDC_ISSUER
       ? metadata.jwks_uri.replace(env.OIDC_ISSUER, env.OIDC_INTERNAL_ISSUER)
       : metadata.jwks_uri
@@ -33,6 +33,7 @@ export function requireHubAuth(db: Database) {
       plan: user.plan,
       features: user.features,
       apps: user.apps,
+      expiresAt: user.expires_at,
       iat: 0,
       exp: 0,
     }

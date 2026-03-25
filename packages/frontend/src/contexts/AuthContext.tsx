@@ -33,9 +33,22 @@ async function generateCodeChallenge(verifier: string): Promise<string> {
     .replace(/=+$/, '')
 }
 
+function checkAccessDenied(): boolean {
+  const params = new URLSearchParams(window.location.search)
+  if (params.get('error') === 'access_denied') {
+    // Clean the URL
+    const url = new URL(window.location.href)
+    url.searchParams.delete('error')
+    window.history.replaceState({}, '', url.toString())
+    return true
+  }
+  return false
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<ReturnType<typeof api.getMe> extends Promise<infer U> ? U | null : never>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isAccessDenied] = useState(checkAccessDenied)
 
   useEffect(() => {
     let cancelled = false
@@ -97,6 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     isAuthenticated: user !== null,
     isLoading,
+    isAccessDenied,
     login,
     logout,
   }

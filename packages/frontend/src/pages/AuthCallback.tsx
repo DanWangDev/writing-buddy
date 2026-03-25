@@ -3,13 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { setTokens } from '../services/api'
 import { Loader2 } from 'lucide-react'
 
-function getOidcConfig() {
-  const issuer = import.meta.env.VITE_OIDC_ISSUER || 'http://localhost:3009'
-  const clientId = import.meta.env.VITE_OIDC_CLIENT_ID || 'writing-buddy-client'
-  const redirectUri = `${window.location.origin}/auth/callback`
-  return { issuer, clientId, redirectUri }
-}
-
 export function AuthCallback() {
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
@@ -26,6 +19,13 @@ export function AuthCallback() {
       const errorParam = url.searchParams.get('error')
 
       if (errorParam) {
+        if (errorParam === 'access_denied') {
+          // Hub denied entitlement — redirect to home with access_denied flag
+          sessionStorage.removeItem('labf_oidc_code_verifier')
+          sessionStorage.removeItem('labf_oidc_state')
+          window.location.href = '/?error=access_denied'
+          return
+        }
         const description = url.searchParams.get('error_description') ?? errorParam
         setError(`Authentication error: ${description}`)
         return
@@ -48,21 +48,16 @@ export function AuthCallback() {
         return
       }
 
-      const { issuer, clientId, redirectUri } = getOidcConfig()
-
-      const body = new URLSearchParams({
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: redirectUri,
-        client_id: clientId,
-        code_verifier: codeVerifier,
-      })
-
       try {
-        const response = await fetch(`${issuer}/oidc/token`, {
+        // Exchange code via the backend BFF — the backend adds the client_secret
+        const response = await fetch('/api/writing/auth/exchange', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: body.toString(),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code,
+            code_verifier: codeVerifier,
+            redirect_uri: `${window.location.origin}/auth/callback`,
+          }),
         })
 
         if (!response.ok) {
@@ -92,9 +87,6 @@ export function AuthCallback() {
         localStorage.setItem('labf_oidc_hub_token', data.access_token)
 
         // Full page reload so AuthProvider re-initializes with the new token.
-        // Not guarded by `cancelled` — exchangeStarted ref already prevents
-        // double execution, and StrictMode cleanup sets cancelled=true before
-        // this async code resolves.
         window.location.href = '/'
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to complete authentication')
