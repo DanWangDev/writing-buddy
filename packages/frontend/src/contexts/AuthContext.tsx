@@ -33,22 +33,22 @@ async function generateCodeChallenge(verifier: string): Promise<string> {
     .replace(/=+$/, '')
 }
 
+function checkAccessDenied(): boolean {
+  const params = new URLSearchParams(window.location.search)
+  if (params.get('error') === 'access_denied') {
+    // Clean the URL
+    const url = new URL(window.location.href)
+    url.searchParams.delete('error')
+    window.history.replaceState({}, '', url.toString())
+    return true
+  }
+  return false
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<ReturnType<typeof api.getMe> extends Promise<infer U> ? U | null : never>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isAccessDenied, setIsAccessDenied] = useState(false)
-
-  useEffect(() => {
-    // Detect access_denied from hub entitlement check redirect
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('error') === 'access_denied') {
-      setIsAccessDenied(true)
-      // Clean the URL
-      const url = new URL(window.location.href)
-      url.searchParams.delete('error')
-      window.history.replaceState({}, '', url.toString())
-    }
-  }, [])
+  const [isAccessDenied] = useState(checkAccessDenied)
 
   useEffect(() => {
     let cancelled = false
