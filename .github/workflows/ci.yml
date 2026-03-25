@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGE_TOKEN }}
       - name: TypeScript check (shared)
         run: npm run typecheck -w packages/shared
       - name: TypeScript check (backend)
@@ -58,7 +58,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGE_TOKEN }}
       - name: Run tests with coverage
         run: npm run test:coverage -w packages/backend
 
@@ -79,7 +79,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGE_TOKEN }}
       - name: Run tests with coverage
         run: npm run test:coverage -w packages/frontend
 
@@ -101,7 +101,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGE_TOKEN }}
       - name: Build all packages
         run: npm run build
 
@@ -151,7 +151,7 @@ jobs:
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ${{ steps.meta-backend.outputs.tags }}
           labels: ${{ steps.meta-backend.outputs.labels }}
-          build-args: NODE_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          build-args: NODE_AUTH_TOKEN=${{ secrets.GH_PACKAGE_TOKEN }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
