@@ -1,5 +1,5 @@
 import type { Database } from 'better-sqlite3'
-import { JwtVerifier } from '@labf/auth-client'
+import { JwtVerifier } from '@labf/auth-client/server'
 import { createHubAuth } from '../middleware/hub-auth.js'
 import { SqliteAppUserRepository } from '../repositories/sqlite/app-user-repository.js'
 import { createUserSync } from '../services/user-sync.js'

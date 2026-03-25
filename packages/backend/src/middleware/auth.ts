@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express'
-import type { HubTokenClaims } from '@labf/auth-client'
+import type { HubTokenClaims } from '@labf/auth-client/types'
 
 /**
  * Re-exports for backward compatibility with domain routes.
