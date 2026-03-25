@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { healthRouter } from './health.js'
 import { createMeRouter } from './me.js'
+import { createAuthExchangeRouter } from './auth-exchange.js'
 import { createPromptRouter } from './prompts.js'
 import { createSubmissionRouter } from './submissions.js'
 import { createCoachingRouter } from './coaching.js'
@@ -11,6 +12,7 @@ import db from '../config/database.js'
 export const writingRouter = Router()
 
 writingRouter.use('/health', healthRouter)
+writingRouter.use('/auth', createAuthExchangeRouter())
 writingRouter.use('/auth', createMeRouter(db))
 writingRouter.use('/prompts', createPromptRouter(db))
 writingRouter.use('/submissions', createSubmissionRouter(db))
