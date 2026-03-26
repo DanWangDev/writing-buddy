@@ -3,7 +3,6 @@ import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { Layout } from './components/Layout'
 import { LoginPage } from './pages/LoginPage'
-import { AuthCallback } from './pages/AuthCallback'
 import { Dashboard } from './pages/Dashboard'
 import { PromptBrowser } from './pages/PromptBrowser'
 import { WritingDesk } from './pages/WritingDesk'
@@ -15,7 +14,6 @@ export function App() {
     <AuthProvider>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route
           element={
             <ProtectedRoute>

@@ -14,13 +14,11 @@ function jsonResponse(data: unknown, status = 200) {
 
 beforeEach(() => {
   mockFetch.mockReset()
-  api.setTokens(null, null)
 })
 
 describe('api service', () => {
   describe('getMe', () => {
-    it('sends authorization header', async () => {
-      api.setTokens('mytoken', null)
+    it('sends request with credentials included', async () => {
       const user = { id: '1', email: 'a@b.com', displayName: 'Test', role: 'student', plan: 'free', createdAt: '2025-01-01' }
       mockFetch.mockReturnValueOnce(
         jsonResponse({ success: true, data: user }),
@@ -28,61 +26,17 @@ describe('api service', () => {
 
       await api.getMe()
 
-      const callHeaders = mockFetch.mock.calls[0]?.[1]?.headers
-      expect(callHeaders?.Authorization).toBe('Bearer mytoken')
+      const callOptions = mockFetch.mock.calls[0]?.[1]
+      expect(callOptions?.credentials).toBe('include')
     })
   })
 
-  describe('clearTokens', () => {
-    it('clears all stored tokens', () => {
-      api.setTokens('tok', 'ref')
-      expect(api.getAccessToken()).toBe('tok')
-
-      api.clearTokens()
-      expect(api.getAccessToken()).toBeNull()
-    })
-  })
-
-  describe('token refresh on 401', () => {
-    it('retries with new token after OIDC refresh', async () => {
-      api.setTokens('old', 'refresh-tok')
-
-      // First call returns 401
+  describe('401 handling', () => {
+    it('throws session expired on 401', async () => {
       mockFetch.mockReturnValueOnce(jsonResponse({ success: false, error: 'Unauthorized' }, 401))
-      // Refresh call succeeds (OIDC token endpoint)
-      mockFetch.mockReturnValueOnce(
-        Promise.resolve({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve({ access_token: 'new-at', refresh_token: 'new-rt' }),
-        }),
-      )
-      // Retry call succeeds
-      const user = { id: '1', email: 'a@b.com', displayName: 'Test', role: 'student', plan: 'free', createdAt: '2025-01-01' }
-      mockFetch.mockReturnValueOnce(jsonResponse({ success: true, data: user }))
-
-      const result = await api.getMe()
-
-      expect(result).toEqual(user)
-      expect(api.getAccessToken()).toBe('new-at')
-      expect(mockFetch).toHaveBeenCalledTimes(3)
-    })
-
-    it('throws when refresh fails', async () => {
-      api.setTokens('old', 'bad-refresh')
-
-      mockFetch.mockReturnValueOnce(jsonResponse({ success: false }, 401))
-      // Refresh fails
-      mockFetch.mockReturnValueOnce(
-        Promise.resolve({
-          ok: false,
-          status: 401,
-          json: () => Promise.resolve({ error: 'invalid_grant' }),
-        }),
-      )
 
       await expect(api.getMe()).rejects.toThrow('Session expired')
-      expect(api.getAccessToken()).toBeNull()
+      expect(mockFetch).toHaveBeenCalledTimes(1)
     })
   })
 

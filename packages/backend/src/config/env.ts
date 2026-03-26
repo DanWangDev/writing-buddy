@@ -27,7 +27,8 @@ export const env = {
   OIDC_INTERNAL_ISSUER: process.env.OIDC_INTERNAL_ISSUER || process.env.OIDC_ISSUER || 'http://localhost:3009',
   OIDC_CLIENT_ID: process.env.OIDC_CLIENT_ID || 'writing-buddy-client',
   OIDC_CLIENT_SECRET: process.env.OIDC_CLIENT_SECRET || '',
-  OIDC_REDIRECT_URI: process.env.OIDC_REDIRECT_URI || 'http://localhost:5179/auth/callback',
+  OIDC_REDIRECT_URI: process.env.OIDC_REDIRECT_URI || 'http://localhost:5179/api/writing/auth/callback',
+  SESSION_SECRET: process.env.SESSION_SECRET || 'dev-session-secret-change-in-production-32chars!',
 
   // Legacy JWT secret — used only in tests
   JWT_SECRET: process.env.JWT_SECRET || 'dev-secret-change-in-production',

@@ -5,24 +5,24 @@ import { requireAuth } from '../middleware/auth.js'
 import { logger } from '../services/logger.js'
 
 /**
- * Minimal auth routes -- replaces the old register/login/refresh/logout
- * with a single /me endpoint that reads claims from the hub JWT.
+ * Minimal auth routes -- returns current user from session claims,
+ * mapped to PublicUser format for the frontend.
  */
 export function createMeRouter(_db: Database): Router {
   const router = Router()
 
   router.get('/me', requireAuth, (req: Request, res: Response) => {
     try {
-      const claims = req.user!
+      const user = req.user!
 
       res.json({
         success: true,
         data: {
-          id: claims.sub,
-          email: claims.email,
-          displayName: claims.displayName,
-          role: claims.role,
-          plan: claims.plan,
+          id: user.sub,
+          email: user.email,
+          displayName: user.display_name,
+          role: user.role,
+          plan: user.plan,
           createdAt: '',
         },
       })

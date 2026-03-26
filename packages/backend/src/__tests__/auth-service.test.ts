@@ -5,7 +5,23 @@ import { Migrator } from '../config/migrator.js'
 import { migrations } from '../migrations/index.js'
 import { SqliteAppUserRepository } from '../repositories/sqlite/app-user-repository.js'
 import { createUserSync } from '../services/user-sync.js'
-import { mockHubClaims } from '@danwangdev/auth-client/test-helpers'
+import type { HubUser } from '@danwangdev/auth-client/types'
+
+function mockHubUser(overrides: Partial<HubUser> = {}): HubUser {
+  return {
+    sub: '1',
+    email: 'test@example.com',
+    username: 'testuser',
+    display_name: 'Test User',
+    email_verified: true,
+    role: 'student',
+    plan: 'free',
+    features: [],
+    apps: ['writing-buddy'],
+    expires_at: null,
+    ...overrides,
+  }
+}
 
 describe('User Sync Service', () => {
   let db: DatabaseType
@@ -25,14 +41,14 @@ describe('User Sync Service', () => {
 
   it('creates app_users record from hub claims', () => {
     const syncUser = createUserSync(appUserRepo)
-    const claims = mockHubClaims({
+    const hubUser = mockHubUser({
       sub: '42',
       email: 'sync@example.com',
-      displayName: 'Sync User',
+      display_name: 'Sync User',
       role: 'student',
     })
 
-    syncUser(claims)
+    syncUser(hubUser)
 
     const user = appUserRepo.findByHubUserId('42')
     expect(user).not.toBeNull()
@@ -44,8 +60,8 @@ describe('User Sync Service', () => {
   it('updates existing record on re-sync', () => {
     const syncUser = createUserSync(appUserRepo)
 
-    syncUser(mockHubClaims({ sub: '42', displayName: 'Original' }))
-    syncUser(mockHubClaims({ sub: '42', displayName: 'Updated' }))
+    syncUser(mockHubUser({ sub: '42', display_name: 'Original' }))
+    syncUser(mockHubUser({ sub: '42', display_name: 'Updated' }))
 
     const user = appUserRepo.findByHubUserId('42')
     expect(user!.displayName).toBe('Updated')

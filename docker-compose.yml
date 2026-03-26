@@ -16,6 +16,8 @@ services:
       - DATABASE_PATH=/app/data/writing-buddy.db
       - OIDC_ISSUER=${OIDC_ISSUER:-http://localhost:3009}
       - OIDC_INTERNAL_ISSUER=${OIDC_INTERNAL_ISSUER:-http://hub-app:3009}
+      - OIDC_REDIRECT_URI=${OIDC_REDIRECT_URI:-http://localhost:5055/api/writing/auth/callback}
+      - SESSION_SECRET=${SESSION_SECRET}
     networks:
       - default
       - hub

@@ -1,16 +1,16 @@
 import jwt from 'jsonwebtoken'
+import type { Request, Response, NextFunction } from 'express'
 import type { Database } from 'better-sqlite3'
-import type { HubTokenClaims } from '@danwangdev/auth-client/types'
-import { createHubAuth } from '../middleware/hub-auth.js'
+import type { HubUser } from '@danwangdev/auth-client/types'
 import { SqliteAppUserRepository } from '../repositories/sqlite/app-user-repository.js'
 import { createUserSync } from '../services/user-sync.js'
-import { initAuth } from '../middleware/auth.js'
+import { setAuthMiddleware } from '../middleware/auth.js'
 
 const TEST_JWT_SECRET = 'test-hub-secret-for-writing-buddy'
 
 export interface TestUser {
   readonly token: string
-  readonly claims: HubTokenClaims
+  readonly user: HubUser
 }
 
 export interface CreateTestUserOptions {
@@ -28,36 +28,35 @@ export interface CreateTestUserOptions {
  * Uses HS256 with a shared secret for simplicity in tests.
  */
 export function createTestToken(options: CreateTestUserOptions = {}): TestUser {
-  const now = Math.floor(Date.now() / 1000)
-  const claims: HubTokenClaims = {
+  const user: HubUser = {
     sub: options.sub ?? '1',
     email: options.email ?? 'test@example.com',
     username: options.email?.split('@')[0] ?? 'testuser',
-    displayName: options.displayName ?? 'Test User',
+    display_name: options.displayName ?? 'Test User',
+    email_verified: true,
     role: options.role ?? 'student',
     plan: options.plan ?? 'free',
     features: options.features ?? [],
     apps: options.apps ?? ['writing-buddy'],
-    iat: now,
-    exp: now + 900,
+    expires_at: null,
   }
 
   const token = jwt.sign(
     {
-      sub: claims.sub,
-      email: claims.email,
-      username: claims.username,
-      display_name: claims.displayName,
-      role: claims.role,
-      plan: claims.plan,
-      features: claims.features,
-      apps: claims.apps,
+      sub: user.sub,
+      email: user.email,
+      username: user.username,
+      display_name: user.display_name,
+      role: user.role,
+      plan: user.plan,
+      features: user.features,
+      apps: user.apps,
     },
     TEST_JWT_SECRET,
     { expiresIn: '15m' },
   )
 
-  return { token, claims }
+  return { token, user }
 }
 
 /**
@@ -81,37 +80,67 @@ export function createExpiredTestToken(options: CreateTestUserOptions = {}): str
 }
 
 /**
- * Verifies a test token using the shared test secret.
- * Returns hub claims in the expected format.
+ * Verifies a test token and returns HubUser.
  */
-function verifyTestToken(token: string): HubTokenClaims {
+function verifyTestToken(token: string): HubUser {
   const payload = jwt.verify(token, TEST_JWT_SECRET) as Record<string, unknown>
   return {
     sub: String(payload.sub ?? ''),
     email: String(payload.email ?? ''),
     username: String(payload.username ?? ''),
-    displayName: String(payload.display_name ?? ''),
+    display_name: String(payload.display_name ?? ''),
+    email_verified: true,
     role: String(payload.role ?? 'student'),
     plan: String(payload.plan ?? 'free'),
     features: Array.isArray(payload.features) ? payload.features.map(String) : [],
     apps: Array.isArray(payload.apps) ? payload.apps.map(String) : [],
-    iat: typeof payload.iat === 'number' ? payload.iat : 0,
-    exp: typeof payload.exp === 'number' ? payload.exp : 0,
+    expires_at: null,
   }
+}
+
+function extractToken(req: Request): string | null {
+  const authHeader = req.headers.authorization
+  if (authHeader?.startsWith('Bearer ')) {
+    return authHeader.slice(7)
+  }
+  return req.cookies?.accessToken as string ?? null
 }
 
 /**
  * Initializes the shared auth middleware for tests.
- * Call this in beforeEach after creating the test DB.
+ * Uses Bearer token verification (JWT) instead of session cookies.
  */
 export function initTestAuth(db: Database): void {
   const appUserRepo = new SqliteAppUserRepository(db)
   const syncUser = createUserSync(appUserRepo)
 
-  const hubAuth = createHubAuth({
-    verify: verifyTestToken,
-    onAuthenticated: syncUser,
-  })
+  function testRequireAuth(req: Request, res: Response, next: NextFunction): void {
+    const token = extractToken(req)
+    if (!token) {
+      res.status(401).json({ success: false, error: 'Authentication required' })
+      return
+    }
+    try {
+      const user = verifyTestToken(token)
+      req.user = user
+      try { syncUser(user) } catch { /* ignore */ }
+      next()
+    } catch {
+      res.status(401).json({ success: false, error: 'Invalid or expired token' })
+    }
+  }
 
-  initAuth(hubAuth.requireAuth, hubAuth.optionalAuth)
+  function testOptionalAuth(req: Request, res: Response, next: NextFunction): void {
+    const token = extractToken(req)
+    if (token) {
+      try {
+        const user = verifyTestToken(token)
+        req.user = user
+        try { syncUser(user) } catch { /* ignore */ }
+      } catch { /* ignore */ }
+    }
+    next()
+  }
+
+  setAuthMiddleware(testRequireAuth, testOptionalAuth)
 }
