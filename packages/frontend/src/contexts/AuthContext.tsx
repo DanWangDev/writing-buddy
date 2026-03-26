@@ -54,8 +54,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Clean up any legacy localStorage tokens
     api.clearTokens()
     setUser(null)
-    // Redirect to backend logout — destroys session, redirects to hub end-session
-    window.location.href = '/api/auth/logout'
+    // POST to backend logout — destroys session, redirects to hub end-session
+    // Use form submission so the browser follows the 302 redirect
+    const form = document.createElement('form')
+    form.method = 'POST'
+    form.action = '/api/auth/logout'
+    document.body.appendChild(form)
+    form.submit()
   }, [])
 
   const value = {
