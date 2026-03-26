@@ -5,7 +5,7 @@ import {
   requireAuth as acRequireAuth,
   optionalAuth as acOptionalAuth,
 } from '@danwangdev/auth-client/server'
-import type { AuthServerConfig, OidcMetadata } from '@danwangdev/auth-client/server'
+import type { AuthServerConfig } from '@danwangdev/auth-client/server'
 import type { HubUser } from '@danwangdev/auth-client/types'
 import { SqliteAppUserRepository } from '../repositories/sqlite/app-user-repository.js'
 import { createUserSync } from '../services/user-sync.js'
@@ -37,18 +37,12 @@ export function initAuth(config: AuthServerConfig, db: Database): void {
 
   async function getMiddleware(): Promise<{ require: AuthMiddleware; optional: AuthMiddleware }> {
     if (!cachedMiddleware) {
+      // discoverOidc handles URL rewriting for Docker internal networking:
+      // browser-facing endpoints use public issuer, server-to-server use internalIssuer
       const metadata = await discoverOidc(config.issuer, config.internalIssuer)
-      // Rewrite endpoints for Docker internal networking
-      const resolvedMetadata: OidcMetadata = config.internalIssuer && config.internalIssuer !== config.issuer
-        ? {
-            ...metadata,
-            token_endpoint: metadata.token_endpoint.replace(config.issuer, config.internalIssuer),
-            jwks_uri: metadata.jwks_uri.replace(config.issuer, config.internalIssuer),
-          }
-        : metadata
       cachedMiddleware = {
-        require: acRequireAuth({ config, metadata: resolvedMetadata }),
-        optional: acOptionalAuth({ config, metadata: resolvedMetadata }),
+        require: acRequireAuth({ config, metadata }),
+        optional: acOptionalAuth({ config, metadata }),
       }
     }
     return cachedMiddleware
