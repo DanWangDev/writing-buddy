@@ -42,7 +42,7 @@ const authConfig: AuthServerConfig = {
   clientId: env.OIDC_CLIENT_ID,
   clientSecret: env.OIDC_CLIENT_SECRET,
   redirectUri: env.OIDC_REDIRECT_URI,
-  postLogoutRedirectUri: env.CORS_ORIGIN,
+  postLogoutRedirectUri: env.CORS_ORIGIN.split(',')[0].trim(),
   sessionSecret: env.SESSION_SECRET,
   backchannelLogout: true,
 }
