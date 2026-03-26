@@ -13,67 +13,6 @@ import type {
 } from '@writing-buddy/shared'
 
 const BASE_URL = '/api/writing'
-const ACCESS_TOKEN_KEY = 'labf_oidc_access_token'
-const REFRESH_TOKEN_KEY = 'labf_oidc_refresh_token'
-
-let accessToken: string | null = localStorage.getItem(ACCESS_TOKEN_KEY)
-let refreshToken: string | null = localStorage.getItem(REFRESH_TOKEN_KEY)
-
-function persistTokens(): void {
-  if (accessToken) {
-    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
-  } else {
-    localStorage.removeItem(ACCESS_TOKEN_KEY)
-  }
-  if (refreshToken) {
-    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
-  } else {
-    localStorage.removeItem(REFRESH_TOKEN_KEY)
-  }
-}
-
-export function getAccessToken(): string | null {
-  return accessToken
-}
-
-export function setTokens(access: string | null, refresh: string | null): void {
-  accessToken = access
-  refreshToken = refresh
-  persistTokens()
-}
-
-async function refreshAccessToken(): Promise<boolean> {
-  if (!refreshToken) return false
-
-  try {
-    const res = await fetch(`${BASE_URL}/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: refreshToken }),
-    })
-
-    if (!res.ok) {
-      clearTokens()
-      return false
-    }
-
-    const data = await res.json() as {
-      access_token: string
-      refresh_token?: string
-      id_token?: string
-    }
-
-    // Use id_token as Bearer token (hub issues opaque access tokens)
-    accessToken = data.id_token ?? data.access_token
-    if (data.refresh_token) {
-      refreshToken = data.refresh_token
-    }
-    persistTokens()
-    return true
-  } catch {
-    return false
-  }
-}
 
 async function request<T>(
   path: string,
@@ -84,32 +23,13 @@ async function request<T>(
     ...(options.headers as Record<string, string> | undefined),
   }
 
-  if (accessToken) {
-    headers['Authorization'] = `Bearer ${accessToken}`
-  }
-
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers,
+    credentials: 'include',
   })
 
-  if (res.status === 401 && accessToken) {
-    const refreshed = await refreshAccessToken()
-    if (refreshed) {
-      headers['Authorization'] = `Bearer ${accessToken}`
-      const retryRes = await fetch(`${BASE_URL}${path}`, {
-        ...options,
-        headers,
-      })
-      const retryJson: ApiResponse<T> = await retryRes.json()
-      if (!retryJson.success) {
-        throw new Error(retryJson.error ?? 'Request failed')
-      }
-      return retryJson.data as T
-    }
-    accessToken = null
-    refreshToken = null
-    persistTokens()
+  if (res.status === 401) {
     throw new Error('Session expired. Please log in again.')
   }
 
@@ -120,17 +40,24 @@ async function request<T>(
   return json.data as T
 }
 
-// Auth
+// Auth (mounted at /api/auth, separate from /api/writing domain routes)
 export async function getMe(): Promise<PublicUser> {
-  return request<PublicUser>('/auth/me')
+  const res = await fetch('/api/auth/me', { credentials: 'include' })
+  if (res.status === 401) {
+    throw new Error('Session expired. Please log in again.')
+  }
+  const json: ApiResponse<PublicUser> = await res.json()
+  if (!json.success) {
+    throw new Error(json.error ?? 'Request failed')
+  }
+  return json.data as PublicUser
 }
 
 export function clearTokens(): void {
-  accessToken = null
-  refreshToken = null
-  localStorage.removeItem(ACCESS_TOKEN_KEY)
-  localStorage.removeItem(REFRESH_TOKEN_KEY)
+  localStorage.removeItem('labf_oidc_access_token')
+  localStorage.removeItem('labf_oidc_refresh_token')
   localStorage.removeItem('labf_oidc_id_token')
+  localStorage.removeItem('labf_oidc_hub_token')
   sessionStorage.removeItem('labf_oidc_code_verifier')
   sessionStorage.removeItem('labf_oidc_state')
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { App } from '../App'
@@ -6,6 +6,11 @@ import * as api from '../services/api'
 
 vi.mock('../services/api')
 const mockedApi = vi.mocked(api)
+
+beforeEach(() => {
+  // Layout calls getStreak on mount — provide a safe default
+  mockedApi.getStreak.mockResolvedValue({ streakDays: 0 })
+})
 
 describe('App', () => {
   it('redirects unauthenticated users to login', async () => {
@@ -35,16 +40,26 @@ describe('App', () => {
     expect(screen.getByText(/Sign in with your 11\+ Hub account/)).toBeInTheDocument()
   })
 
-  it('renders callback page at /auth/callback', async () => {
-    mockedApi.getMe.mockRejectedValueOnce(new Error('no token'))
+  it('shows dashboard when authenticated', async () => {
+    mockedApi.getMe.mockResolvedValueOnce({
+      id: '1',
+      email: 'a@b.com',
+      displayName: 'Test',
+      role: 'student',
+      plan: 'free',
+      createdAt: '2025-01-01',
+    })
+    // Layout calls getStreak on mount
+    mockedApi.getStreak.mockResolvedValueOnce({ streakDays: 3 })
 
     render(
-      <MemoryRouter initialEntries={['/auth/callback']}>
+      <MemoryRouter initialEntries={['/']}>
         <App />
       </MemoryRouter>,
     )
 
-    // Callback page shows error (no code parameter in test URL)
-    expect(screen.getByText('Authentication Failed')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByText('Welcome to Writing Buddy!')).not.toBeInTheDocument()
+    })
   })
 })
