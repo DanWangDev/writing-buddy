@@ -40,9 +40,17 @@ async function request<T>(
   return json.data as T
 }
 
-// Auth
+// Auth (mounted at /api/auth, separate from /api/writing domain routes)
 export async function getMe(): Promise<PublicUser> {
-  return request<PublicUser>('/auth/me')
+  const res = await fetch('/api/auth/me', { credentials: 'include' })
+  if (res.status === 401) {
+    throw new Error('Session expired. Please log in again.')
+  }
+  const json: ApiResponse<PublicUser> = await res.json()
+  if (!json.success) {
+    throw new Error(json.error ?? 'Request failed')
+  }
+  return json.data as PublicUser
 }
 
 export function clearTokens(): void {

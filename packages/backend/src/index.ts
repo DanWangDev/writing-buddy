@@ -8,6 +8,7 @@ import { env } from './config/env.js'
 import { initializeDatabase, closeDatabase } from './config/database.js'
 import { logger } from './services/logger.js'
 import { writingRouter } from './routes/index.js'
+import { createMeRouter } from './routes/me.js'
 import { initAuth } from './middleware/auth.js'
 import db from './config/database.js'
 
@@ -46,13 +47,17 @@ const authConfig: AuthServerConfig = {
   backchannelLogout: true,
 }
 
-// Mount auth-client's OIDC routes (login, callback, logout, me, backchannel-logout)
+// Mount auth-client's OIDC routes (login, callback, logout, backchannel-logout)
 const authRouter = createAuthRoutes({ ...authConfig, basePath: '/auth' })
 
 // Initialize session-based auth middleware for domain routes
 initAuth(authConfig, db)
 
-app.use('/api/writing', authRouter)
+// Custom /auth/me maps HubUser → PublicUser format (mounted first to take priority)
+app.use('/api/auth', createMeRouter(db))
+// Auth-client routes at /api/auth (login, callback, logout, backchannel-logout)
+app.use('/api', authRouter)
+// Domain routes
 app.use('/api/writing', writingRouter)
 
 initializeDatabase()

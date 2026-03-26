@@ -15,7 +15,7 @@ function buildTestApp(db: DatabaseType) {
   const app = express()
   app.use(express.json())
   app.use(cookieParser())
-  app.use('/api/writing/auth', createMeRouter(db))
+  app.use('/api/auth', createMeRouter(db))
   return app
 }
 
@@ -35,7 +35,7 @@ describe('Auth Routes (Hub Auth)', () => {
     db.close()
   })
 
-  describe('GET /api/writing/auth/me', () => {
+  describe('GET /api/auth/me', () => {
     it('returns user claims from valid hub JWT', async () => {
       const { token } = createTestToken({
         email: 'me@example.com',
@@ -44,7 +44,7 @@ describe('Auth Routes (Hub Auth)', () => {
       })
 
       const res = await request(app)
-        .get('/api/writing/auth/me')
+        .get('/api/auth/me')
         .set('Authorization', `Bearer ${token}`)
 
       expect(res.status).toBe(200)
@@ -58,7 +58,7 @@ describe('Auth Routes (Hub Auth)', () => {
 
     it('returns 401 without token', async () => {
       const res = await request(app)
-        .get('/api/writing/auth/me')
+        .get('/api/auth/me')
 
       expect(res.status).toBe(401)
       expect(res.body.success).toBe(false)
@@ -68,7 +68,7 @@ describe('Auth Routes (Hub Auth)', () => {
       const token = createExpiredTestToken()
 
       const res = await request(app)
-        .get('/api/writing/auth/me')
+        .get('/api/auth/me')
         .set('Authorization', `Bearer ${token}`)
 
       expect(res.status).toBe(401)
@@ -76,7 +76,7 @@ describe('Auth Routes (Hub Auth)', () => {
 
     it('returns 401 for invalid token', async () => {
       const res = await request(app)
-        .get('/api/writing/auth/me')
+        .get('/api/auth/me')
         .set('Authorization', 'Bearer invalid-token-string')
 
       expect(res.status).toBe(401)
@@ -90,7 +90,7 @@ describe('Auth Routes (Hub Auth)', () => {
       })
 
       await request(app)
-        .get('/api/writing/auth/me')
+        .get('/api/auth/me')
         .set('Authorization', `Bearer ${token}`)
 
       const row = db.prepare('SELECT * FROM app_users WHERE hub_user_id = ?').get('42') as {
@@ -111,7 +111,7 @@ describe('Auth Routes (Hub Auth)', () => {
       })
 
       await request(app)
-        .get('/api/writing/auth/me')
+        .get('/api/auth/me')
         .set('Authorization', `Bearer ${token1}`)
 
       const { token: token2 } = createTestToken({
@@ -121,7 +121,7 @@ describe('Auth Routes (Hub Auth)', () => {
       })
 
       await request(app)
-        .get('/api/writing/auth/me')
+        .get('/api/auth/me')
         .set('Authorization', `Bearer ${token2}`)
 
       const row = db.prepare('SELECT * FROM app_users WHERE hub_user_id = ?').get('42') as {

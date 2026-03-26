@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(() => {
     // Redirect to backend auth route — handles OIDC redirect + PKCE
-    window.location.href = '/api/writing/auth/login'
+    window.location.href = '/api/auth/login'
   }, [])
 
   const logout = useCallback(() => {
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     api.clearTokens()
     setUser(null)
     // Redirect to backend logout — destroys session, redirects to hub end-session
-    window.location.href = '/api/writing/auth/logout'
+    window.location.href = '/api/auth/logout'
   }, [])
 
   const value = {
