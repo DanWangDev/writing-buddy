@@ -1,8 +1,15 @@
+import { useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { InkwellWriting, MarginDoodles } from '../components/inkwell'
 
 export function LoginPage() {
-  const { login } = useAuth()
+  const { login, isAccessDenied } = useAuth()
+
+  useEffect(() => {
+    if (!isAccessDenied) {
+      login()
+    }
+  }, [isAccessDenied, login])
 
   return (
     <div className="min-h-screen bg-warm-50 flex items-center justify-center px-4 relative overflow-hidden">
@@ -15,17 +22,27 @@ export function LoginPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-warm-200 p-6 space-y-5">
-          <button
-            type="button"
-            onClick={login}
-            className="w-full bg-sky text-white font-semibold rounded-[10px] px-4 h-12 text-base hover:bg-sky-dark transition-colors flex items-center justify-center gap-2 shadow-sm shadow-sky/20"
-          >
-            Sign in with 11+ Hub
-          </button>
-
-          <p className="text-center text-sm text-warm-400">
-            You will be redirected to the 11+ Hub to sign in or create an account.
-          </p>
+          {isAccessDenied ? (
+            <>
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
+                Your current plan does not include Writing Buddy. Please upgrade your subscription at the 11+ Hub.
+              </div>
+              <button
+                type="button"
+                onClick={login}
+                className="w-full bg-sky text-white font-semibold rounded-[10px] px-4 h-12 text-base hover:bg-sky-dark transition-colors flex items-center justify-center gap-2 shadow-sm shadow-sky/20"
+              >
+                Try again
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="flex flex-col items-center gap-3 py-4">
+                <div className="w-8 h-8 border-3 border-sky border-t-transparent rounded-full animate-spin" />
+                <p className="text-warm-500 text-sm">Redirecting to 11+ Hub...</p>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
