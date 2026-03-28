@@ -8,6 +8,7 @@ import { env } from "./config/env.js";
 import { initializeDatabase, closeDatabase } from "./config/database.js";
 import { logger } from "./services/logger.js";
 import { writingRouter } from "./routes/index.js";
+import { healthRouter } from "./routes/health.js";
 import { createMeRouter } from "./routes/me.js";
 import {
   initAuth,
@@ -70,6 +71,8 @@ initAuth(authConfig, db);
 app.use("/api/auth", createMeRouter(db));
 // Auth-client routes at /api/auth (login, callback, logout, backchannel-logout)
 app.use("/api", authRouter);
+// Health check — public, no auth required
+app.use("/api/writing/health", healthRouter);
 // Domain routes — auth + entitlement check ensures user has writing-buddy access
 app.use("/api/writing", requireAuthMw, requireEntitlement, writingRouter);
 
