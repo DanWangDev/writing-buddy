@@ -41,3 +41,10 @@ export function createUserSync(appUserRepo: IAppUserRepository) {
     }
   };
 }
+
+/**
+ * Export for testing — reset the throttle cache.
+ */
+export function _resetSyncCache(): void {
+  recentSyncs.clear();
+}
