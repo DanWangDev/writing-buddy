@@ -1,15 +1,15 @@
-import { useEffect } from 'react'
-import { useAuth } from '../hooks/useAuth'
-import { InkwellWriting, MarginDoodles } from '../components/inkwell'
+import { useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { InkwellWriting, MarginDoodles } from "../components/inkwell";
 
 export function LoginPage() {
-  const { login, isAccessDenied } = useAuth()
+  const { login, isAccessDenied } = useAuth();
 
   useEffect(() => {
     if (!isAccessDenied) {
-      login()
+      login();
     }
-  }, [isAccessDenied, login])
+  }, [isAccessDenied, login]);
 
   return (
     <div className="min-h-screen bg-warm-50 flex items-center justify-center px-4 relative overflow-hidden">
@@ -17,15 +17,25 @@ export function LoginPage() {
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <InkwellWriting className="mx-auto mb-2" width={120} height={132} />
-          <h1 className="font-display text-3xl font-bold text-warm-800">Welcome to Writing Buddy!</h1>
-          <p className="text-warm-500 mt-2 text-base">Sign in with your 11+ Hub account to start writing</p>
+          <h1 className="font-display text-3xl font-bold text-warm-800">
+            Welcome to Writing Buddy!
+          </h1>
+          <p className="text-warm-500 mt-2 text-base">
+            Sign in with your 11+ Hub account to start writing
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-warm-200 p-6 space-y-5">
           {isAccessDenied ? (
             <>
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
-                Your current plan does not include Writing Buddy. Please upgrade your subscription at the 11+ Hub.
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+                <p className="text-amber-800 text-sm font-medium">
+                  Your current plan does not include access to Writing Buddy.
+                </p>
+                <p className="text-amber-600 text-xs mt-1">
+                  Please upgrade your subscription on the 11+ Hub to get
+                  access.
+                </p>
               </div>
               <button
                 type="button"
@@ -39,12 +49,14 @@ export function LoginPage() {
             <>
               <div className="flex flex-col items-center gap-3 py-4">
                 <div className="w-8 h-8 border-3 border-sky border-t-transparent rounded-full animate-spin" />
-                <p className="text-warm-500 text-sm">Redirecting to 11+ Hub...</p>
+                <p className="text-warm-500 text-sm">
+                  Redirecting to 11+ Hub...
+                </p>
               </div>
             </>
           )}
         </div>
       </div>
     </div>
-  )
+  );
 }
