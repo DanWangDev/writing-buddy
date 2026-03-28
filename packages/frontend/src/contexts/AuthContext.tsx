@@ -60,9 +60,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     // Clean up any legacy localStorage tokens
     api.clearTokens();
-    setUser(null);
     // POST to backend logout — destroys session, redirects to hub end-session
-    // Use form submission so the browser follows the 302 redirect
+    // Use form submission so the browser follows the 302 redirect chain.
+    // Do NOT call setUser(null) here — it triggers a React re-render that
+    // causes ProtectedRoute to navigate to /login, aborting the form POST
+    // before the hub's OIDC session can be destroyed.
     const form = document.createElement("form");
     form.method = "POST";
     form.action = "/api/auth/logout";
