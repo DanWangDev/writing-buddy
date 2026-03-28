@@ -57,6 +57,12 @@ export function initAuth(config: AuthServerConfig, db: Database): void {
         if (req.user && _syncUser) {
           try { _syncUser(req.user) } catch { /* logged in syncUser */ }
         }
+        // Entitlement check: user must have writing-buddy in their apps list
+        if (req.user && !req.user.apps?.includes('writing-buddy')) {
+          logger.warn('User lacks writing-buddy entitlement', { sub: req.user.sub, apps: req.user.apps })
+          res.status(403).json({ success: false, error: 'Your plan does not include access to Writing Buddy' })
+          return
+        }
         next()
       })
     } catch (error) {

@@ -28,7 +28,13 @@ export const env = {
   OIDC_CLIENT_ID: process.env.OIDC_CLIENT_ID || 'writing-buddy-client',
   OIDC_CLIENT_SECRET: process.env.OIDC_CLIENT_SECRET || '',
   OIDC_REDIRECT_URI: process.env.OIDC_REDIRECT_URI || 'http://localhost:5179/api/auth/callback',
-  SESSION_SECRET: process.env.SESSION_SECRET || 'dev-session-secret-change-in-production-32chars!',
+  SESSION_SECRET: (() => {
+    const secret = process.env.SESSION_SECRET || 'dev-session-secret-change-in-production-32chars!'
+    if (secret === 'dev-session-secret-change-in-production-32chars!' && process.env.NODE_ENV === 'production') {
+      throw new Error('SESSION_SECRET must be set in production — do not use the default value')
+    }
+    return secret
+  })(),
 
   // Legacy JWT secret — used only in tests
   JWT_SECRET: process.env.JWT_SECRET || 'dev-secret-change-in-production',
