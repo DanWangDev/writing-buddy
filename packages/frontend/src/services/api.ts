@@ -40,6 +40,12 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     throw new Error("Session expired. Please log in again.");
   }
 
+  if (res.status === 403) {
+    // Redirect to login with access denied — user is authenticated but lacks entitlement
+    window.location.href = "/login?error=access_denied";
+    throw new Error("Your plan does not include access to Writing Buddy");
+  }
+
   const json: ApiResponse<T> = await res.json();
   if (!json.success) {
     throw new Error(json.error ?? "Request failed");
