@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CheckCircle2, XCircle, Info, X } from 'lucide-react'
-
-export type ToastVariant = 'success' | 'error' | 'info'
+import type { ToastVariant } from './toast-store'
+import { setToastHandler } from './toast-store'
 
 interface ToastMessage {
   id: number
@@ -17,21 +17,16 @@ const VARIANT_STYLES: Record<ToastVariant, { bg: string; icon: typeof CheckCircl
 }
 
 let toastId = 0
-let addToastGlobal: ((text: string, variant: ToastVariant) => void) | null = null
-
-export function toast(text: string, variant: ToastVariant = 'info') {
-  addToastGlobal?.(text, variant)
-}
 
 export function ToastContainer() {
   const [toasts, setToasts] = useState<ToastMessage[]>([])
 
   useEffect(() => {
-    addToastGlobal = (text: string, variant: ToastVariant) => {
+    setToastHandler((text: string, variant: ToastVariant) => {
       const id = ++toastId
       setToasts(prev => [...prev, { id, text, variant }])
-    }
-    return () => { addToastGlobal = null }
+    })
+    return () => { setToastHandler(null) }
   }, [])
 
   const dismiss = (id: number) => {

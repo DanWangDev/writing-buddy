@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import type { Prompt, PromptGenre, PromptDifficulty, CreatePromptDto } from '@writing-buddy/shared'
 import { PromptCard } from '../components/PromptCard'
 import { ConfirmDialog } from '../components/ConfirmDialog'
-import { toast } from '../components/Toast'
+import { toast } from '../components/toast-store'
 import * as api from '../services/api'
 import type { PromptStats } from '../services/api'
 import {
