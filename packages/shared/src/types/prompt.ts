@@ -19,4 +19,10 @@ export interface Prompt {
   timeLimitMinutes?: number
   tags: string[]
   createdAt: string
+  updatedAt?: string
+  archivedAt?: string
 }
+
+export type CreatePromptDto = Omit<Prompt, 'id' | 'createdAt' | 'updatedAt' | 'archivedAt'>
+
+export type UpdatePromptDto = Partial<CreatePromptDto>

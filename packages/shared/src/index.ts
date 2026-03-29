@@ -1,9 +1,7 @@
 export type { ApiResponse } from './types/api-response.js'
 export type {
   AppUser,
-  User,
   UserRole,
-  CreateUserDto,
   PublicUser,
 } from './types/user.js'
 export type {
@@ -16,6 +14,8 @@ export type {
   Prompt,
   PromptGenre,
   PromptDifficulty,
+  CreatePromptDto,
+  UpdatePromptDto,
 } from './types/prompt.js'
 export type {
   Submission,

@@ -19,19 +19,15 @@ const DIFFICULTY_COLORS: Record<string, string> = {
 
 interface PromptCardProps {
   prompt: Prompt
-  onClick: (prompt: Prompt) => void
+  onClick?: (prompt: Prompt) => void
 }
 
 export function PromptCard({ prompt, onClick }: PromptCardProps) {
   const genreStyle = GENRE_STYLES[prompt.genre] ?? { badge: 'bg-warm-100 text-warm-700', accent: 'border-t-warm-300' }
   const diffColor = DIFFICULTY_COLORS[prompt.difficulty] ?? 'text-warm-600'
 
-  return (
-    <button
-      type="button"
-      onClick={() => onClick(prompt)}
-      className={`text-left w-full card-clay border-t-4 ${genreStyle.accent} p-5 cursor-pointer`}
-    >
+  const content = (
+    <>
       <div className="flex items-start justify-between gap-2 mb-3">
         <h3 className="font-display font-semibold text-warm-800 text-lg leading-snug">
           {prompt.title}
@@ -54,6 +50,24 @@ export function PromptCard({ prompt, onClick }: PromptCardProps) {
           </span>
         ) : null}
       </div>
-    </button>
+    </>
+  )
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={() => onClick(prompt)}
+        className={`text-left w-full card-clay border-t-4 ${genreStyle.accent} p-5 cursor-pointer`}
+      >
+        {content}
+      </button>
+    )
+  }
+
+  return (
+    <div className={`text-left w-full card-clay-static border-t-4 ${genreStyle.accent} p-5`}>
+      {content}
+    </div>
   )
 }

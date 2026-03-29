@@ -117,7 +117,24 @@ export function setAuthMiddleware(
 }
 
 /**
+ * Admin role check: user must have role 'admin' from hub OIDC claim.
+ * Apply AFTER requireAuth on admin-only routes.
+ */
+export function requireAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  if (!req.user || req.user.role !== "admin") {
+    res.status(403).json({ success: false, error: "Admin access required" });
+    return;
+  }
+  next();
+}
+
+/**
  * Entitlement check: user must have writing-buddy in their apps list.
+ * Admins bypass this check (they manage prompts regardless of subscription).
  * Apply AFTER requireAuth on domain routes, NOT on /auth/me.
  */
 export function requireEntitlement(
@@ -125,6 +142,10 @@ export function requireEntitlement(
   res: Response,
   next: NextFunction,
 ): void {
+  if (req.user?.role === "admin") {
+    next();
+    return;
+  }
   if (req.user && !req.user.apps?.includes("writing-buddy")) {
     logger.warn("User lacks writing-buddy entitlement", {
       sub: req.user.sub,
