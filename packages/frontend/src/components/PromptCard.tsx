@@ -30,7 +30,7 @@ export function PromptCard({ prompt, onClick }: PromptCardProps) {
     <button
       type="button"
       onClick={() => onClick(prompt)}
-      className={`text-left w-full rounded-[16px] border border-warm-200 border-t-4 ${genreStyle.accent} bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer`}
+      className={`text-left w-full card-clay border-t-4 ${genreStyle.accent} p-5 cursor-pointer`}
     >
       <div className="flex items-start justify-between gap-2 mb-3">
         <h3 className="font-display font-semibold text-warm-800 text-lg leading-snug">

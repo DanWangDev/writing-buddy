@@ -79,7 +79,7 @@ export function RubricChart({ scores, activeCategory, loadingCategory, onToggleC
   }
 
   return (
-    <div className="rounded-[16px] border border-warm-200 bg-white p-5">
+    <div className="card-clay-static p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-display font-semibold text-warm-800">Your Scores</h3>
         <div className="flex items-center gap-2">

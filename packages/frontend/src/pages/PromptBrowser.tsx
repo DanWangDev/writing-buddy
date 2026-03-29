@@ -79,7 +79,7 @@ export function PromptBrowser() {
       </div>
 
       {/* Difficulty tabs */}
-      <div className="flex gap-1 bg-white rounded-[10px] border border-warm-200 p-1 w-fit">
+      <div className="flex gap-1 bg-white rounded-[10px] border-2 border-warm-200 p-1 w-fit" style={{ boxShadow: '3px 3px 0 0 var(--color-warm-200)' }}>
         {DIFFICULTIES.map((d) => (
           <button
             key={d.value}

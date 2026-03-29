@@ -54,7 +54,7 @@ export function CoachingFeedback({ pass, passNumber, onApply, applying, isComple
   const showApplyButtons = onApply && !isCompleted && (pass.passType === 'suggestions' || pass.passType === 'guiding_questions' || pass.passType === 'polish')
 
   return (
-    <div className={`rounded-[12px] ${config.bgClass} ${config.borderClass}`}>
+    <div className={`rounded-[12px] ${config.bgClass} ${config.borderClass}`} style={{ boxShadow: '3px 3px 0 0 var(--color-warm-200)' }}>
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
