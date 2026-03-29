@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { StreakBadge } from './StreakBadge'
 import {
@@ -20,7 +20,6 @@ const NAV_ITEMS = [
 
 export function Layout() {
   const { user, logout } = useAuth()
-  const navigate = useNavigate()
   const [streak, setStreak] = useState(0)
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -31,9 +30,8 @@ export function Layout() {
       .catch(() => setStreak(0))
   }, [])
 
-  const handleLogout = async () => {
-    await logout()
-    navigate('/login')
+  const handleLogout = () => {
+    logout()
   }
 
   return (
