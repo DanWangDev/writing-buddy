@@ -18,7 +18,9 @@ import {
   X,
 } from 'lucide-react'
 import { CelebrationOverlay } from '../components/CelebrationOverlay'
+import { Stopwatch } from '../components/Stopwatch'
 import { useCelebration } from '../hooks/useCelebration'
+import { useStopwatch } from '../hooks/useStopwatch'
 import * as api from '../services/api'
 import type { RubricCategory } from '../services/api'
 import type {
@@ -64,6 +66,8 @@ export function WritingDesk() {
   const [applying, setApplying] = useState(false)
   const [error, setError] = useState('')
   const { celebration, trigger: triggerCelebration, dismiss: dismissCelebration } = useCelebration()
+  const stopwatch = useStopwatch()
+  const hasStartedTyping = useRef(false)
   const lastSavedContent = useRef('')
 
   // Inline diff preview state
@@ -334,6 +338,13 @@ export function WritingDesk() {
   const isCompleted = submission?.status === 'completed'
   const currentPass = passes.length
 
+  // Pause stopwatch when submission is marked complete
+  useEffect(() => {
+    if (isCompleted && stopwatch.running) {
+      stopwatch.pause()
+    }
+  }, [isCompleted, stopwatch.running, stopwatch.pause])
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -457,15 +468,29 @@ export function WritingDesk() {
               <textarea
                 ref={textareaCallbackRef}
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) => {
+                  setContent(e.target.value)
+                  if (!hasStartedTyping.current && e.target.value.trim()) {
+                    hasStartedTyping.current = true
+                    stopwatch.start()
+                  }
+                }}
                 disabled={isCompleted}
                 placeholder="Start writing your story here... Let your imagination run wild!"
                 className="writing-paper w-full min-h-80 rounded-[16px] border border-warm-200 p-6 font-body text-xl leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-sky focus:border-transparent disabled:bg-warm-50 disabled:text-warm-400 text-warm-700 overflow-hidden"
                 aria-label="Writing area"
               />
 
-              <div className="flex items-center justify-between">
-                <WordCounter count={wordCount} target={prompt?.wordCountTarget} />
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-3">
+                  <WordCounter count={wordCount} target={prompt?.wordCountTarget} />
+                  <Stopwatch
+                    elapsed={stopwatch.elapsed}
+                    running={stopwatch.running}
+                    onToggle={stopwatch.toggle}
+                    onReset={stopwatch.reset}
+                  />
+                </div>
 
                 {!isCompleted && (
                   <div className="flex items-center gap-2">
