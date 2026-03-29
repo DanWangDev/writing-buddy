@@ -66,7 +66,7 @@ export function WritingDesk() {
   const [applying, setApplying] = useState(false)
   const [error, setError] = useState('')
   const { celebration, trigger: triggerCelebration, dismiss: dismissCelebration } = useCelebration()
-  const stopwatch = useStopwatch()
+  const { elapsed, running: stopwatchRunning, start: startStopwatch, pause: pauseStopwatch, toggle: toggleStopwatch, reset: resetStopwatch } = useStopwatch()
   const hasStartedTyping = useRef(false)
   const lastSavedContent = useRef('')
 
@@ -340,10 +340,10 @@ export function WritingDesk() {
 
   // Pause stopwatch when submission is marked complete
   useEffect(() => {
-    if (isCompleted && stopwatch.running) {
-      stopwatch.pause()
+    if (isCompleted && stopwatchRunning) {
+      pauseStopwatch()
     }
-  }, [isCompleted, stopwatch.running, stopwatch.pause])
+  }, [isCompleted, stopwatchRunning, pauseStopwatch])
 
   if (loading) {
     return (
@@ -472,7 +472,7 @@ export function WritingDesk() {
                   setContent(e.target.value)
                   if (!hasStartedTyping.current && e.target.value.trim()) {
                     hasStartedTyping.current = true
-                    stopwatch.start()
+                    startStopwatch()
                   }
                 }}
                 disabled={isCompleted}
@@ -485,10 +485,10 @@ export function WritingDesk() {
                 <div className="flex items-center gap-3">
                   <WordCounter count={wordCount} target={prompt?.wordCountTarget} />
                   <Stopwatch
-                    elapsed={stopwatch.elapsed}
-                    running={stopwatch.running}
-                    onToggle={stopwatch.toggle}
-                    onReset={stopwatch.reset}
+                    elapsed={elapsed}
+                    running={stopwatchRunning}
+                    onToggle={toggleStopwatch}
+                    onReset={resetStopwatch}
                   />
                 </div>
 
