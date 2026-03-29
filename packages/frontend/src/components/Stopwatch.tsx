@@ -13,7 +13,7 @@ export function Stopwatch({ elapsed, running, onToggle, onReset }: StopwatchProp
     <div className="inline-flex items-center gap-2 card-clay-static px-3 py-1.5">
       <Timer className="w-4 h-4 text-sky" />
       <span
-        className="font-mono text-base font-bold text-warm-700 tabular-nums min-w-[3.5rem] text-center"
+        className={`font-mono text-base font-bold text-warm-700 tabular-nums text-center ${elapsed >= 3600 ? 'min-w-[4.75rem]' : 'min-w-[3.5rem]'}`}
         aria-label={`Writing time: ${formatTime(elapsed)}`}
         role="timer"
       >

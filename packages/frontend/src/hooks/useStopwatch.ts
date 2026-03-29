@@ -68,9 +68,12 @@ export function useStopwatch() {
   }
 }
 
-/** Format seconds into MM:SS */
+/** Format seconds into MM:SS or H:MM:SS when over an hour */
 export function formatTime(totalSeconds: number): string {
-  const mins = Math.floor(totalSeconds / 60)
+  const hours = Math.floor(totalSeconds / 3600)
+  const mins = Math.floor((totalSeconds % 3600) / 60)
   const secs = totalSeconds % 60
-  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+  const mm = String(mins).padStart(2, '0')
+  const ss = String(secs).padStart(2, '0')
+  return hours > 0 ? `${hours}:${mm}:${ss}` : `${mm}:${ss}`
 }
