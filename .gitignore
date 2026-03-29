@@ -24,3 +24,4 @@ packages/backend/data/
 
 # Logs
 *.log
+.gstack/

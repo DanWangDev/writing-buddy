@@ -14,6 +14,7 @@ import {
   ArrowLeft,
   BookOpen,
   Target,
+  Timer,
   Check,
   X,
 } from 'lucide-react'
@@ -397,6 +398,12 @@ export function WritingDesk() {
                 {prompt.wordCountTarget} words target
               </span>
             )}
+            {prompt.timeLimitMinutes && (
+              <span className="inline-flex items-center gap-1 text-xs text-warm-500">
+                <Timer className="w-3.5 h-3.5" />
+                {prompt.timeLimitMinutes} min limit
+              </span>
+            )}
             {prompt.tags && prompt.tags.length > 0 && (
               <div className="flex items-center gap-1.5 ml-auto">
                 {prompt.tags.map((tag: string) => (
@@ -489,6 +496,7 @@ export function WritingDesk() {
                     running={stopwatchRunning}
                     onToggle={toggleStopwatch}
                     onReset={resetStopwatch}
+                    timeLimitMinutes={prompt?.timeLimitMinutes}
                   />
                 </div>
 

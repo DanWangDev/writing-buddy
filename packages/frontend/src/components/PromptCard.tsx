@@ -1,5 +1,5 @@
 import type { Prompt } from '@writing-buddy/shared'
-import { BookOpen } from 'lucide-react'
+import { BookOpen, Clock } from 'lucide-react'
 
 const GENRE_STYLES: Record<string, { badge: string; accent: string }> = {
   adventure: { badge: 'bg-sky/10 text-sky', accent: 'border-t-sky' },
@@ -47,6 +47,12 @@ export function PromptCard({ prompt, onClick }: PromptCardProps) {
         {prompt.wordCountTarget ? (
           <span className="text-xs text-warm-400">
             {prompt.wordCountTarget} words
+          </span>
+        ) : null}
+        {prompt.timeLimitMinutes ? (
+          <span className="inline-flex items-center gap-1 text-xs text-warm-400">
+            <Clock className="w-3 h-3" />
+            {prompt.timeLimitMinutes} min
           </span>
         ) : null}
       </div>
