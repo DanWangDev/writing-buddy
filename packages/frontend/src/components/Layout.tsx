@@ -7,11 +7,12 @@ import {
   FolderOpen,
   PenLine,
   LogOut,
+  Settings,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import * as api from '../services/api'
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/prompts', label: 'Browse Prompts', icon: BookOpen },
   { to: '/portfolio', label: 'My Writing', icon: FolderOpen },
@@ -20,6 +21,10 @@ const NAV_ITEMS = [
 
 export function Layout() {
   const { user, logout } = useAuth()
+
+  const NAV_ITEMS = user?.role === 'admin'
+    ? [...BASE_NAV_ITEMS, { to: '/admin/prompts', label: 'Manage Prompts', icon: Settings }]
+    : BASE_NAV_ITEMS
   const [streak, setStreak] = useState(0)
   const [mobileOpen, setMobileOpen] = useState(false)
 

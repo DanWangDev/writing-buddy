@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import type { Database } from 'better-sqlite3'
-import type { Prompt } from '@writing-buddy/shared'
+import type { Prompt, UpdatePromptDto } from '@writing-buddy/shared'
 import type { IPromptRepository, PromptFilters } from '../interfaces/prompt-repository.js'
 
 interface PromptRow {
@@ -13,7 +13,20 @@ interface PromptRow {
   time_limit_minutes: number | null
   tags: string
   created_at: string
+  updated_at: string | null
+  archived_at: string | null
 }
+
+/** Whitelist mapping DTO fields to DB column names (defense-in-depth against SQL injection) */
+const COLUMN_MAP: Record<string, string> = {
+  title: 'title',
+  body: 'body',
+  genre: 'genre',
+  difficulty: 'difficulty',
+  wordCountTarget: 'word_count_target',
+  timeLimitMinutes: 'time_limit_minutes',
+  tags: 'tags',
+} as const
 
 function rowToPrompt(row: PromptRow): Prompt {
   return {
@@ -26,11 +39,13 @@ function rowToPrompt(row: PromptRow): Prompt {
     timeLimitMinutes: row.time_limit_minutes ?? undefined,
     tags: JSON.parse(row.tags) as string[],
     createdAt: row.created_at,
+    updatedAt: row.updated_at ?? undefined,
+    archivedAt: row.archived_at ?? undefined,
   }
 }
 
 function buildWhereClause(filters?: PromptFilters): { clause: string; params: string[] } {
-  const conditions: string[] = []
+  const conditions: string[] = ['archived_at IS NULL']
   const params: string[] = []
 
   if (filters?.genre) {
@@ -43,7 +58,7 @@ function buildWhereClause(filters?: PromptFilters): { clause: string; params: st
     params.push(filters.difficulty)
   }
 
-  const clause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+  const clause = `WHERE ${conditions.join(' AND ')}`
   return { clause, params }
 }
 
@@ -71,7 +86,7 @@ export class SqlitePromptRepository implements IPromptRepository {
     return row ? rowToPrompt(row) : null
   }
 
-  create(prompt: Omit<Prompt, 'id' | 'createdAt'>): Prompt {
+  create(prompt: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt' | 'archivedAt'>): Prompt {
     const id = crypto.randomUUID()
     const now = new Date().toISOString()
 
@@ -95,6 +110,40 @@ export class SqlitePromptRepository implements IPromptRepository {
       throw new Error('Failed to create prompt')
     }
     return created
+  }
+
+  update(id: string, data: UpdatePromptDto): Prompt | null {
+    const sets: string[] = []
+    const params: unknown[] = []
+
+    for (const [key, value] of Object.entries(data)) {
+      const column = COLUMN_MAP[key]
+      if (!column || value === undefined) continue
+
+      sets.push(`${column} = ?`)
+      params.push(key === 'tags' ? JSON.stringify(value) : value)
+    }
+
+    if (sets.length === 0) {
+      return this.findById(id)
+    }
+
+    sets.push('updated_at = CURRENT_TIMESTAMP')
+    params.push(id)
+
+    const result = this.db.prepare(
+      `UPDATE prompts SET ${sets.join(', ')} WHERE id = ? AND archived_at IS NULL`
+    ).run(...params)
+
+    if (result.changes === 0) return null
+    return this.findById(id)
+  }
+
+  delete(id: string): boolean {
+    const result = this.db.prepare(
+      'UPDATE prompts SET archived_at = CURRENT_TIMESTAMP WHERE id = ?'
+    ).run(id)
+    return result.changes > 0
   }
 
   count(filters?: PromptFilters): number {

@@ -117,4 +117,91 @@ describe('SqlitePromptRepository', () => {
       expect(repo.count({ genre: 'fantasy' })).toBe(1)
     })
   })
+
+  describe('update', () => {
+    it('updates prompt fields', () => {
+      const created = repo.create({ title: 'Original', body: 'Original body text here.', genre: 'fantasy', difficulty: 'beginner', tags: ['old'] })
+
+      const updated = repo.update(created.id, { title: 'Updated Title' })
+      expect(updated).not.toBeNull()
+      expect(updated!.title).toBe('Updated Title')
+      expect(updated!.body).toBe('Original body text here.')
+      expect(updated!.updatedAt).toBeDefined()
+    })
+
+    it('updates multiple fields at once', () => {
+      const created = repo.create({ title: 'Test', body: 'Test body for updating.', genre: 'fantasy', difficulty: 'beginner', tags: ['a'] })
+
+      const updated = repo.update(created.id, { title: 'New', genre: 'mystery', tags: ['b', 'c'] })
+      expect(updated!.title).toBe('New')
+      expect(updated!.genre).toBe('mystery')
+      expect(updated!.tags).toEqual(['b', 'c'])
+    })
+
+    it('returns null for nonexistent prompt', () => {
+      const result = repo.update('nonexistent', { title: 'Nope' })
+      expect(result).toBeNull()
+    })
+
+    it('returns null for archived prompt', () => {
+      const created = repo.create({ title: 'Will Archive', body: 'Archive me soon.', genre: 'humor', difficulty: 'standard', tags: ['x'] })
+      repo.delete(created.id)
+
+      const result = repo.update(created.id, { title: 'Should Fail' })
+      expect(result).toBeNull()
+    })
+
+    it('filters out unknown fields (column whitelist)', () => {
+      const created = repo.create({ title: 'Safe', body: 'Safety test body here.', genre: 'fantasy', difficulty: 'beginner', tags: [] })
+
+      // Pass unknown fields — they should be silently ignored
+      const updated = repo.update(created.id, { title: 'Updated', unknownField: 'evil' } as never)
+      expect(updated!.title).toBe('Updated')
+    })
+  })
+
+  describe('delete (soft-delete)', () => {
+    it('soft-deletes a prompt', () => {
+      const created = repo.create({ title: 'Delete Me', body: 'To be deleted.', genre: 'fantasy', difficulty: 'beginner', tags: [] })
+
+      const result = repo.delete(created.id)
+      expect(result).toBe(true)
+
+      // Should not appear in findAll
+      const all = repo.findAll()
+      expect(all.find(p => p.id === created.id)).toBeUndefined()
+    })
+
+    it('findById still returns archived prompts', () => {
+      const created = repo.create({ title: 'Archived', body: 'Still findable.', genre: 'mystery', difficulty: 'standard', tags: [] })
+      repo.delete(created.id)
+
+      const found = repo.findById(created.id)
+      expect(found).not.toBeNull()
+      expect(found!.archivedAt).toBeDefined()
+    })
+
+    it('is idempotent on already-archived prompts', () => {
+      const created = repo.create({ title: 'Double Delete', body: 'Delete me twice.', genre: 'humor', difficulty: 'beginner', tags: [] })
+      repo.delete(created.id)
+
+      // Second delete should still succeed (idempotent)
+      const result = repo.delete(created.id)
+      expect(result).toBe(true)
+    })
+
+    it('returns false for nonexistent prompt', () => {
+      const result = repo.delete('nonexistent-id')
+      expect(result).toBe(false)
+    })
+
+    it('excludes archived from count()', () => {
+      repo.create({ title: 'P1', body: 'B1', genre: 'fantasy', difficulty: 'beginner', tags: [] })
+      const p2 = repo.create({ title: 'P2', body: 'B2', genre: 'mystery', difficulty: 'standard', tags: [] })
+
+      expect(repo.count()).toBe(2)
+      repo.delete(p2.id)
+      expect(repo.count()).toBe(1)
+    })
+  })
 })

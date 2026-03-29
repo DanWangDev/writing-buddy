@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'parent' | 'tutor'
+export type UserRole = 'student' | 'parent' | 'tutor' | 'admin'
 
 /**
  * App-local user record. Keyed by hub_user_id.
@@ -27,29 +27,3 @@ export interface PublicUser {
   createdAt: string
 }
 
-/**
- * @deprecated Use AppUser instead. Kept for migration period only.
- */
-export interface User {
-  id: string
-  email: string
-  displayName: string
-  passwordHash?: string
-  role: UserRole
-  parentId?: string
-  subscriptionPlan: string
-  subscriptionStatus: string
-  createdAt: string
-  updatedAt: string
-}
-
-/**
- * @deprecated Registration now happens on the hub.
- */
-export interface CreateUserDto {
-  email: string
-  displayName: string
-  password: string
-  role: UserRole
-  parentId?: string
-}

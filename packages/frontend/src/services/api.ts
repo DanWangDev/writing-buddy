@@ -3,6 +3,8 @@ import type {
   Prompt,
   PromptGenre,
   PromptDifficulty,
+  CreatePromptDto,
+  UpdatePromptDto,
   Submission,
   Revision,
   CoachingPass,
@@ -216,4 +218,50 @@ export async function getProgress(days?: number): Promise<WritingProgress[]> {
 
 export async function getStreak(): Promise<{ streakDays: number }> {
   return request<{ streakDays: number }>("/progress/streak");
+}
+
+// Admin — Prompt Management
+export interface PromptStats {
+  heatmap: Array<{ genre: string; difficulty: string; count: number }>;
+  submissionCounts: Record<string, number>;
+}
+
+export async function getPromptStats(): Promise<PromptStats> {
+  return request<PromptStats>("/prompts/stats");
+}
+
+export async function createPromptAdmin(
+  data: CreatePromptDto,
+): Promise<Prompt> {
+  return request<Prompt>("/prompts", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updatePrompt(
+  id: string,
+  data: UpdatePromptDto,
+): Promise<Prompt> {
+  return request<Prompt>(`/prompts/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deletePrompt(id: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/prompts/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (res.status === 401) {
+    onSessionExpired?.();
+    throw new Error("Session expired. Please log in again.");
+  }
+
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({ error: "Delete failed" }));
+    throw new Error(json.error ?? "Delete failed");
+  }
 }
