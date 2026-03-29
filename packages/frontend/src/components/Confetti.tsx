@@ -76,7 +76,7 @@ function ParticleShape({ particle }: { particle: Particle }) {
 }
 
 export function Confetti() {
-  const particles = useMemo(generateParticles, [])
+  const particles = useMemo(() => generateParticles(), [])
 
   const prefersReducedMotion =
     typeof window !== 'undefined' &&
