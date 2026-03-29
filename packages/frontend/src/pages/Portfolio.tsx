@@ -108,7 +108,7 @@ export function Portfolio() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-warm-200 divide-y divide-warm-100">
+        <div className="card-clay-static divide-y divide-warm-100">
           {submissions.map((sub) => {
             const displayTitle = sub.promptTitle ?? `Free Writing #${sub.id.slice(0, 8)}`
 

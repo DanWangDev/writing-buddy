@@ -63,7 +63,7 @@ export function Dashboard() {
       <MarginDoodles variant="default" />
 
       {/* Welcome */}
-      <div className="bg-white rounded-2xl border border-warm-200 p-6 relative overflow-hidden">
+      <div className="card-clay-static p-6 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="relative z-10">
             <h1 className="font-display text-2xl font-bold text-warm-800">
@@ -90,9 +90,9 @@ export function Dashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-[16px] border border-warm-200 p-5 flex items-center gap-4">
+        <div className="card-clay-static p-5 flex items-center gap-4">
           <div className="w-12 h-12 rounded-[10px] bg-coral/10 flex items-center justify-center">
-            <span className="text-2xl">🔥</span>
+            <span className="text-2xl">&#x1F525;</span>
           </div>
           <div>
             <p className="text-sm font-semibold text-warm-500">Writing Streak</p>
@@ -100,7 +100,7 @@ export function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-[16px] border border-warm-200 p-5 flex items-center gap-4">
+        <div className="card-clay-static p-5 flex items-center gap-4">
           <div className="w-12 h-12 rounded-[10px] bg-gold/10 flex items-center justify-center">
             <Trophy className="w-6 h-6 text-gold-dark" />
           </div>
@@ -110,7 +110,7 @@ export function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-[16px] border border-warm-200 p-5 flex items-center gap-4">
+        <div className="card-clay-static p-5 flex items-center gap-4">
           <div className="w-12 h-12 rounded-[10px] bg-violet/10 flex items-center justify-center">
             <Clock className="w-6 h-6 text-violet-dark" />
           </div>
@@ -122,7 +122,7 @@ export function Dashboard() {
       </div>
 
       {/* Recent submissions */}
-      <div className="bg-white rounded-2xl border border-warm-200 p-6">
+      <div className="card-clay-static p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-lg font-semibold text-warm-800">Recent Writing</h2>
           <Link

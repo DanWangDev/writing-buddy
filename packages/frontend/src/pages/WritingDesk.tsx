@@ -17,6 +17,8 @@ import {
   Check,
   X,
 } from 'lucide-react'
+import { CelebrationOverlay } from '../components/CelebrationOverlay'
+import { useCelebration } from '../hooks/useCelebration'
 import * as api from '../services/api'
 import type { RubricCategory } from '../services/api'
 import type {
@@ -61,6 +63,7 @@ export function WritingDesk() {
   const [completing, setCompleting] = useState(false)
   const [applying, setApplying] = useState(false)
   const [error, setError] = useState('')
+  const { celebration, trigger: triggerCelebration, dismiss: dismissCelebration } = useCelebration()
   const lastSavedContent = useRef('')
 
   // Inline diff preview state
@@ -167,12 +170,13 @@ export function WritingDesk() {
       setPasses((prev) => [...prev, pass])
       const updated = await api.getSubmission(submission.id)
       setSubmission(updated)
+      triggerCelebration('coaching')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to get coaching.')
     } finally {
       setCoaching(false)
     }
-  }, [submission, content])
+  }, [submission, content, triggerCelebration])
 
   const handleComplete = useCallback(async () => {
     if (!submission) return
@@ -185,6 +189,7 @@ export function WritingDesk() {
       }
       const updated = await api.completeSubmission(submission.id)
       setSubmission(updated)
+      triggerCelebration('completion')
       try {
         const s = await api.getScores(submission.id)
         setScores(s)
@@ -196,7 +201,7 @@ export function WritingDesk() {
     } finally {
       setCompleting(false)
     }
-  }, [submission, content])
+  }, [submission, content, triggerCelebration])
 
   const handleApply = useCallback(async (feedback: string, mode: ApplyMode, passId?: string) => {
     if (!submission) return
@@ -353,7 +358,7 @@ export function WritingDesk() {
 
       {/* Prompt context banner */}
       {prompt ? (
-        <div className="bg-white rounded-[16px] border border-warm-200 p-5">
+        <div className="card-clay-static p-5">
           <div className="flex items-start justify-between gap-4 mb-3">
             <div className="flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-sky" />
@@ -517,7 +522,7 @@ export function WritingDesk() {
           <h2 className="font-display text-lg font-semibold text-warm-800">Coaching Feedback</h2>
 
           {passes.length === 0 ? (
-            <div className="text-center py-8 text-warm-400 text-sm bg-white rounded-[16px] border border-warm-200 p-6">
+            <div className="text-center py-8 text-warm-400 text-sm card-clay-static p-6">
               <MessageSquare className="w-10 h-10 mx-auto mb-3 opacity-30" />
               <p className="text-base">No coaching feedback yet.</p>
               <p className="mt-1 text-sm">Write some words and click &quot;Get Coaching&quot; to begin!</p>
@@ -548,6 +553,14 @@ export function WritingDesk() {
           )}
         </div>
       </div>
+
+      {celebration && (
+        <CelebrationOverlay
+          type={celebration.type}
+          message={celebration.message}
+          onDismiss={dismissCelebration}
+        />
+      )}
     </div>
   )
 }
