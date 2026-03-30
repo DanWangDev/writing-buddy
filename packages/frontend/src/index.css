@@ -2,27 +2,30 @@
 
 @theme {
   /* Typography */
-  --font-display: 'Fredoka', sans-serif;
+  --font-display: 'Bangers', cursive;
   --font-body: 'Comic Sans MS', 'Comic Sans', 'Comic Neue', cursive;
   --font-handwriting: 'Caveat', cursive;
 
-  /* Core palette */
-  --color-sky: #0EA5E9;
-  --color-sky-light: #7DD3FC;
-  --color-sky-dark: #0284C7;
+  /* Manga ink (primary dark) */
+  --color-ink: #1a1a2e;
+
+  /* Core palette — vivid manga burst */
+  --color-sky: #2563EB;
+  --color-sky-light: #60A5FA;
+  --color-sky-dark: #1D4ED8;
   --color-coral: #F97316;
   --color-coral-light: #FDBA74;
   --color-coral-dark: #EA580C;
-  --color-gold: #FBBF24;
+  --color-gold: #FACC15;
   --color-gold-light: #FDE68A;
-  --color-gold-dark: #D97706;
-  --color-violet: #A78BFA;
+  --color-gold-dark: #CA8A04;
+  --color-violet: #8B5CF6;
   --color-violet-light: #C4B5FD;
   --color-violet-dark: #7C3AED;
 
   /* Surface colors */
-  --color-paper: #FFFBEB;
-  --color-notebook-lines: rgba(147, 197, 253, 0.3);
+  --color-paper: #FFF8E7;
+  --color-notebook-lines: rgba(37, 99, 235, 0.15);
 
   /* Warm neutrals */
   --color-warm-50: #FAFAF9;
@@ -37,31 +40,94 @@
   --color-warm-900: #1C1917;
 }
 
-/* ─── Claymorphism cards ─── */
+/* ─── Manga page background ─── */
+.bg-manga-page {
+  background-color: var(--color-warm-50);
+  background-image: radial-gradient(circle, #e5e0d5 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* ─── Manga panel cards (neubrutalist) ─── */
 .card-clay {
   background: #fff;
-  border: 2px solid var(--color-warm-200);
-  border-radius: 16px;
-  box-shadow:
-    6px 6px 0 0 var(--color-warm-200),
-    inset 0 2px 0 0 rgba(255, 255, 255, 0.8);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 3px solid var(--color-ink);
+  border-radius: 12px;
+  box-shadow: 4px 4px 0 0 var(--color-ink);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .card-clay:hover {
-  transform: translate(-2px, -2px);
-  box-shadow:
-    8px 8px 0 0 var(--color-warm-200),
-    inset 0 2px 0 0 rgba(255, 255, 255, 0.8);
+  transform: translate(-3px, -3px);
+  box-shadow: 8px 8px 0 0 var(--color-ink);
+}
+
+.card-clay:active {
+  transform: translate(0, 0);
+  box-shadow: 2px 2px 0 0 var(--color-ink);
 }
 
 .card-clay-static {
   background: #fff;
-  border: 2px solid var(--color-warm-200);
-  border-radius: 16px;
-  box-shadow:
-    4px 4px 0 0 var(--color-warm-200),
-    inset 0 2px 0 0 rgba(255, 255, 255, 0.8);
+  border: 3px solid var(--color-ink);
+  border-radius: 12px;
+  box-shadow: 4px 4px 0 0 var(--color-ink);
+}
+
+/* ─── Manga badge (genre/difficulty pills) ─── */
+.badge-manga {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 12px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 2px solid var(--color-ink);
+  box-shadow: 2px 2px 0 var(--color-ink);
+}
+
+/* ─── Manga button (neubrutalist CTA) ─── */
+.btn-manga {
+  font-family: 'Bangers', cursive;
+  letter-spacing: 1.5px;
+  border: 3px solid var(--color-ink);
+  border-radius: 10px;
+  box-shadow: 4px 4px 0 0 var(--color-ink);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-manga:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 0 var(--color-ink);
+}
+
+.btn-manga:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 0 var(--color-ink);
+}
+
+/* ─── Speech bubble (for coaching/celebrations) ─── */
+.speech-bubble {
+  background: var(--color-gold);
+  border: 3px solid var(--color-ink);
+  border-radius: 20px;
+  box-shadow: 4px 4px 0 var(--color-ink);
+  position: relative;
+}
+
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -14px;
+  left: 36px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 14px solid var(--color-gold);
+  filter: drop-shadow(2px 3px 0 var(--color-ink));
 }
 
 /* ─── Confetti animation ─── */
@@ -105,15 +171,21 @@
 /* ─── Reduced motion ─── */
 @media (prefers-reduced-motion: reduce) {
   .card-clay,
-  .card-clay:hover {
+  .card-clay:hover,
+  .card-clay:active {
     transition: none;
     transform: none;
   }
 
   .card-clay:hover {
-    box-shadow:
-      6px 6px 0 0 var(--color-warm-200),
-      inset 0 2px 0 0 rgba(255, 255, 255, 0.8);
+    box-shadow: 4px 4px 0 0 var(--color-ink);
+  }
+
+  .btn-manga,
+  .btn-manga:hover,
+  .btn-manga:active {
+    transition: none;
+    transform: none;
   }
 }
 
@@ -122,9 +194,9 @@
   background-color: var(--color-paper);
   background-image: repeating-linear-gradient(
     transparent,
-    transparent 31px,
-    var(--color-notebook-lines) 31px,
-    var(--color-notebook-lines) 32px
+    transparent 39px,
+    var(--color-notebook-lines) 39px,
+    var(--color-notebook-lines) 40px
   );
-  background-position: 0 16px;
+  background-position: 0 24px;
 }

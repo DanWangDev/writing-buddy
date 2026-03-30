@@ -107,7 +107,7 @@ export function SubmissionDetail() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex-1">
-          <h1 className="font-display text-xl font-bold text-warm-800">
+          <h1 className="font-display text-xl text-warm-800 tracking-wider uppercase">
             {prompt ? prompt.title : `Free Writing #${submission.id.slice(0, 8)}`}
           </h1>
           <p className="text-sm text-warm-500">
@@ -119,7 +119,7 @@ export function SubmissionDetail() {
         {canResume && (
           <Link
             to={`/write/${submission.id}`}
-            className="inline-flex items-center gap-1.5 px-4 h-10 text-sm font-semibold rounded-[10px] bg-sky text-white hover:bg-sky-dark transition-colors shadow-sm shadow-sky/20"
+            className="btn-manga inline-flex items-center gap-1.5 px-4 h-10 text-sm bg-sky text-white"
           >
             <PenLine className="w-4 h-4" />
             Resume Writing
@@ -148,10 +148,10 @@ export function SubmissionDetail() {
                       setSelectedRevision(idx)
                       if (idx === 0) setShowChanges(false)
                     }}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors border-2 border-ink ${
                       selectedRevision === idx
-                        ? 'bg-sky text-white'
-                        : 'bg-white border border-warm-200 text-warm-600 hover:bg-warm-50'
+                        ? 'bg-sky text-white shadow-[2px_2px_0_var(--color-ink)]'
+                        : 'bg-white text-warm-600 hover:bg-warm-50'
                     }`}
                   >
                     Revision {rev.revisionNumber}
@@ -163,10 +163,10 @@ export function SubmissionDetail() {
                 <button
                   type="button"
                   onClick={() => setShowChanges(!showChanges)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors border-2 border-ink ${
                     showChanges
-                      ? 'bg-violet/10 text-violet-dark border border-violet-light'
-                      : 'bg-white border border-warm-200 text-warm-600 hover:bg-warm-50'
+                      ? 'bg-violet/10 text-violet-dark shadow-[2px_2px_0_var(--color-ink)]'
+                      : 'bg-white text-warm-600 hover:bg-warm-50'
                   }`}
                 >
                   <GitCompareArrows className="w-3.5 h-3.5" />
@@ -177,7 +177,7 @@ export function SubmissionDetail() {
           )}
 
           {/* Content display */}
-          <div className="writing-paper rounded-[16px] border border-warm-200 p-6">
+          <div className="writing-paper rounded-[16px] border-2 border-ink p-6">
             {currentRevision ? (
               <>
                 {showChanges && previousRevision ? (
@@ -206,7 +206,7 @@ export function SubmissionDetail() {
         {/* Sidebar */}
         <div className="space-y-4">
           {/* Coaching feedback */}
-          <h2 className="font-display text-lg font-semibold text-warm-800">Coaching Feedback</h2>
+          <h2 className="font-display text-lg text-warm-800 tracking-wider uppercase">Coaching Feedback</h2>
           {passes.length === 0 ? (
             <p className="text-sm text-warm-400">No coaching feedback yet.</p>
           ) : (

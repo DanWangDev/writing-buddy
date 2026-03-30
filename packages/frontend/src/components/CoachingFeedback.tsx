@@ -54,7 +54,7 @@ export function CoachingFeedback({ pass, passNumber, onApply, applying, isComple
   const showApplyButtons = onApply && !isCompleted && (pass.passType === 'suggestions' || pass.passType === 'guiding_questions' || pass.passType === 'polish')
 
   return (
-    <div className={`rounded-[12px] ${config.bgClass} ${config.borderClass}`} style={{ boxShadow: '3px 3px 0 0 var(--color-warm-200)' }}>
+    <div className={`rounded-[12px] border-2 border-ink ${config.bgClass}`} style={{ boxShadow: '3px 3px 0 0 var(--color-ink)' }}>
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
@@ -79,7 +79,7 @@ export function CoachingFeedback({ pass, passNumber, onApply, applying, isComple
                 type="button"
                 onClick={() => onApply(pass.feedback, 'improve', pass.id)}
                 disabled={applying}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-violet/10 text-violet-dark hover:bg-violet/20 transition-colors disabled:opacity-50"
+                className="btn-manga inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-violet/10 text-violet-dark disabled:opacity-50"
               >
                 {applying ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
                 Apply Suggestions
@@ -88,7 +88,7 @@ export function CoachingFeedback({ pass, passNumber, onApply, applying, isComple
                 type="button"
                 onClick={() => onApply(pass.feedback, 'grammar', pass.id)}
                 disabled={applying}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-sky/10 text-sky-dark hover:bg-sky/20 transition-colors disabled:opacity-50"
+                className="btn-manga inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-sky/10 text-sky-dark disabled:opacity-50"
               >
                 {applying ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <SpellCheck className="w-3.5 h-3.5" />}
                 Fix Grammar
@@ -97,7 +97,7 @@ export function CoachingFeedback({ pass, passNumber, onApply, applying, isComple
                 type="button"
                 onClick={() => onApply(pass.feedback, 'vocabulary', pass.id)}
                 disabled={applying}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-gold/10 text-gold-dark hover:bg-gold/20 transition-colors disabled:opacity-50"
+                className="btn-manga inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-gold/10 text-gold-dark disabled:opacity-50"
               >
                 {applying ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookA className="w-3.5 h-3.5" />}
                 Improve Vocabulary

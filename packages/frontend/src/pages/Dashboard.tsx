@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { StreakBadge } from '../components/StreakBadge'
 import { InkwellWriting, InkwellSleeping, MarginDoodles } from '../components/inkwell'
 import { PenLine, Trophy, Clock, ArrowRight, Loader2 } from 'lucide-react'
 import * as api from '../services/api'
@@ -62,21 +61,23 @@ export function Dashboard() {
     <div className="space-y-6 relative">
       <MarginDoodles variant="default" />
 
-      {/* Welcome */}
+      {/* Welcome — speech bubble style */}
       <div className="card-clay-static p-6 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="relative z-10">
-            <h1 className="font-display text-2xl font-bold text-warm-800">
-              Welcome back, {user?.displayName ?? 'Writer'}!
-            </h1>
-            <p className="text-warm-500 mt-1 text-base">Ready to write something amazing today?</p>
+            <div className="speech-bubble inline-block px-6 py-4 mb-2">
+              <h1 className="font-display text-3xl text-warm-800 tracking-wider uppercase">
+                LET'S GO, {user?.displayName ?? 'Writer'}!
+              </h1>
+              <p className="text-warm-600 mt-1 text-base font-bold">Your story awaits. Ready to write something EPIC?</p>
+            </div>
           </div>
           <Link
             to="/write"
-            className="inline-flex items-center gap-2 bg-sky text-white font-semibold rounded-[10px] px-5 h-12 text-base hover:bg-sky-dark transition-colors shrink-0 shadow-sm shadow-sky/20 relative z-10"
+            className="btn-manga inline-flex items-center gap-2 bg-sky text-white text-lg px-6 h-12 shrink-0 relative z-10"
           >
             <PenLine className="w-5 h-5" />
-            Start Writing
+            START WRITING!
           </Link>
         </div>
         <InkwellWriting className="absolute -right-2 -bottom-4 opacity-[0.18] hidden sm:block" width={140} height={154} />
@@ -90,44 +91,38 @@ export function Dashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="card-clay-static p-5 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-[10px] bg-coral/10 flex items-center justify-center">
+        <div className="card-clay-static p-5 text-center">
+          <div className="w-12 h-12 rounded-[10px] bg-coral border-2 border-ink flex items-center justify-center shadow-[2px_2px_0_var(--color-ink)] mx-auto mb-2">
             <span className="text-2xl">&#x1F525;</span>
           </div>
-          <div>
-            <p className="text-sm font-semibold text-warm-500">Writing Streak</p>
-            <StreakBadge streak={streak} />
-          </div>
+          <p className="text-xs font-bold text-warm-400 uppercase tracking-wider">Streak</p>
+          <p className="font-display text-3xl text-coral tracking-wide">{streak}</p>
         </div>
 
-        <div className="card-clay-static p-5 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-[10px] bg-gold/10 flex items-center justify-center">
-            <Trophy className="w-6 h-6 text-gold-dark" />
+        <div className="card-clay-static p-5 text-center">
+          <div className="w-12 h-12 rounded-[10px] bg-gold border-2 border-ink flex items-center justify-center shadow-[2px_2px_0_var(--color-ink)] mx-auto mb-2">
+            <Trophy className="w-6 h-6 text-ink" />
           </div>
-          <div>
-            <p className="text-sm font-semibold text-warm-500">XP Today</p>
-            <p className="font-display text-2xl font-bold text-warm-800">{todayXp}</p>
-          </div>
+          <p className="text-xs font-bold text-warm-400 uppercase tracking-wider">XP Today</p>
+          <p className="font-display text-3xl text-gold-dark tracking-wide">{todayXp}</p>
         </div>
 
-        <div className="card-clay-static p-5 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-[10px] bg-violet/10 flex items-center justify-center">
-            <Clock className="w-6 h-6 text-violet-dark" />
+        <div className="card-clay-static p-5 text-center">
+          <div className="w-12 h-12 rounded-[10px] bg-sky border-2 border-ink flex items-center justify-center shadow-[2px_2px_0_var(--color-ink)] mx-auto mb-2">
+            <Clock className="w-6 h-6 text-white" />
           </div>
-          <div>
-            <p className="text-sm font-semibold text-warm-500">Words This Week</p>
-            <p className="font-display text-2xl font-bold text-warm-800">{totalWords}</p>
-          </div>
+          <p className="text-xs font-bold text-warm-400 uppercase tracking-wider">Words This Week</p>
+          <p className="font-display text-3xl text-sky tracking-wide">{totalWords}</p>
         </div>
       </div>
 
       {/* Recent submissions */}
       <div className="card-clay-static p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-lg font-semibold text-warm-800">Recent Writing</h2>
+          <h2 className="font-display text-xl text-warm-800 tracking-wider uppercase">Recent Writing</h2>
           <Link
             to="/portfolio"
-            className="text-sm text-sky font-semibold hover:underline flex items-center gap-1"
+            className="text-sm text-sky font-bold hover:underline flex items-center gap-1"
           >
             View all <ArrowRight className="w-3 h-3" />
           </Link>
@@ -139,13 +134,13 @@ export function Dashboard() {
             <p className="text-warm-400 text-base">Inkwell is waiting for your first story!</p>
             <Link
               to="/prompts"
-              className="inline-flex items-center gap-2 mt-4 bg-sky text-white font-semibold rounded-[10px] px-5 h-12 text-base hover:bg-sky-dark transition-colors"
+              className="btn-manga inline-flex items-center gap-2 mt-4 bg-sky text-white text-base px-5 h-12"
             >
               Browse Prompts
             </Link>
           </div>
         ) : (
-          <div className="divide-y divide-warm-100">
+          <div className="divide-y divide-warm-200">
             {recentSubmissions.map((sub) => (
               <Link
                 key={sub.id}
@@ -153,7 +148,7 @@ export function Dashboard() {
                 className="flex items-center justify-between py-3 hover:bg-warm-50 -mx-2 px-2 rounded-[10px] transition-colors"
               >
                 <div>
-                  <p className="text-base font-semibold text-warm-700">
+                  <p className="text-base font-bold text-warm-700">
                     {sub.promptTitle ?? `Free Writing #${sub.id.slice(0, 8)}`}
                   </p>
                   <p className="text-sm text-warm-400">
@@ -174,9 +169,9 @@ export function Dashboard() {
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    draft: 'bg-warm-100 text-warm-600',
-    in_coaching: 'bg-sky/10 text-sky',
-    completed: 'bg-green-100 text-green-700',
+    draft: 'bg-warm-100 text-warm-600 border-ink',
+    in_coaching: 'bg-sky/10 text-sky border-ink',
+    completed: 'bg-green-500 text-white border-ink',
   }
 
   const labels: Record<string, string> = {
@@ -186,7 +181,7 @@ function StatusBadge({ status }: { status: string }) {
   }
 
   return (
-    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${styles[status] ?? styles.draft}`}>
+    <span className={`badge-manga text-xs ${styles[status] ?? styles.draft}`}>
       {labels[status] ?? status}
     </span>
   )

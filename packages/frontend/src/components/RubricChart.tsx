@@ -53,7 +53,7 @@ function ScoreBar({
         {label}
         {loading && <Loader2 className="w-3 h-3 inline-block ml-1 animate-spin" />}
       </span>
-      <div className="flex-1 h-3 bg-warm-100 rounded-full overflow-hidden">
+      <div className="flex-1 h-3 bg-warm-100 rounded-full overflow-hidden border border-ink/20">
         <div
           className={`h-full rounded-full transition-all duration-500 ${active ? 'bg-sky' : barColor}`}
           style={{ width: `${pct}%` }}
@@ -69,7 +69,7 @@ function ScoreBar({
 export function RubricChart({ scores, activeCategory, loadingCategory, onToggleCategory }: RubricChartProps) {
   if (scores.status === 'scoring_failed') {
     return (
-      <div className="rounded-[12px] border-l-4 border-l-gold border border-gold-light/50 bg-gold/5 p-4 flex items-center gap-3">
+      <div className="rounded-[12px] border-2 border-ink bg-gold/5 p-4 flex items-center gap-3" style={{ boxShadow: '3px 3px 0 0 var(--color-ink)' }}>
         <AlertTriangle className="w-5 h-5 text-gold-dark shrink-0" />
         <p className="text-sm text-warm-700">
           Scoring could not be completed for this submission. Keep writing and try again!
@@ -81,7 +81,7 @@ export function RubricChart({ scores, activeCategory, loadingCategory, onToggleC
   return (
     <div className="card-clay-static p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-display font-semibold text-warm-800">Your Scores</h3>
+        <h3 className="font-display text-warm-800 tracking-wider uppercase">Your Scores</h3>
         <div className="flex items-center gap-2">
           <span className="font-display text-2xl font-bold text-sky">
             {scores.overallScore}

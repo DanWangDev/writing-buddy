@@ -34,7 +34,7 @@ export function CelebrationOverlay({ type, message, onDismiss }: CelebrationOver
           width={isCompletion ? 100 : 80}
           height={isCompletion ? 110 : 88}
         />
-        <h2 className="font-display text-2xl font-bold text-warm-800 mb-1">
+        <h2 className="font-display text-2xl text-warm-800 tracking-wider uppercase mb-1">
           {isCompletion ? 'Story Complete!' : 'Nice Work!'}
         </h2>
         <p className="text-warm-500 text-base">{message}</p>
