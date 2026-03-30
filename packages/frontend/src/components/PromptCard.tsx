@@ -29,14 +29,14 @@ export function PromptCard({ prompt, onClick }: PromptCardProps) {
   const content = (
     <>
       <div className={`h-[6px] rounded-t-[9px] ${genreStyle.accent}`} />
-      <div className="p-5">
+      <div className="p-5 flex flex-col flex-1">
         <div className="flex items-start justify-between gap-2 mb-3">
-          <h3 className="font-display text-lg tracking-wide text-warm-800 leading-snug uppercase">
+          <h3 className="font-display text-lg tracking-wide text-warm-800 leading-snug uppercase line-clamp-2">
             {prompt.title}
           </h3>
           <BookOpen className="w-5 h-5 text-warm-300 shrink-0" />
         </div>
-        <p className="text-sm text-warm-500 mb-4 line-clamp-2">{prompt.body}</p>
+        <p className="text-sm text-warm-500 mb-4 line-clamp-2 flex-1">{prompt.body}</p>
         <div className="flex items-center gap-2 flex-wrap">
           <span
             className={`badge-manga text-xs ${genreStyle.badge}`}
@@ -67,7 +67,7 @@ export function PromptCard({ prompt, onClick }: PromptCardProps) {
       <button
         type="button"
         onClick={() => onClick(prompt)}
-        className="text-left w-full card-clay p-0 cursor-pointer"
+        className="text-left w-full h-full card-clay p-0 cursor-pointer flex flex-col"
       >
         {content}
       </button>
@@ -75,7 +75,7 @@ export function PromptCard({ prompt, onClick }: PromptCardProps) {
   }
 
   return (
-    <div className="text-left w-full card-clay-static p-0">
+    <div className="text-left w-full h-full card-clay-static p-0 flex flex-col">
       {content}
     </div>
   )
