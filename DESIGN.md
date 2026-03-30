@@ -1,93 +1,117 @@
-# Design System — Writing Buddy
+# Design System — Writing Buddy (Manga Burst Edition)
 
 ## Product Context
 - **What this is:** An AI coaching app that helps 10-11 year olds prepare for 11+ creative writing exams through iterative, voice-preserving coaching passes
-- **Who it's for:** Primary: children aged 10-11. Secondary: parents who purchase/oversee
+- **Who it's for:** Primary: children aged 10-11 (targeting early-teen aesthetic appeal). Secondary: parents who purchase/oversee
 - **Space/industry:** EdTech, kids' learning apps (peers: Writeasy, Duolingo, Night Zookeeper)
 - **Project type:** Web app (React SPA) — tablet-first, responsive
 
 ## Aesthetic Direction
-- **Direction:** Storybook Playground — a creative writing adventure that feels like opening a favorite storybook. Illustrated, warm, inviting, with just enough whimsy to spark imagination without feeling babyish
-- **Decoration level:** Expressive — layered depth with paper textures, subtle grain, illustrated elements, and hand-drawn accents. The app should feel crafted, not generated
-- **Mood:** Like sitting in a cozy library corner with your favorite notebook and a kind, encouraging tutor. Warm, safe, creative, celebratory of effort
-- **Reference sites:** Writeasy (hand-drawn illustrations, yellow notebook aesthetic), Duolingo (gamification, mascot-driven engagement, celebration moments), Night Zookeeper (creative writing for kids, illustrated world-building)
+- **Style:** Neubrutalism / Manga Burst — bold, graphic, high-energy comic book aesthetic with thick ink outlines, hard offset shadows, vivid flat colors, and halftone textures
+- **Decoration level:** Expressive — layered depth with halftone dot patterns, speech bubbles, bold outlines, and comic-style lettering. Every element has weight and presence
+- **Mood:** Like flipping through a manga or comic book — exciting, energetic, rewarding. The app feels like a creative adventure, not homework
+- **Key visual principles:**
+  - **Bold ink outlines:** 2-3px solid `var(--color-ink)` borders on all interactive elements
+  - **Hard offset shadows:** `4px 4px 0` (cards), `2px 2px 0` (badges/pills) using `var(--color-ink)`
+  - **Flat vivid colors:** No gradients, no blur/glass effects. Solid saturated fills
+  - **Comic lettering:** ALL CAPS headings in Bangers font with wide tracking
+  - **Halftone backgrounds:** Subtle dot pattern on page backgrounds (`.bg-manga-page`)
+  - **Speech bubbles:** Gold-background callouts with triangular tails for mascot dialogue
 
 ## Typography
-- **Display/Hero:** Fredoka (600-700 weight) — rounded, friendly, substantial presence without being childish. Used for page titles, hero text, celebration headings
-- **Body:** Comic Sans MS with Comic Neue fallback — Comic Sans has proven readability for young and dyslexic readers, casual and approachable. System font on Windows/Mac, Comic Neue (Google Fonts) for Linux/fallback. Used for all body text, UI labels, navigation
-- **UI/Labels:** Comic Sans MS / Comic Neue
-- **Writing/Handwriting:** Caveat (400-700 weight) — natural handwriting feel for student writing display, coaching annotations, and the "notebook" experience. This is the signature font that makes the writing feel personal
-- **Data/Tables:** Comic Neue with tabular-nums (for scores, word counts, progress numbers)
-- **Loading:** Google Fonts CDN
+- **Display/Hero:** Bangers (regular weight) — comic book display font, always uppercase with `tracking-wider`. Used for page titles, hero text, section headings, celebration headings. Loaded via Google Fonts
+- **Body:** Comic Neue (400, 700 weight) — friendly, readable, approachable. Used for all body text, UI labels, navigation, AND the writing area (per user preference)
+- **Writing area:** Comic Neue (`font-body`) — NOT Caveat. User explicitly chose Comic Neue for the writing space for readability
+- **Data/Tables:** Comic Neue with `tabular-nums` (for scores, word counts, progress numbers)
+- **Loading:** Google Fonts CDN: `Bangers`, `Comic Neue` (300/400/700, italic variants)
 - **Scale:**
-  - `text-xs`: 12px / 0.75rem — fine print, metadata
+  - `text-xs`: 12px / 0.75rem — badge text, fine metadata
   - `text-sm`: 14px / 0.875rem — captions, helper text
   - `text-base`: 16px / 1rem — body text (minimum for kids)
-  - `text-lg`: 18px / 1.125rem — emphasized body, card titles
-  - `text-xl`: 20px / 1.25rem — section headings
-  - `text-2xl`: 24px / 1.5rem — page subtitles
-  - `text-3xl`: 30px / 1.875rem — page titles
+  - `text-lg`: 18px / 1.125rem — card titles, sidebar headings
+  - `text-xl`: 20px / 1.25rem — section headings, prompt titles
+  - `text-2xl`: 24px / 1.5rem — sub-page titles
+  - `text-3xl`: 30px / 1.875rem — page titles (Bangers, uppercase)
   - `text-4xl`: 36px / 2.25rem — hero headings
   - `text-5xl`: 48px / 3rem — celebration/splash screens
 
 ## Color
-- **Approach:** Expressive — color is a primary design tool, with a warm vibrant palette that energizes without overwhelming
 
-### Core Palette
-- **Sky Blue (Primary):** `#0EA5E9` — trust, creativity, open sky. Used for primary buttons, active states, links, progress indicators
-- **Warm Coral (Secondary):** `#F97316` — energy, encouragement, warmth. Used for secondary actions, highlights, badges, streak indicators
-- **Sunshine Gold (Accent):** `#FBBF24` — achievement, celebration, stars. Used for XP, scores, achievements, gold stars, celebration moments
-- **Soft Violet (Magic):** `#A78BFA` — imagination, AI/coaching moments, creativity sparks. Used for AI coaching indicators, suggestion highlights, "magic" moments
+### Ink (Border/Shadow Color)
+- **Ink:** `#1a1a2e` (`--color-ink`) — deep blue-black used for all borders, outlines, and hard shadows. This is the signature manga outline color
 
-### Neutrals (Warm Gray)
-- `warm-50`: `#FAFAF9` — page backgrounds
-- `warm-100`: `#F5F5F4` — card backgrounds, input backgrounds
-- `warm-200`: `#E7E5E4` — borders, dividers
-- `warm-300`: `#D6D3D1` — disabled states
-- `warm-400`: `#A8A29E` — placeholder text
-- `warm-500`: `#78716C` — secondary text
-- `warm-600`: `#57534E` — body text
-- `warm-700`: `#44403C` — headings
-- `warm-800`: `#292524` — high-emphasis text
-- `warm-900`: `#1C1917` — maximum contrast
+### Core Palette (More Saturated)
+- **Sky Blue (Primary):** `#2563EB` — bolder, more vivid blue. Used for primary buttons, active states, header background, links
+- **Warm Coral (Secondary):** `#F97316` — energy, warmth. Used for streaks, highlights, stat icons
+- **Sunshine Gold (Accent):** `#FACC15` — brighter gold. Used for speech bubbles, active nav, achievements, star ratings
+- **Soft Violet (Magic):** `#8B5CF6` — deeper violet. Used for AI coaching, mystery genre, suggestion buttons
+
+### Neutrals (Warm Gray) — unchanged
+- `warm-50` through `warm-900` (same stone scale)
 
 ### Semantic Colors
-- **Success:** `#22C55E` (green-500) — completed passes, positive feedback
-- **Warning:** `#F59E0B` (amber-500) — approaching limits, gentle nudges
-- **Error:** `#EF4444` (red-500) — validation errors, content safety flags
-- **Info:** `#0EA5E9` (sky-500) — tips, coaching suggestions
+- **Success:** `#22C55E` (green-500) — completed badges, accept buttons
+- **Warning:** `#F59E0B` (amber-500) — approaching limits
+- **Error:** `#EF4444` (red-500) — validation errors, overtime indicator, challenge difficulty
+- **Info:** `#2563EB` (sky) — tips, coaching
 
 ### Surface Colors
-- **Paper:** `#FFFBEB` (amber-50) — writing area background, simulates warm paper
-- **Notebook Lines:** `#93C5FD` (blue-300 at 30% opacity) — ruled lines in writing area
-- **Card:** `#FFFFFF` — elevated card surfaces
-- **Sidebar:** `#F5F5F4` — navigation background
+- **Paper:** `#FFFBEB` (amber-50) — writing area background
+- **Notebook Lines:** `rgba(37, 99, 235, 0.15)` — blue-tinted ruled lines (39px spacing)
+- **Card:** `#FFFFFF` with `border: 3px solid var(--color-ink)` and hard shadow
+- **Page background:** `.bg-manga-page` — halftone dot pattern on warm-50
+
+## CSS Utility Classes
+
+### Cards
+- `.card-clay` — Interactive card: white bg, 3px ink border, 4px hard shadow, hover lifts to 7px shadow with -3px translate
+- `.card-clay-static` — Non-interactive card: same as above but no hover effect
+- Both have `rounded-[12px]` and `cursor-pointer` (clay only)
+
+### Badges
+- `.badge-manga` — Pill badge: 2px ink border, 2px hard shadow, `font-bold`, `rounded-full`, `px-2.5 py-1`
+
+### Buttons
+- `.btn-manga` — Bold button: 3px ink border, 4px hard shadow, hover lifts to 5px shadow, active presses to 1px shadow. `font-bold`, `rounded-[10px]`, 48px min-height
+
+### Speech Bubble
+- `.speech-bubble` — Gold background, 3px ink border, 4px shadow, rounded-[16px], with `::after` triangular tail pointing down-left
+
+### Background
+- `.bg-manga-page` — Radial halftone dot pattern: `radial-gradient(circle, rgba(37,99,235,0.06) 1px, transparent 1px)` at 20px spacing
 
 ## Spacing
 - **Base unit:** 8px
-- **Density:** Comfortable — generous whitespace for young readers, nothing should feel cramped
+- **Density:** Comfortable — generous whitespace for young readers
 - **Scale:** 2xs(2) xs(4) sm(8) md(16) lg(24) xl(32) 2xl(48) 3xl(64)
 
 ## Layout
-- **Approach:** Grid-disciplined with playful elements
+- **Approach:** Grid-disciplined with bold graphic elements
 - **Grid:**
-  - Mobile (< 640px): 4 columns, 16px gutter
-  - Tablet (640-1024px): 8 columns, 24px gutter — PRIMARY target
-  - Desktop (> 1024px): 12 columns, 32px gutter
+  - Mobile (< 640px): single column, 16px gutter
+  - Tablet (640-1024px): 2-column grid, 24px gutter — PRIMARY target
+  - Desktop (> 1024px): 3-column grid, 32px gutter
 - **Max content width:** 1280px (80rem)
-- **Border radius:** sm:6px, md:10px, lg:16px, xl:24px, full:9999px
+- **Border radius:** sm:6px, md:10px, lg:16px (cards/dialogs use 12px-16px)
 - **Touch targets:** 48px minimum (WCAG 2.2 Level AAA for kids)
 - **Min font size:** 16px for body text
 
+### Header/Navigation
+- **Desktop:** Sky blue background with white text, Bangers logo with text-shadow, gold active nav items with ink border
+- **Mobile:** Sky blue hamburger menu, slide-down nav panel matching header color
+
 ## Illustration & Mascot
-- **Style:** Semi-flat illustration with subtle texture/grain
-- **Mascot:** A friendly owl character as the AI coaching persona
-- **Icon style:** Lucide icons at 24px, stroke-width 2, with rounded line caps
+- **Style:** Manga-influenced ink illustrations (Inkwell mascot)
+- **Mascot states:** InkwellWriting (active), InkwellSleeping (empty state)
+- **Margin doodles:** `MarginDoodles` component with variant-based decorative elements
+- **Icon style:** Lucide icons at 24px, stroke-width 2
 
 ## Motion
-- **Approach:** Intentional + playful
-- **Easing:** enter(ease-out) exit(ease-in) move(ease-in-out) bounce(cubic-bezier(0.34,1.56,0.64,1))
-- **Duration:** micro(50-100ms) short(150-250ms) medium(250-400ms) long(400-700ms)
+- **Approach:** Snappy, comic-book energy
+- **Card hover:** `translate(-3px, -3px)` with shadow expansion (150ms ease)
+- **Button press:** `translate(2px, 2px)` with shadow shrink (active state)
+- **Celebration:** Pop-in animation with confetti overlay
+- **Easing:** `transition-all duration-150` for interactive elements
 - **Reduced motion:** Respect `prefers-reduced-motion`
 
 ## Accessibility (Kids-Specific)
@@ -99,22 +123,31 @@
 - **Reading level:** All UI copy at Year 5-6 reading level (age 10-11)
 
 ## Tailwind Custom Classes
-- `font-display` — Fredoka (headings)
-- `font-body` — Comic Neue (everything else)
-- `font-handwriting` — Caveat (writing areas)
-- `bg-sky` / `text-sky` / `border-sky` — primary blue
+- `font-display` — Bangers (headings, always uppercase with tracking-wider)
+- `font-body` — Comic Neue (everything else including writing areas)
+- `font-handwriting` — Caveat (available but NOT used for writing areas)
+- `bg-sky` / `text-sky` / `border-sky` — primary blue (#2563EB)
 - `bg-coral` / `text-coral` — secondary orange
 - `bg-gold` / `text-gold` — accent yellow
 - `bg-violet` / `text-violet` — magic purple
 - `bg-warm-*` — warm neutral scale (50-900)
-- `.writing-paper` — notebook-lined paper background
+- `border-ink` / `text-ink` — manga ink color (#1a1a2e)
+- `.writing-paper` — notebook-lined paper background (39px line spacing, blue lines)
+- `.card-clay` / `.card-clay-static` — manga-style cards
+- `.badge-manga` — pill badges with ink border
+- `.btn-manga` — bold buttons with ink border and shadow
+- `.speech-bubble` — gold speech callout with tail
+- `.bg-manga-page` — halftone dot page background
 
 ## Decisions Log
 | Date | Decision | Rationale |
 |------|----------|-----------|
 | 2026-03-23 | Initial design system created | Created by /design-consultation based on competitive analysis |
-| 2026-03-23 | Chose "Storybook Playground" aesthetic | Differentiates from Writeasy while keeping warmth |
-| 2026-03-23 | Fredoka + Comic Neue + Caveat typography | Fredoka for personality, Comic Neue for proven kid readability, Caveat for handwriting |
-| 2026-03-23 | Sky Blue as primary | Trust + creativity, avoids EdTech cliche green |
-| 2026-03-23 | 48px touch targets | Target audience is 10-11 year olds on tablets |
-| 2026-03-23 | Paper texture for writing area | Makes writing feel personal and familiar |
+| 2026-03-23 | Chose "Storybook Playground" aesthetic | Original design direction |
+| 2026-03-30 | Switched to "Manga Burst" neubrutalist style | User found original too boring for teenager appeal. Bold comic/manga aesthetic is more engaging |
+| 2026-03-30 | Bangers replaces Fredoka for display font | Comic book display font matches manga aesthetic, always uppercase |
+| 2026-03-30 | Comic Neue for writing area (not Caveat) | User explicitly preferred Comic Neue readability over Caveat handwriting style |
+| 2026-03-30 | Added --color-ink (#1a1a2e) | Deep blue-black for all borders/shadows, signature manga outline color |
+| 2026-03-30 | Saturated core palette | Sky=#2563EB, Violet=#8B5CF6, Gold=#FACC15 — bolder for neubrutalist energy |
+| 2026-03-30 | Hard offset shadows replace soft shadows | 4px/2px hard shadows using ink color, no blur — core neubrutalist principle |
+| 2026-03-30 | Halftone dot background | Manga-style texture on page backgrounds (.bg-manga-page) |

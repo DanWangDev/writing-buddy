@@ -36,19 +36,19 @@ function countWords(text: string): number {
 }
 
 const GENRE_STYLES: Record<string, string> = {
-  adventure: 'bg-sky/10 text-sky',
-  mystery: 'bg-violet/10 text-violet-dark',
-  'sci-fi': 'bg-sky-light/20 text-sky-dark',
-  fantasy: 'bg-violet-light/20 text-violet-dark',
-  humor: 'bg-gold/15 text-gold-dark',
-  descriptive: 'bg-coral/10 text-coral-dark',
-  persuasive: 'bg-coral-light/20 text-coral-dark',
+  adventure: 'bg-sky text-white',
+  mystery: 'bg-violet text-white',
+  'sci-fi': 'bg-sky-dark text-white',
+  fantasy: 'bg-[#EC4899] text-white',
+  humor: 'bg-gold text-ink',
+  descriptive: 'bg-coral text-white',
+  persuasive: 'bg-[#EF4444] text-white',
 }
 
 const DIFFICULTY_STYLES: Record<string, string> = {
-  beginner: 'text-green-600 bg-green-50 border-green-200',
-  standard: 'text-gold-dark bg-gold/10 border-gold-light',
-  challenge: 'text-coral-dark bg-coral/10 border-coral-light',
+  beginner: 'bg-green-500 text-white',
+  standard: 'bg-gold text-ink',
+  challenge: 'bg-[#EF4444] text-white',
 }
 
 export function WritingDesk() {
@@ -374,11 +374,11 @@ export function WritingDesk() {
           <div className="flex items-start justify-between gap-4 mb-3">
             <div className="flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-sky" />
-              <h1 className="font-display text-xl font-bold text-warm-800">{prompt.title}</h1>
+              <h1 className="font-display text-xl text-warm-800 tracking-wider uppercase">{prompt.title}</h1>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {currentPass > 0 && (
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-sky/10 text-sky">
+                <span className="badge-manga text-xs bg-sky/10 text-sky">
                   Pass {currentPass}/4
                 </span>
               )}
@@ -386,10 +386,10 @@ export function WritingDesk() {
           </div>
           <p className="text-sm text-warm-600 leading-relaxed mb-4">{prompt.body}</p>
           <div className="flex items-center gap-3 flex-wrap">
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${GENRE_STYLES[prompt.genre] ?? 'bg-warm-100 text-warm-700'}`}>
+            <span className={`badge-manga text-xs ${GENRE_STYLES[prompt.genre] ?? 'bg-warm-100 text-warm-700'}`}>
               {prompt.genre}
             </span>
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${DIFFICULTY_STYLES[prompt.difficulty] ?? 'text-warm-600 bg-warm-50 border-warm-200'}`}>
+            <span className={`badge-manga text-xs ${DIFFICULTY_STYLES[prompt.difficulty] ?? 'bg-warm-200 text-warm-700'}`}>
               {prompt.difficulty}
             </span>
             {prompt.wordCountTarget && (
@@ -407,7 +407,7 @@ export function WritingDesk() {
             {prompt.tags && prompt.tags.length > 0 && (
               <div className="flex items-center gap-1.5 ml-auto">
                 {prompt.tags.map((tag: string) => (
-                  <span key={tag} className="text-xs text-warm-400 bg-warm-50 px-2 py-0.5 rounded">
+                  <span key={tag} className="text-xs text-warm-400 bg-warm-50 px-2 py-0.5 rounded border border-ink/20">
                     {tag}
                   </span>
                 ))}
@@ -417,9 +417,9 @@ export function WritingDesk() {
         </div>
       ) : (
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-xl font-bold text-warm-800">Free Writing</h1>
+          <h1 className="font-display text-xl text-warm-800 tracking-wider uppercase">Free Writing</h1>
           {currentPass > 0 && (
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-sky/10 text-sky">
+            <span className="badge-manga text-xs bg-sky/10 text-sky">
               Pass {currentPass}/4
             </span>
           )}
@@ -440,7 +440,7 @@ export function WritingDesk() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-sky-dark bg-sky/10 px-3 py-1 rounded-full">
+                  <span className="badge-manga text-sm bg-sky/10 text-sky-dark">
                     {categorySuggestion
                       ? `${activeCategory ? activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1) : ''} Suggestions`
                       : `Preview: ${previewMode === 'grammar' ? 'Grammar Fix' : previewMode === 'vocabulary' ? 'Vocabulary Boost' : 'Applied Suggestions'}`}
@@ -451,7 +451,7 @@ export function WritingDesk() {
                   <button
                     type="button"
                     onClick={categorySuggestion ? handleAcceptCategorySuggestion : handleAcceptPreview}
-                    className="inline-flex items-center gap-1 px-4 h-10 text-sm font-semibold rounded-[10px] bg-green-500 text-white hover:bg-green-600 transition-colors"
+                    className="btn-manga inline-flex items-center gap-1 px-4 h-10 text-sm bg-green-500 text-white"
                   >
                     <Check className="w-4 h-4" />
                     Accept
@@ -459,14 +459,14 @@ export function WritingDesk() {
                   <button
                     type="button"
                     onClick={categorySuggestion ? handleRejectCategorySuggestion : handleRejectPreview}
-                    className="inline-flex items-center gap-1 px-4 h-10 text-sm font-semibold rounded-[10px] border-2 border-warm-200 bg-white text-warm-700 hover:bg-warm-50 transition-colors"
+                    className="btn-manga inline-flex items-center gap-1 px-4 h-10 text-sm bg-white text-warm-700"
                   >
                     <X className="w-4 h-4" />
                     Reject
                   </button>
                 </div>
               </div>
-              <div className="writing-paper rounded-[16px] border-2 border-sky/30 p-6">
+              <div className="writing-paper rounded-[16px] border-2 border-ink p-6">
                 <InlineDiff oldText={content} newText={(categorySuggestion ?? previewContent)!} />
               </div>
             </div>
@@ -484,7 +484,7 @@ export function WritingDesk() {
                 }}
                 disabled={isCompleted}
                 placeholder="Start writing your story here... Let your imagination run wild!"
-                className="writing-paper w-full min-h-80 rounded-[16px] border border-warm-200 p-6 font-body text-xl leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-sky focus:border-transparent disabled:bg-warm-50 disabled:text-warm-400 text-warm-700 overflow-hidden"
+                className="writing-paper w-full min-h-80 rounded-[16px] border-2 border-ink p-6 font-body text-xl leading-relaxed resize-none focus:outline-none focus:ring-[3px] focus:ring-sky focus:border-ink disabled:bg-warm-50 disabled:text-warm-400 text-warm-700 overflow-hidden"
                 aria-label="Writing area"
               />
 
@@ -506,7 +506,7 @@ export function WritingDesk() {
                       type="button"
                       onClick={handleSave}
                       disabled={saving || !content.trim()}
-                      className="inline-flex items-center gap-1.5 px-4 h-10 text-sm font-semibold rounded-[10px] border-2 border-warm-200 bg-white text-warm-700 hover:bg-warm-50 transition-colors disabled:opacity-50"
+                      className="btn-manga inline-flex items-center gap-1.5 px-4 h-10 text-sm bg-white text-warm-700 disabled:opacity-50"
                     >
                       {saving ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -520,7 +520,7 @@ export function WritingDesk() {
                       type="button"
                       onClick={handleCoaching}
                       disabled={coaching || !content.trim() || currentPass >= 4}
-                      className="inline-flex items-center gap-1.5 px-4 h-10 text-sm font-semibold rounded-[10px] bg-sky text-white hover:bg-sky-dark transition-colors disabled:opacity-50 shadow-sm shadow-sky/20"
+                      className="btn-manga inline-flex items-center gap-1.5 px-4 h-10 text-sm bg-sky text-white disabled:opacity-50"
                     >
                       {coaching ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -534,7 +534,7 @@ export function WritingDesk() {
                       type="button"
                       onClick={handleComplete}
                       disabled={completing || !content.trim()}
-                      className="inline-flex items-center gap-1.5 px-4 h-10 text-sm font-semibold rounded-[10px] bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50"
+                      className="btn-manga inline-flex items-center gap-1.5 px-4 h-10 text-sm bg-green-500 text-white disabled:opacity-50"
                     >
                       {completing ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -552,7 +552,7 @@ export function WritingDesk() {
 
         {/* Coaching sidebar */}
         <div className="space-y-4">
-          <h2 className="font-display text-lg font-semibold text-warm-800">Coaching Feedback</h2>
+          <h2 className="font-display text-lg text-warm-800 tracking-wider uppercase">Coaching Feedback</h2>
 
           {passes.length === 0 ? (
             <div className="text-center py-8 text-warm-400 text-sm card-clay-static p-6">

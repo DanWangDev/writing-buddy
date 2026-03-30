@@ -7,9 +7,9 @@ import * as api from '../services/api'
 import type { Submission } from '@writing-buddy/shared'
 
 const STATUS_STYLES: Record<string, string> = {
-  draft: 'bg-warm-100 text-warm-600',
-  in_coaching: 'bg-sky/10 text-sky',
-  completed: 'bg-green-100 text-green-700',
+  draft: 'bg-warm-100 text-warm-600 border-ink',
+  in_coaching: 'bg-sky/10 text-sky border-ink',
+  completed: 'bg-green-500 text-white border-ink',
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -86,8 +86,8 @@ export function Portfolio() {
     <div className="space-y-6 relative">
       <MarginDoodles variant="portal" />
       <div>
-        <h1 className="font-display text-2xl font-bold text-warm-800">My Writing</h1>
-        <p className="text-warm-500 mt-1 text-base">All your stories and submissions</p>
+        <h1 className="font-display text-3xl text-warm-800 tracking-wider uppercase">My Writing</h1>
+        <p className="text-warm-500 mt-1 text-base font-bold">All your stories and submissions</p>
       </div>
 
       {error && (
@@ -102,7 +102,7 @@ export function Portfolio() {
           <p className="text-warm-400 text-base">Inkwell is snoozing... Wake them up with your first story!</p>
           <Link
             to="/prompts"
-            className="inline-flex mt-4 px-5 h-12 items-center bg-sky text-white text-base font-semibold rounded-[10px] hover:bg-sky-dark transition-colors shadow-sm shadow-sky/20"
+            className="btn-manga inline-flex mt-4 px-5 h-12 items-center bg-sky text-white text-base"
           >
             Browse Prompts
           </Link>
@@ -122,7 +122,7 @@ export function Portfolio() {
                   }
                   className="flex items-center gap-4 flex-1 min-w-0"
                 >
-                  <div className="w-12 h-12 rounded-[10px] bg-sky/10 flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 rounded-[10px] bg-sky/10 border-2 border-ink flex items-center justify-center shrink-0">
                     <FileText className="w-5 h-5 text-sky" />
                   </div>
                   <div className="min-w-0">
@@ -138,7 +138,7 @@ export function Portfolio() {
                 </Link>
                 <div className="flex items-center gap-2 shrink-0">
                   <span
-                    className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                    className={`badge-manga text-xs ${
                       STATUS_STYLES[sub.status] ?? STATUS_STYLES.draft
                     }`}
                   >

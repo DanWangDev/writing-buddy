@@ -103,15 +103,15 @@ export function AdminPrompts() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-2xl font-bold text-warm-800">Manage Prompts</h1>
-          <span className="px-2.5 py-0.5 rounded-full bg-warm-100 text-warm-600 text-sm font-semibold">
+          <h1 className="font-display text-3xl text-warm-800 tracking-wider uppercase">Manage Prompts</h1>
+          <span className="badge-manga text-sm bg-warm-100 text-warm-600">
             {prompts.length}
           </span>
         </div>
         <button
           type="button"
           onClick={() => setView('create')}
-          className="flex items-center gap-2 h-12 px-5 bg-sky text-white font-semibold rounded-[10px] hover:bg-sky-dark transition-colors cursor-pointer"
+          className="btn-manga flex items-center gap-2 h-12 px-5 bg-sky text-white cursor-pointer"
         >
           <Plus className="w-5 h-5" />
           Add Prompt
@@ -151,7 +151,7 @@ export function AdminPrompts() {
           <button
             type="button"
             onClick={() => setView('create')}
-            className="inline-flex items-center gap-2 px-5 h-12 bg-sky text-white font-semibold rounded-[10px] hover:bg-sky-dark transition-colors cursor-pointer"
+            className="btn-manga inline-flex items-center gap-2 px-5 h-12 bg-sky text-white cursor-pointer"
           >
             <Plus className="w-5 h-5" />
             Create your first prompt
@@ -167,7 +167,7 @@ export function AdminPrompts() {
               <PromptCard prompt={prompt} />
               {/* Submission count badge */}
               {stats && (
-                <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-warm-100 text-warm-500 text-xs font-semibold">
+                <span className="absolute top-3 right-3 badge-manga text-xs bg-warm-100 text-warm-500">
                   {stats.submissionCounts[prompt.id] ?? 0} submissions
                 </span>
               )}
@@ -176,7 +176,7 @@ export function AdminPrompts() {
                 <button
                   type="button"
                   onClick={() => handleEdit(prompt)}
-                  className="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-sm border border-warm-200 text-warm-500 hover:text-sky hover:border-sky transition-colors cursor-pointer"
+                  className="w-9 h-9 flex items-center justify-center rounded-full bg-white border-2 border-ink text-warm-500 hover:text-sky transition-colors cursor-pointer shadow-[2px_2px_0_var(--color-ink)]"
                   aria-label={`Edit ${prompt.title}`}
                 >
                   <Pencil className="w-4 h-4" />
@@ -184,7 +184,7 @@ export function AdminPrompts() {
                 <button
                   type="button"
                   onClick={() => setDeleteTarget(prompt)}
-                  className="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-sm border border-warm-200 text-warm-500 hover:text-red-500 hover:border-red-300 transition-colors cursor-pointer"
+                  className="w-9 h-9 flex items-center justify-center rounded-full bg-white border-2 border-ink text-warm-500 hover:text-red-500 transition-colors cursor-pointer shadow-[2px_2px_0_var(--color-ink)]"
                   aria-label={`Archive ${prompt.title}`}
                 >
                   <Trash2 className="w-4 h-4" />
@@ -234,7 +234,7 @@ function ContentHeatmap({
 
   return (
     <div className="card-clay-static p-4 overflow-x-auto">
-      <h2 className="font-display font-semibold text-warm-700 text-sm mb-3">Content Coverage</h2>
+      <h2 className="font-display text-warm-700 text-sm mb-3 tracking-wider uppercase">Content Coverage</h2>
       <table className="w-full text-center text-xs">
         <thead>
           <tr>
@@ -377,7 +377,7 @@ function PromptForm({
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="font-display text-2xl font-bold text-warm-800">
+        <h1 className="font-display text-2xl text-warm-800 tracking-wider uppercase">
           {isEdit ? `Edit: ${prompt?.title}` : 'New Prompt'}
         </h1>
       </div>
@@ -436,9 +436,9 @@ function PromptForm({
                     key={d}
                     type="button"
                     onClick={() => updateField('difficulty', d)}
-                    className={`flex-1 h-12 rounded-[10px] text-sm font-semibold capitalize transition-colors cursor-pointer ${
+                    className={`flex-1 h-12 rounded-[10px] text-sm font-bold capitalize transition-colors cursor-pointer border-2 border-ink ${
                       form.difficulty === d
-                        ? 'bg-sky text-white'
+                        ? 'bg-sky text-white shadow-[2px_2px_0_var(--color-ink)]'
                         : 'bg-warm-100 text-warm-600 hover:bg-warm-200'
                     }`}
                   >
@@ -501,7 +501,7 @@ function PromptForm({
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 h-12 px-6 bg-sky text-white font-semibold rounded-[10px] hover:bg-sky-dark transition-colors disabled:opacity-60 cursor-pointer"
+              className="btn-manga flex items-center gap-2 h-12 px-6 bg-sky text-white disabled:opacity-60 cursor-pointer"
             >
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               {saving ? (isEdit ? 'Saving...' : 'Creating...') : 'Save Prompt'}
@@ -509,7 +509,7 @@ function PromptForm({
             <button
               type="button"
               onClick={onCancel}
-              className="h-12 px-6 text-warm-600 font-semibold rounded-[10px] hover:bg-warm-100 transition-colors cursor-pointer"
+              className="btn-manga h-12 px-6 bg-white text-warm-600 cursor-pointer"
             >
               Cancel
             </button>

@@ -41,7 +41,7 @@ describe('Dashboard', () => {
     renderDashboard()
 
     await waitFor(() => {
-      expect(screen.getByText(/Welcome back, Alice/)).toBeInTheDocument()
+      expect(screen.getByText(/LET'S GO, Alice/i)).toBeInTheDocument()
     })
   })
 

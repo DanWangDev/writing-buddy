@@ -57,11 +57,11 @@ export function ConfirmDialog({
         aria-modal="true"
         aria-labelledby="confirm-title"
         aria-describedby="confirm-message"
-        className="relative bg-white rounded-[16px] border border-warm-200 shadow-lg w-full max-w-sm p-6 space-y-4"
+        className="relative bg-white rounded-[16px] border-3 border-ink shadow-[6px_6px_0_var(--color-ink)] w-full max-w-sm p-6 space-y-4"
       >
         <h2
           id="confirm-title"
-          className="font-display text-xl font-bold text-warm-800"
+          className="font-display text-xl text-warm-800 tracking-wider uppercase"
         >
           {title}
         </h2>
@@ -75,7 +75,7 @@ export function ConfirmDialog({
             ref={cancelRef}
             type="button"
             onClick={onCancel}
-            className="flex-1 h-12 text-base font-semibold rounded-[10px] bg-sky text-white hover:bg-sky-dark transition-colors shadow-sm shadow-sky/20"
+            className="btn-manga flex-1 h-12 text-base bg-sky text-white"
           >
             {cancelLabel}
           </button>
@@ -84,10 +84,10 @@ export function ConfirmDialog({
           <button
             type="button"
             onClick={onConfirm}
-            className={`flex-1 h-12 text-base font-semibold rounded-[10px] border-2 transition-colors ${
+            className={`btn-manga flex-1 h-12 text-base ${
               variant === 'danger'
-                ? 'border-red-200 text-red-500 bg-white hover:bg-red-50'
-                : 'border-warm-200 text-warm-600 bg-white hover:bg-warm-50'
+                ? 'bg-white text-red-500'
+                : 'bg-white text-warm-600'
             }`}
           >
             {confirmLabel}

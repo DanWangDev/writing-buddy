@@ -74,21 +74,21 @@ export function PromptBrowser() {
     <div className="space-y-6 relative">
       <MarginDoodles variant="prompts" />
       <div>
-        <h1 className="font-display text-2xl font-bold text-warm-800">Browse Prompts</h1>
-        <p className="text-warm-500 mt-1 text-base">Pick a prompt and start your story!</p>
+        <h1 className="font-display text-3xl text-warm-800 tracking-wider uppercase">Browse Prompts</h1>
+        <p className="text-warm-500 mt-1 text-base font-bold">Pick a prompt and start your story!</p>
       </div>
 
       {/* Difficulty tabs */}
-      <div className="flex gap-1 bg-white rounded-[10px] border-2 border-warm-200 p-1 w-fit" style={{ boxShadow: '3px 3px 0 0 var(--color-warm-200)' }}>
+      <div className="inline-flex border-[3px] border-ink rounded-[10px] overflow-hidden shadow-[4px_4px_0_var(--color-ink)]">
         {DIFFICULTIES.map((d) => (
           <button
             key={d.value}
             type="button"
             onClick={() => setDifficulty(d.value)}
-            className={`px-4 h-10 rounded-lg text-sm font-semibold transition-colors ${
+            className={`px-5 h-10 text-sm font-bold transition-colors border-r-[2px] border-ink last:border-r-0 ${
               difficulty === d.value
-                ? 'bg-sky text-white shadow-sm'
-                : 'text-warm-500 hover:bg-warm-100'
+                ? 'bg-sky text-white'
+                : 'bg-white text-warm-500 hover:bg-warm-100'
             }`}
           >
             {d.label}
@@ -103,10 +103,10 @@ export function PromptBrowser() {
             key={g.value}
             type="button"
             onClick={() => setGenre(g.value)}
-            className={`px-3 py-1.5 rounded-full text-sm font-semibold border-2 transition-colors ${
+            className={`px-4 py-1.5 rounded-full text-sm font-bold border-2 border-ink transition-all shadow-[2px_2px_0_var(--color-ink)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_var(--color-ink)] ${
               genre === g.value
-                ? 'bg-sky/10 border-sky text-sky'
-                : 'bg-white border-warm-200 text-warm-500 hover:bg-warm-50'
+                ? 'bg-sky text-white'
+                : 'bg-white text-warm-500'
             }`}
           >
             {g.label}

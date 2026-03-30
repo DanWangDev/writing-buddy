@@ -14,10 +14,10 @@ export function Stopwatch({ elapsed, running, onToggle, onReset, timeLimitMinute
   const isOverTime = timeLimitSeconds !== undefined && elapsed > timeLimitSeconds
 
   return (
-    <div className={`inline-flex items-center gap-2 card-clay-static px-3 py-1.5 ${isOverTime ? 'ring-2 ring-coral/40' : ''}`}>
-      <Timer className={`w-4 h-4 ${isOverTime ? 'text-coral' : 'text-sky'}`} />
+    <div className={`inline-flex items-center gap-2 border-2 border-ink rounded-lg px-3 py-1.5 ${isOverTime ? 'bg-[#EF4444] text-white' : 'bg-warm-100'}`}>
+      <Timer className={`w-4 h-4 ${isOverTime ? 'text-white' : 'text-sky'}`} />
       <span
-        className={`font-mono text-base font-bold tabular-nums text-center ${isOverTime ? 'text-coral' : 'text-warm-700'} ${elapsed >= 3600 ? 'min-w-[4.75rem]' : 'min-w-[3.5rem]'}`}
+        className={`font-mono text-base font-bold tabular-nums text-center ${isOverTime ? 'text-white' : 'text-warm-700'} ${elapsed >= 3600 ? 'min-w-[4.75rem]' : 'min-w-[3.5rem]'}`}
         aria-label={`Writing time: ${formatTime(elapsed)}`}
         role="timer"
       >
