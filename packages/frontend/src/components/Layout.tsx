@@ -1,12 +1,12 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { StreakBadge } from './StreakBadge'
+import { UserMenu, UserMenuInline } from './UserMenu'
 import {
   LayoutDashboard,
   BookOpen,
   FolderOpen,
   PenLine,
-  LogOut,
   Settings,
   X,
   Menu,
@@ -24,7 +24,7 @@ const BASE_NAV_ITEMS = [
 ]
 
 export function Layout() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
 
   const NAV_ITEMS = user?.role === 'admin'
     ? [...BASE_NAV_ITEMS, { to: '/admin/prompts', label: 'Manage Prompts', icon: Settings }]
@@ -39,10 +39,6 @@ export function Layout() {
       .then((data) => setStreak(data.streakDays))
       .catch(() => setStreak(0))
   }, [])
-
-  const handleLogout = () => {
-    logout()
-  }
 
   return (
     <div className="min-h-screen bg-manga-page flex">
@@ -96,25 +92,9 @@ export function Layout() {
           </button>
         </div>
 
-        {/* User section at bottom */}
-        <div className={`px-1.5 py-3 border-t-2 border-ink/30 ${collapsed ? 'flex flex-col items-center gap-2' : 'space-y-3 px-3'}`}>
-          {!collapsed && <StreakBadge streak={streak} />}
-          <div className={`flex items-center ${collapsed ? 'flex-col gap-1' : 'justify-between'}`}>
-            {!collapsed && (
-              <span className="text-sm font-bold text-white truncate">
-                {user?.displayName}
-              </span>
-            )}
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="p-2 text-white/70 hover:text-red-300 transition-colors rounded-lg hover:bg-white/10"
-              aria-label="Log out"
-              title="Log out"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
+        {/* User menu at bottom */}
+        <div className="px-1.5 py-3 border-t-2 border-ink/30">
+          <UserMenu streak={streak} collapsed={collapsed} />
         </div>
       </aside>
 
@@ -164,17 +144,7 @@ export function Layout() {
                 {item.label}
               </NavLink>
             ))}
-            <div className="flex items-center justify-between px-3 pt-2 border-t border-white/20 mt-1">
-              <span className="text-sm font-bold text-white">{user?.displayName}</span>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="p-2 text-white/70 hover:text-red-300 transition-colors rounded-lg"
-                aria-label="Log out"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
+            <UserMenuInline streak={streak} />
           </nav>
         )}
       </header>
