@@ -49,27 +49,27 @@ export function Layout() {
               <div className="w-9 h-9 rounded-[10px] bg-gold border-2 border-ink flex items-center justify-center shadow-[2px_2px_0_rgba(0,0,0,0.3)] -rotate-3">
                 <PenLine className="w-5 h-5 text-ink" />
               </div>
-              <span className="hidden sm:inline font-display text-2xl text-white tracking-wider" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.25)' }}>
+              <span className="hidden sm:inline font-display text-xl text-white tracking-wider whitespace-nowrap" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.25)' }}>
                 WRITING BUDDY
               </span>
             </NavLink>
 
             {/* Desktop nav */}
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden lg:flex items-center gap-1">
               {NAV_ITEMS.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   end={item.to === '/'}
                   className={({ isActive }) =>
-                    `flex items-center gap-1.5 px-3 py-2 rounded-[8px] text-sm font-bold transition-colors border-2 ${
+                    `flex items-center gap-1.5 px-2.5 py-2 rounded-[8px] text-xs font-bold whitespace-nowrap transition-colors border-2 ${
                       isActive
                         ? 'bg-gold text-ink border-ink shadow-[2px_2px_0_rgba(0,0,0,0.3)]'
                         : 'text-white border-transparent hover:bg-white/20 hover:border-white/30'
                     }`
                   }
                 >
-                  <item.icon className="w-4 h-4" />
+                  <item.icon className="w-4 h-4 shrink-0" />
                   {item.label}
                 </NavLink>
               ))}
@@ -94,7 +94,7 @@ export function Layout() {
             <button
               type="button"
               onClick={() => setMobileOpen((p) => !p)}
-              className="md:hidden p-2 text-white"
+              className="lg:hidden p-2 text-white"
               aria-label="Toggle menu"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,7 +106,7 @@ export function Layout() {
 
         {/* Mobile nav */}
         {mobileOpen && (
-          <nav className="md:hidden border-t-2 border-ink px-4 pb-3 pt-2 flex flex-col gap-1 bg-sky">
+          <nav className="lg:hidden border-t-2 border-ink px-4 pb-3 pt-2 flex flex-col gap-1 bg-sky">
             {NAV_ITEMS.map((item) => (
               <NavLink
                 key={item.to}
