@@ -96,9 +96,9 @@
 - **Touch targets:** 48px minimum (WCAG 2.2 Level AAA for kids)
 - **Min font size:** 16px for body text
 
-### Header/Navigation
-- **Desktop:** Sky blue background with white text, Bangers logo with text-shadow, gold active nav items with ink border
-- **Mobile:** Sky blue hamburger menu, slide-down nav panel matching header color
+### Sidebar Navigation
+- **Desktop:** Collapsible sky blue sidebar (default: collapsed 60px icon rail, expanded: 224px). Bangers logo with text-shadow, gold active nav items with ink border. Collapse toggle at bottom. User menu popover (avatar with initials) at sidebar footer with hub link and logout.
+- **Mobile:** Sky blue top bar with hamburger menu, slide-down nav panel matching header color. Inline user menu at bottom of dropdown with hub link and logout.
 
 ## Illustration & Mascot
 - **Style:** Manga-influenced ink illustrations (Inkwell mascot)

@@ -7,10 +7,10 @@
 - **What:** Stripped standalone auth, installed `@danwangdev/auth-client` SDK, recreated DB schema with hub_user_id references.
 - **Why:** Writing-buddy no longer maintains its own auth. Same login works across all apps.
 
-## Active Features
+## Completed Features
 
 ### P2: Admin Prompt Editor
-- **Status:** COMPLETE (branch: `feat/admin-prompt-editor`)
+- **Status:** COMPLETE (PR #35)
 - **What:** Full CRUD UI for admin users to create, edit, and soft-delete writing prompts. Includes Content Gap Heatmap (genre x difficulty coverage), per-prompt submission counts, live preview, and admin role gating via hub OIDC claims.
 - **Why:** Prompts were hardcoded in seed file — no way to add/edit/remove without code changes. Admins need a scalable way to manage prompt content.
 - **Effort:** M (human: ~1 week / CC: ~45 min)
@@ -19,6 +19,16 @@
   - Frontend: AdminPrompts page (list/form views), ContentHeatmap, AdminRoute guard, Toast notifications
   - Admin bypass in requireEntitlement (admins manage prompts regardless of subscription)
   - Soft-delete preserves FK integrity with submissions table
+
+### Manga Burst Style Overhaul
+- **Status:** COMPLETE (PR #37)
+- **What:** Full neubrutalist/manga redesign of all frontend pages and components. Bold ink borders, hard offset shadows, vivid flat colors, halftone textures. Bangers font for headings, Comic Neue for body text. Collapsible sidebar navigation (defaults collapsed).
+- **Why:** Original "Storybook Playground" style was too bland for the teenage target audience. Manga/comic aesthetic is more engaging.
+
+### User Menu with Hub Link
+- **Status:** COMPLETE (PR #39)
+- **What:** Avatar-triggered popover user menu in sidebar with "Back to 11+ Hub" link and logout. Hub URL configurable via VITE_HUB_URL env var.
+- **Why:** No way to navigate back to the hub app from within Writing Buddy.
 
 ## Deferred Features
 
