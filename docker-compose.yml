@@ -15,14 +15,14 @@ services:
       - NODE_ENV=production
       - DATABASE_PATH=/app/data/writing-buddy.db
       - OIDC_ISSUER=${OIDC_ISSUER:-http://localhost:3009}
-      - OIDC_INTERNAL_ISSUER=${OIDC_INTERNAL_ISSUER:-http://hub-app:3009}
+      - OIDC_INTERNAL_ISSUER=${OIDC_INTERNAL_ISSUER:-http://hub-backend:3009}
       - OIDC_REDIRECT_URI=${OIDC_REDIRECT_URI:-http://localhost:5055/api/auth/callback}
       - SESSION_SECRET=${SESSION_SECRET}
       - CORS_ORIGIN=http://localhost:5055
       - CORS_EXTRA_ORIGINS=http://localhost:5179
     networks:
       - default
-      - hub
+      - labf-net
     restart: unless-stopped
 
   frontend:
@@ -40,9 +40,12 @@ services:
     restart: unless-stopped
 
 networks:
-  hub:
+  # Shared cross-app network — owned by nobody, created once per host
+  # via the suite's bootstrap.sh (in story-sleuth). Backend joins it to
+  # reach hub-backend for OIDC discovery + JWKS.
+  labf-net:
     external: true
-    name: 11plus-hub_default
+    name: labf-net
 
 volumes:
   db-data:

@@ -1,6 +1,7 @@
 services:
   backend:
     image: ghcr.io/danwangdev/writing-buddy-backend:latest
+    container_name: writing-buddy-backend
     ports:
       - "5050:5050"
     volumes:
@@ -10,10 +11,14 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_PATH=/app/data/writing-buddy.db
+    networks:
+      - default
+      - labf-net
     restart: unless-stopped
 
   frontend:
     image: ghcr.io/danwangdev/writing-buddy-frontend:latest
+    container_name: writing-buddy-frontend
     ports:
       - "5055:80"
     depends_on:
@@ -22,3 +27,11 @@ services:
 
 volumes:
   db-data:
+
+# Shared cross-app network. Backend joins it to reach hub-backend for
+# OIDC discovery + JWKS. Create once per host via suite's bootstrap.sh
+# (kept in story-sleuth).
+networks:
+  labf-net:
+    external: true
+    name: labf-net
