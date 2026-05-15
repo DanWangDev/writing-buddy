@@ -12,18 +12,141 @@ Part of the 11+ prep suite alongside [vocab-master](https://github.com/DanWangDe
 4. **Review changes** — see exactly what changed with word-level revision diffs
 5. **Get scored** — receive a rubric-based score with detailed feedback on each dimension
 
+## Architecture
+
+```
+                          ┌──────────────────────────────────────┐
+                          │          11plus-hub (OIDC)            │
+                          │         Express · port 3009           │
+                          │    session store · user management    │
+                          └──────────────┬───────────────────────┘
+                                         │
+                    ┌────────────────────┼────────────────────┐
+                    │  OIDC (PKCE)       │   hub network      │
+                    │  login/logout      │   (Docker bridge)  │
+                    ▼                    │                    ▼
+   ┌────────────────────────────────────┴────────────────────────────────────┐
+   │                          Docker Host                                      │
+   │                                                                           │
+   │  ┌─────────────────────────────┐    ┌──────────────────────────────┐     │
+   │  │   Frontend Container        │    │    Backend Container          │     │
+   │  │   Nginx :80 (port 5055)     │    │    Express :5050              │     │
+   │  │                             │    │                               │     │
+   │  │  ┌───────────────────────┐  │    │  ┌────────────────────────┐   │     │
+   │  │  │   React 19 SPA        │  │    │  │    Middleware Stack    │   │     │
+   │  │  │   (Vite-built)        │  │    │  │  helmet · cors         │   │     │
+   │  │  │                       │  │    │  │  cookieParser · auth   │   │     │
+   │  │  │  Pages:               │  │    │  │  requireEntitlement    │   │     │
+   │  │  │  ├─ Dashboard         │  │    │  └───────────┬────────────┘   │     │
+   │  │  │  ├─ PromptBrowser     │  │    │              │                │     │
+   │  │  │  ├─ WritingDesk  ◄────┼──┼────┼───/api/writing/*             │     │
+   │  │  │  ├─ CoachingFeedback  │  │    │              │                │     │
+   │  │  │  ├─ Portfolio         │  │    │  ┌───────────▼────────────┐   │     │
+   │  │  │  ├─ SubmissionDetail  │  │    │  │      API Routes        │   │     │
+   │  │  │  └─ AdminPrompts      │  │    │  │                        │   │     │
+   │  │  │                       │  │    │  │  /api/auth/*           │   │     │
+   │  │  │  Contexts:            │  │    │  │  ├─ /login (OIDC)      │   │     │
+   │  │  │  └─ AuthContext       │  │    │  │  ├─ /callback          │   │     │
+   │  │  │                       │  │    │  │  ├─ /logout            │   │     │
+   │  │  │  Design:              │  │    │  │  ├─ /me                │   │     │
+   │  │  │  ├─ Bangers font      │  │    │  │  └─ /backchannel       │   │     │
+   │  │  │  ├─ Comic Neue font   │  │    │  │                        │   │     │
+   │  │  │  ├─ Tailwind v4       │  │    │  │  /api/writing/*        │   │     │
+   │  │  │  └─ Manga Burst       │  │    │  │  ├─ /prompts           │   │     │
+   │  │  └───────────────────────┘  │    │  │  ├─ /submissions       │   │     │
+   │  │                             │    │  │  ├─ /submissions/:id/  │   │     │
+   │  │  ┌───────────────────────┐  │    │  │  │   coaching          │   │     │
+   │  │  │  Nginx Config         │  │    │  │  ├─ /submissions/:id/  │   │     │
+   │  │  │  /api → backend:5050  │  │    │  │  │   progress          │   │     │
+   │  │  │  /*   → SPA fallback  │  │    │  │  └─ /submissions/:id/  │   │     │
+   │  │  └───────────────────────┘  │    │  │     scoring            │   │     │
+   │  └─────────────────────────────┘    │  └───────────┬────────────┘   │     │
+   │                                     │              │                │     │
+   │                                     │  ┌───────────▼────────────┐   │     │
+   │                                     │  │      Services          │   │     │
+   │                                     │  │                        │   │     │
+   │                                     │  │  AICoach               │   │     │
+   │                                     │  │  ├─ passes 1-4         │   │     │
+   │                                     │  │  ├─ ContextBuilder     │   │     │
+   │                                     │  │  └─ coaching prompts   │   │     │
+   │                                     │  │                        │   │     │
+   │                                     │  │  RubricScorer          │   │     │
+   │                                     │  │  └─ 5-category rubric  │   │     │
+   │                                     │  │                        │   │     │
+   │                                     │  │  ContentSafety         │   │     │
+   │                                     │  │  ├─ input screening    │   │     │
+   │                                     │  │  └─ output filtering   │   │     │
+   │                                     │  │                        │   │     │
+   │                                     │  │  LLMProvider (interface)│   │     │
+   │                                     │  │  ├─ DashScopeAdapter   │   │     │
+   │                                     │  │  │  (Qwen models)      │   │     │
+   │                                     │  │  └─ ClaudeAdapter      │   │     │
+   │                                     │  │                        │   │     │
+   │                                     │  │  DiffUtil (LCS-based)  │   │     │
+   │                                     │  │  ProgressService       │   │     │
+   │                                     │  │  UserSync              │   │     │
+   │                                     │  └───────────┬────────────┘   │     │
+   │                                     │              │                │     │
+   │                                     │  ┌───────────▼────────────┐   │     │
+   │                                     │  │    Repositories        │   │     │
+   │                                     │  │    (SQLite / WAL)      │   │     │
+   │                                     │  │                        │   │     │
+   │                                     │  │  SubmissionRepository  │   │     │
+   │                                     │  │  CoachingPassRepository│   │     │
+   │                                     │  │  ProgressRepository    │   │     │
+   │                                     │  │  RevisionRepository    │   │     │
+   │                                     │  │  RubricScoresRepository│   │     │
+   │                                     │  │  PromptRepository      │   │     │
+   │                                     │  │  UserRepository        │   │     │
+   │                                     │  │  AppUserRepository     │   │     │
+   │                                     │  └────────────────────────┘   │     │
+   │                                     │                                │     │
+   │                                     │  ┌────────────────────────┐   │     │
+   │                                     │  │  writing-buddy.db      │   │     │
+   │                                     │  │  (Docker volume)       │   │     │
+   │                                     │  └────────────────────────┘   │     │
+   │                                     └────────────────────────────────┘     │
+   └────────────────────────────────────────────────────────────────────────────┘
+```
+
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Runtime | Node.js 22, TypeScript |
-| Backend | Express, better-sqlite3 (WAL mode) |
-| Frontend | React 19, Vite, Tailwind CSS v4, React Router |
-| Auth | Hub OIDC via `@danwangdev/auth-client` (PKCE, session-based) |
-| LLM | Interface-based (`LLMProvider`) with DashScope (Qwen) and Claude (Anthropic) adapters |
-| Testing | Vitest, supertest, @testing-library/react |
-| CI/CD | GitHub Actions |
-| Deploy | Docker Compose |
+### Frontend
+
+| Concern | Choice | Notes |
+|----------|--------|-------|
+| Framework | React 19 | Latest stable, function components + hooks |
+| Build tool | Vite 7 | HMR dev server, production bundling |
+| Styling | Tailwind CSS v4 | Utility-first, custom design tokens |
+| Routing | React Router 7 | Client-side routing, protected routes |
+| HTTP client | `fetch` (native) | Via AuthContext for authenticated requests |
+| Auth state | React Context | `AuthContext` with session polling |
+| Icons | Lucide React | 24px, stroke-width 2 |
+| Fonts | Bangers + Comic Neue | Google Fonts CDN |
+
+### Backend
+
+| Concern | Choice | Notes |
+|----------|--------|-------|
+| Framework | Express 4 | Node.js HTTP server |
+| Database | better-sqlite3 (WAL) | Embedded, zero-config, single-file |
+| Migrations | Custom migrator | Versioned, ordered migration files |
+| Validation | Zod | Request body, env, config schemas |
+| Auth SDK | `@danwangdev/auth-client` | Hub OIDC with PKCE, session-based |
+| Security | helmet, cors, rate-limit | Standard Express security headers |
+| LLM SDK | Fetch-based | OpenAI-compatible API for DashScope + Anthropic SDK |
+| Logging | Custom logger | Structured JSON logs via `logger` service |
+
+### DevOps
+
+| Concern | Choice | Notes |
+|----------|--------|-------|
+| Containerization | Docker (2 images) | Backend + Frontend via docker-compose |
+| Reverse proxy | Nginx (frontend container) | SPA fallback, `/api` proxy |
+| Persistence | Docker volume (`db-data`) | SQLite database file |
+| Networking | `11plus-hub_default` bridge | Shared auth network with Hub |
+| CI | GitHub Actions | Build, typecheck, lint, test |
+| Deploy | `deploy.sh` | `docker compose up -d --build` one-shot
 
 ## Project Structure
 
@@ -111,16 +234,6 @@ The stack runs as two containers:
 - **Frontend** — Nginx-served React SPA on port 5055, reverse-proxies `/api` to backend
 
 Both containers join the `11plus-hub_default` network for auth integration with the Hub.
-
-## Architecture
-
-- **Route prefix**: Writing routes under `/api/writing/...`, auth routes under `/api/auth/...` — ready for single-process merge with vocab-master
-- **LLM provider**: Interface-based with swappable adapters. Currently supports DashScope (Qwen models) and Anthropic (Claude models)
-- **Content safety**: Dedicated service with input screening and output filtering — never inline
-- **Revision summaries**: Hybrid approach — coaching pass feedback combined with LCS-based word diffs, no extra LLM calls
-- **Rubric scoring**: Separate LLM call after the final coaching pass (coaching and grading use different tones)
-- **Spend tracking**: Database-based per-request query, no in-memory counters
-- **Admin**: Role-gated prompt CRUD UI, accessible via Hub OIDC role claims
 
 ## Design
 
