@@ -123,6 +123,22 @@ Part of the 11+ prep suite alongside [vocab-master](https://github.com/DanWangDe
 
 ## Tech Stack
 
+<div align="center">
+
+![Node.js](https://img.shields.io/badge/Node.js_22-339933?style=flat-square&logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express_4-000000?style=flat-square&logo=express&logoColor=white)
+![React](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=flat-square&logo=cloudflare&logoColor=white)
+
+</div>
+
+Session auth via OIDC with PKCE (hub-based). AI coaching with DashScope (Qwen) and Claude. Styling with Tailwind v4 + Manga Burst neubrutalist design system. Deployed via Docker Compose behind Cloudflare Tunnel.
+
 ### Frontend
 
 | Concern | Choice | Notes |
