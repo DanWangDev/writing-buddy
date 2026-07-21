@@ -17,7 +17,7 @@ RUN npm run build -w packages/shared
 ARG VITE_API_URL=/api
 ENV VITE_API_URL=${VITE_API_URL}
 
-ARG VITE_HUB_URL=https://hub.labf.app
+ARG VITE_HUB_URL=https://hub.example.com
 ENV VITE_HUB_URL=${VITE_HUB_URL}
 
 RUN npm run build -w packages/frontend

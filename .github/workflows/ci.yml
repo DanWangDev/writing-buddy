@@ -165,6 +165,6 @@ jobs:
           labels: ${{ steps.meta-frontend.outputs.labels }}
           build-args: |
             VITE_API_URL=/api
-            VITE_HUB_URL=https://hub.labf.app
+            VITE_HUB_URL=${{ vars.VITE_HUB_URL || 'https://hub.example.com' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
