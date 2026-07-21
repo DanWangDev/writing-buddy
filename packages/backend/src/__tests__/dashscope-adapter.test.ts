@@ -132,7 +132,7 @@ describe('DashScopeAdapter', () => {
     const adapter = new DashScopeAdapter('bad-key', 'qwen-plus', 'https://test.example.com/v1')
     await expect(
       adapter.generateResponse('System', 'User', { maxTokens: 500 })
-    ).rejects.toThrow('DashScope API error (401): Invalid API key')
+    ).rejects.toThrow('API error (401): Invalid API key')
   })
 
   it('throws on empty choices', async () => {
@@ -151,7 +151,7 @@ describe('DashScopeAdapter', () => {
     const adapter = new DashScopeAdapter('test-key', 'qwen-plus', 'https://test.example.com/v1')
     await expect(
       adapter.generateResponse('System', 'User', { maxTokens: 500 })
-    ).rejects.toThrow('DashScope API returned no choices')
+    ).rejects.toThrow('API returned no choices')
   })
 
   it('uses default env values when no constructor args', async () => {

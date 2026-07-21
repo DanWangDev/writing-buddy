@@ -298,3 +298,99 @@ export async function generatePrompt(
     body: JSON.stringify(data),
   });
 }
+
+// Admin — LLM Configuration
+export interface LlmCatalogEntry {
+  id: string
+  name: string
+  adapter: string
+  baseUrl: string
+  models: string[]
+}
+
+export interface LlmProvider {
+  id: string
+  catalogId: string
+  name: string
+  adapter: string
+  baseUrl: string
+  models: string[]
+  apiKeyMasked: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface LlmFeatureConfig {
+  id: string
+  feature: string
+  providerId: string
+  providerName: string
+  model: string
+  temperature: number
+  maxTokens: number
+  enabled: boolean
+  updatedAt: string
+}
+
+export interface LlmConfigData {
+  catalog: LlmCatalogEntry[]
+  providers: LlmProvider[]
+  configs: LlmFeatureConfig[]
+}
+
+export async function getLlmConfig(): Promise<LlmConfigData> {
+  return request<LlmConfigData>("/admin/llm-config")
+}
+
+export async function createLlmProvider(data: {
+  catalogId: string
+  apiKey: string
+  name?: string
+  baseUrl?: string
+  models?: string[]
+}): Promise<LlmProvider> {
+  return request<LlmProvider>("/admin/llm-config/providers", {
+    method: "POST",
+    body: JSON.stringify(data),
+  })
+}
+
+export async function updateLlmProvider(
+  id: string,
+  data: { apiKey?: string },
+): Promise<LlmProvider> {
+  return request<LlmProvider>(`/admin/llm-config/providers/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  })
+}
+
+export async function deleteLlmProvider(id: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/admin/llm-config/providers/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  })
+  if (res.status === 401) {
+    onSessionExpired?.()
+    throw new Error("Session expired. Please log in again.")
+  }
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({ error: "Delete failed" }))
+    throw new Error(json.error ?? "Delete failed")
+  }
+}
+
+export async function updateLlmFeatureConfig(
+  id: string,
+  data: {
+    providerId?: string
+    model?: string
+    temperature?: number
+    maxTokens?: number
+  },
+): Promise<LlmFeatureConfig> {
+  return request<LlmFeatureConfig>(`/admin/llm-config/configs/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  })
+}

@@ -11,6 +11,7 @@ import { WritingDesk } from './pages/WritingDesk'
 import { Portfolio } from './pages/Portfolio'
 import { SubmissionDetail } from './pages/SubmissionDetail'
 import { AdminPrompts } from './pages/AdminPrompts'
+import { AdminLlmConfig } from './pages/AdminLlmConfig'
 
 export function App() {
   return (
@@ -32,6 +33,7 @@ export function App() {
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/portfolio/:id" element={<SubmissionDetail />} />
           <Route path="/admin/prompts" element={<AdminRoute><AdminPrompts /></AdminRoute>} />
+          <Route path="/admin/llm-config" element={<AdminRoute><AdminLlmConfig /></AdminRoute>} />
         </Route>
       </Routes>
     </AuthProvider>
