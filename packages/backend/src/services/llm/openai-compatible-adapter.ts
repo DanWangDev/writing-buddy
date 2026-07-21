@@ -7,7 +7,7 @@ interface OpenAIChatResponse {
   readonly model: string
   readonly choices: ReadonlyArray<{
     readonly index: number
-    readonly message: { readonly role: string; readonly content: string }
+    readonly message: { readonly role: string; readonly content: string; readonly reasoning_content?: string }
     readonly finish_reason: string
   }>
   readonly usage: {
@@ -148,7 +148,9 @@ export class OpenAICompatibleAdapter implements LLMProvider {
       throw new Error('API returned no choices')
     }
 
-    const content = data.choices[0]?.message?.content ?? ''
+    // Support reasoning models (DeepSeek-R1, etc.) that return content in reasoning_content
+    const message = data.choices[0]?.message
+    const content = (message?.content || message?.reasoning_content) ?? ''
     const tokensUsed = data.usage?.total_tokens ?? 0
 
     logger.info('LLM response received', {

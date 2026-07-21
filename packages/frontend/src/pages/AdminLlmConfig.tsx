@@ -45,12 +45,24 @@ export function AdminLlmConfig() {
   // Feature config saving
   const [savingConfig, setSavingConfig] = useState<string | null>(null)
 
+  // Local edit state — changes only committed on explicit Save
+  const [editState, setEditState] = useState<Record<string, { providerId: string; model: string; temperature: number; maxTokens: number }>>({})
+
+  const initEdits = useCallback((configs: api.LlmFeatureConfig[]) => {
+    const state: Record<string, { providerId: string; model: string; temperature: number; maxTokens: number }> = {}
+    for (const c of configs) {
+      state[c.id] = { providerId: c.providerId, model: c.model, temperature: c.temperature, maxTokens: c.maxTokens }
+    }
+    setEditState(state)
+  }, [])
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true)
       setError('')
       const result = await api.getLlmConfig()
       setData(result)
+      initEdits(result.configs)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load')
     } finally {
@@ -106,22 +118,26 @@ export function AdminLlmConfig() {
     }
   }
 
-  const handleUpdateConfig = async (configId: string, updates: {
-    providerId?: string
-    model?: string
-    temperature?: number
-    maxTokens?: number
-  }) => {
+  const handleUpdateConfig = async (configId: string) => {
+    const edits = editState[configId]
+    if (!edits) return
     setSavingConfig(configId)
     try {
-      await api.updateLlmFeatureConfig(configId, updates)
-      toast('Configuration updated!', 'success')
+      await api.updateLlmFeatureConfig(configId, edits)
+      toast('Configuration saved!', 'success')
       await fetchData()
     } catch (err) {
-      toast(err instanceof Error ? err.message : 'Failed to update', 'error')
+      toast(err instanceof Error ? err.message : 'Failed to save', 'error')
     } finally {
       setSavingConfig(null)
     }
+  }
+
+  const updateEdit = (configId: string, field: string, value: string | number) => {
+    setEditState(prev => ({
+      ...prev,
+      [configId]: { ...prev[configId], [field]: value },
+    }))
   }
 
   const resetAddForm = () => {
@@ -132,13 +148,6 @@ export function AdminLlmConfig() {
     setCustomName('')
     setCustomBaseUrl('')
     setCustomModels('')
-  }
-
-  // ── Helpers ──
-
-  const getModelsForConfig = (config: api.LlmFeatureConfig): string[] => {
-    const provider = data?.providers.find(p => p.id === config.providerId)
-    return provider?.models ?? [config.model]
   }
 
   // ── Render ──
@@ -251,7 +260,15 @@ export function AdminLlmConfig() {
             </thead>
             <tbody>
               {data.configs.map(config => {
-                const models = getModelsForConfig(config)
+                const edits = editState[config.id]
+                if (!edits) return null
+                const currentProvider = data.providers.find(p => p.id === edits.providerId)
+                const models = currentProvider?.models ?? [edits.model]
+                const isDirty = edits.providerId !== config.providerId
+                  || edits.model !== config.model
+                  || edits.temperature !== config.temperature
+                  || edits.maxTokens !== config.maxTokens
+
                 return (
                   <tr key={config.id} className="border-b border-warm-100">
                     <td className="py-3 px-4 font-semibold text-warm-700">
@@ -259,14 +276,12 @@ export function AdminLlmConfig() {
                     </td>
                     <td className="py-3 px-4">
                       <select
-                        value={config.providerId}
+                        value={edits.providerId}
                         onChange={e => {
                           const newProvider = data.providers.find(p => p.id === e.target.value)
                           const newModels = newProvider?.models ?? []
-                          handleUpdateConfig(config.id, {
-                            providerId: e.target.value,
-                            model: newModels[0] ?? config.model,
-                          })
+                          updateEdit(config.id, 'providerId', e.target.value)
+                          updateEdit(config.id, 'model', newModels[0] ?? edits.model)
                         }}
                         className="w-full h-10 px-3 rounded-[8px] border-2 border-warm-200 bg-warm-50 text-warm-800 focus:border-violet outline-none text-sm cursor-pointer"
                         disabled={savingConfig === config.id}
@@ -278,8 +293,8 @@ export function AdminLlmConfig() {
                     </td>
                     <td className="py-3 px-4">
                       <select
-                        value={config.model}
-                        onChange={e => handleUpdateConfig(config.id, { model: e.target.value })}
+                        value={edits.model}
+                        onChange={e => updateEdit(config.id, 'model', e.target.value)}
                         className="w-full h-10 px-3 rounded-[8px] border-2 border-warm-200 bg-warm-50 text-warm-800 focus:border-violet outline-none text-sm cursor-pointer"
                         disabled={savingConfig === config.id}
                       >
@@ -291,9 +306,9 @@ export function AdminLlmConfig() {
                     <td className="py-3 px-4">
                       <input
                         type="number"
-                        value={config.temperature}
-                        onChange={e => handleUpdateConfig(config.id, { temperature: parseFloat(e.target.value) || 0 })}
-                        className="w-20 h-10 px-2 rounded-[8px] border-2 border-warm-200 bg-warm-50 text-warm-800 focus:border-violet outline-none text-sm"
+                        value={edits.temperature}
+                        onChange={e => updateEdit(config.id, 'temperature', parseFloat(e.target.value) || 0)}
+                        className="w-16 h-10 px-2 rounded-[8px] border-2 border-warm-200 bg-warm-50 text-warm-800 focus:border-violet outline-none text-sm"
                         min={0}
                         max={2}
                         step={0.1}
@@ -303,18 +318,27 @@ export function AdminLlmConfig() {
                     <td className="py-3 px-4">
                       <input
                         type="number"
-                        value={config.maxTokens}
-                        onChange={e => handleUpdateConfig(config.id, { maxTokens: parseInt(e.target.value) || 100 })}
-                        className="w-24 h-10 px-2 rounded-[8px] border-2 border-warm-200 bg-warm-50 text-warm-800 focus:border-violet outline-none text-sm"
+                        value={edits.maxTokens}
+                        onChange={e => updateEdit(config.id, 'maxTokens', parseInt(e.target.value) || 100)}
+                        className="w-20 h-10 px-2 rounded-[8px] border-2 border-warm-200 bg-warm-50 text-warm-800 focus:border-violet outline-none text-sm"
                         min={1}
                         max={32000}
                         disabled={savingConfig === config.id}
                       />
                     </td>
                     <td className="py-3 px-4">
-                      {savingConfig === config.id && (
-                        <Loader2 className="w-4 h-4 animate-spin text-violet" />
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateConfig(config.id)}
+                        disabled={!isDirty || savingConfig === config.id}
+                        className="btn-manga h-9 px-3 bg-violet text-white text-xs disabled:opacity-40 cursor-pointer whitespace-nowrap"
+                      >
+                        {savingConfig === config.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          'Save'
+                        )}
+                      </button>
                     </td>
                   </tr>
                 )
