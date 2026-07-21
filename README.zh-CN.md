@@ -1,20 +1,20 @@
-# Writing Buddy
+# Writing Buddy（写作伙伴）
 
-An AI coaching app that helps 10–11 year olds prepare for 11+ creative writing exams. Unlike AI tools that rewrite for the student, Writing Buddy provides iterative, voice-preserving coaching passes that guide students to improve their own work.
+一款 AI 辅导应用，帮助 10-11 岁的学生备考英国 11+ 创意写作考试。不同于直接替学生改写的 AI 工具，Writing Buddy 提供迭代式的、保留学生个人风格的辅导，引导学生改进自己的作品。
 
-Part of the 11+ prep suite alongside [vocab-master](https://github.com/DanWangDev/vocab-master). Shares auth infrastructure and is subscription-ready.
+属于 11+ 备考套件的一部分，与 [vocab-master](https://github.com/DanWangDev/vocab-master) 搭配使用。共享认证基础设施，支持订阅制。
 
-[中文文档](README.zh-CN.md)
+[English](README.md)
 
-## How It Works
+## 工作原理
 
-1. **Pick a prompt** — choose from a library of creative writing prompts, each with genre, time limits, and word count targets
-2. **Write** — compose your story on the notebook-styled writing desk with a live stopwatch
-3. **Get coached** — the AI runs multiple coaching passes: language improvement, narrative structure, description depth, and polishing
-4. **Review changes** — see exactly what changed with word-level revision diffs
-5. **Get scored** — receive a rubric-based score with detailed feedback on each dimension
+1. **选择题目** — 从创意写作题库中选择，每道题目标注了体裁、时间限制和字数目标
+2. **开始写作** — 在笔记本风格的书桌上创作，配有实时计时器
+3. **获取辅导** — AI 进行多轮辅导：语言优化、叙事结构、描写深度和润色打磨
+4. **查看修改** — 通过逐词差异对比，清晰看到每次修改的内容
+5. **获得评分** — 收到基于评分标准的详细反馈，涵盖每个维度
 
-## Architecture
+## 架构
 
 ```
                               ┌──────────────────────────────────────┐
@@ -28,31 +28,31 @@ Part of the 11+ prep suite alongside [vocab-master](https://github.com/DanWangDe
                         │  login/logout      │   (Docker bridge)  │
                         ▼                    │                    ▼
        ┌────────────────────────────────────┴────────────────────────────────────┐
-       │                          Docker Host (server)                                │
+       │                          Docker Host                                     │
        │                                                                           │
        │  ┌─────────────────────────────┐    ┌──────────────────────────────┐     │
        │  │   Frontend Container        │    │    Backend Container          │     │
        │  │   Nginx :80 (port 5055)     │    │    Express :5050              │     │
        │  │                             │    │                               │     │
        │  │  ┌───────────────────────┐  │    │  ┌────────────────────────┐   │     │
-       │  │  │   React 19 SPA        │  │    │  │    Middleware Stack    │   │     │
-       │  │  │   (Vite-built)        │  │    │  │  helmet · cors         │   │     │
+       │  │  │   React 19 SPA        │  │    │  │    中间件栈            │   │     │
+       │  │  │   (Vite 构建)         │  │    │  │  helmet · cors         │   │     │
        │  │  │                       │  │    │  │  cookieParser · auth   │   │     │
-       │  │  │  Pages:               │  │    │  │  requireEntitlement    │   │     │
+       │  │  │  页面：               │  │    │  │  requireEntitlement    │   │     │
        │  │  │  ├─ Dashboard         │  │    │  └───────────┬────────────┘   │     │
        │  │  │  ├─ PromptBrowser     │  │    │              │                │     │
        │  │  │  ├─ WritingDesk  ◄────┼──┼────┼───/api/writing/*             │     │
        │  │  │  ├─ CoachingFeedback  │  │    │              │                │     │
        │  │  │  ├─ Portfolio         │  │    │  ┌───────────▼────────────┐   │     │
-       │  │  │  ├─ SubmissionDetail  │  │    │  │      API Routes        │   │     │
+       │  │  │  ├─ SubmissionDetail  │  │    │  │      API 路由          │   │     │
        │  │  │  └─ AdminPrompts      │  │    │  │                        │   │     │
        │  │  │                       │  │    │  │  /api/auth/*           │   │     │
-       │  │  │  Contexts:            │  │    │  │  ├─ /login (OIDC)      │   │     │
+       │  │  │  上下文：             │  │    │  │  ├─ /login (OIDC)      │   │     │
        │  │  │  └─ AuthContext       │  │    │  │  ├─ /callback          │   │     │
        │  │  │                       │  │    │  │  ├─ /logout            │   │     │
-       │  │  │  Design:              │  │    │  │  ├─ /me                │   │     │
-       │  │  │  ├─ Bangers font      │  │    │  │  └─ /backchannel       │   │     │
-       │  │  │  ├─ Comic Neue font   │  │    │  │                        │   │     │
+       │  │  │  设计：               │  │    │  │  ├─ /me                │   │     │
+       │  │  │  ├─ Bangers 字体      │  │    │  │  └─ /backchannel       │   │     │
+       │  │  │  ├─ Comic Neue 字体   │  │    │  │                        │   │     │
        │  │  │  ├─ Tailwind v4       │  │    │  │  /api/writing/*        │   │     │
        │  │  │  └─ Manga Burst       │  │    │  │  ├─ /prompts           │   │     │
        │  │  └───────────────────────┘  │    │  │  ├─ /submissions       │   │     │
@@ -65,32 +65,32 @@ Part of the 11+ prep suite alongside [vocab-master](https://github.com/DanWangDe
        │  └──────────────┬──────────────┘    │  └───────────┬────────────┘   │     │
        │                 │                   │              │                │     │
        │                 │                   │  ┌───────────▼────────────┐   │     │
-       │                 │                   │  │      Services          │   │     │
+       │                 │                   │  │      服务层            │   │     │
        │                 │                   │  │                        │   │     │
        │                 │                   │  │  AICoach               │   │     │
-       │                 │                   │  │  ├─ passes 1-4         │   │     │
+       │                 │                   │  │  ├─ 第1-4轮辅导        │   │     │
        │                 │                   │  │  ├─ ContextBuilder     │   │     │
-       │                 │                   │  │  └─ coaching prompts   │   │     │
+       │                 │                   │  │  └─ 辅导提示词         │   │     │
        │                 │                   │  │                        │   │     │
        │                 │                   │  │  RubricScorer          │   │     │
-       │                 │                   │  │  └─ 5-category rubric  │   │     │
+       │                 │                   │  │  └─ 五维度评分标准     │   │     │
        │                 │                   │  │                        │   │     │
        │                 │                   │  │  ContentSafety         │   │     │
-       │                 │                   │  │  ├─ input screening    │   │     │
-       │                 │                   │  │  └─ output filtering   │   │     │
+       │                 │                   │  │  ├─ 输入筛查           │   │     │
+       │                 │                   │  │  └─ 输出过滤           │   │     │
        │                 │                   │  │                        │   │     │
-       │                 │                   │  │  LLMProvider (interface)│   │     │
+       │                 │                   │  │  LLMProvider (接口)    │   │     │
        │                 │                   │  │  ├─ DashScopeAdapter   │   │     │
-       │                 │                   │  │  │  (Qwen models)      │   │     │
+       │                 │                   │  │  │  (Qwen 模型)        │   │     │
        │                 │                   │  │  └─ ClaudeAdapter      │   │     │
        │                 │                   │  │                        │   │     │
-       │                 │                   │  │  DiffUtil (LCS-based)  │   │     │
+       │                 │                   │  │  DiffUtil (LCS算法)    │   │     │
        │                 │                   │  │  ProgressService       │   │     │
        │                 │                   │  │  UserSync              │   │     │
        │                 │                   │  └───────────┬────────────┘   │     │
        │                 │                   │              │                │     │
        │                 │                   │  ┌───────────▼────────────┐   │     │
-       │                 │                   │  │    Repositories        │   │     │
+       │                 │                   │  │    数据仓库层          │   │     │
        │                 │                   │  │    (SQLite / WAL)      │   │     │
        │                 │                   │  │                        │   │     │
        │                 │                   │  │  SubmissionRepository  │   │     │
@@ -117,7 +117,7 @@ Part of the 11+ prep suite alongside [vocab-master](https://github.com/DanWangDe
                     └─────────────┘
 ```
 
-## Tech Stack
+## 技术栈
 
 <div align="center">
 
@@ -133,69 +133,69 @@ Part of the 11+ prep suite alongside [vocab-master](https://github.com/DanWangDe
 
 </div>
 
-Session auth via OIDC with PKCE (hub-based). AI coaching with DashScope (Qwen) and Claude. Styling with Tailwind v4 + Manga Burst neubrutalist design system. Deployed via Docker Compose behind Cloudflare Tunnel.
+基于 OIDC + PKCE 的会话认证（Hub 提供）。AI 辅导采用 DashScope（Qwen）和 Claude 模型。使用 Tailwind v4 + Manga Burst 新粗野主义设计系统。通过 Docker Compose 部署于 Cloudflare Tunnel 之后。
 
-### Frontend
+### 前端
 
-| Concern | Choice | Notes |
-|----------|--------|-------|
-| Framework | React 19 | Latest stable, function components + hooks |
-| Build tool | Vite 7 | HMR dev server, production bundling |
-| Styling | Tailwind CSS v4 | Utility-first, custom design tokens |
-| Routing | React Router 7 | Client-side routing, protected routes |
-| HTTP client | `fetch` (native) | Via AuthContext for authenticated requests |
-| Auth state | React Context | `AuthContext` with session polling |
-| Icons | Lucide React | 24px, stroke-width 2 |
-| Fonts | Bangers + Comic Neue | Google Fonts CDN |
+| 关注点 | 技术选型 | 备注 |
+|--------|----------|------|
+| 框架 | React 19 | 最新稳定版，函数组件 + Hooks |
+| 构建工具 | Vite 7 | HMR 开发服务器，生产构建打包 |
+| 样式 | Tailwind CSS v4 | 实用优先，自定义设计令牌 |
+| 路由 | React Router 7 | 客户端路由，受保护路由 |
+| HTTP 客户端 | `fetch`（原生） | 通过 AuthContext 发起认证请求 |
+| 认证状态 | React Context | `AuthContext` 含会话轮询 |
+| 图标 | Lucide React | 24px，stroke-width 2 |
+| 字体 | Bangers + Comic Neue | Google Fonts CDN |
 
-### Backend
+### 后端
 
-| Concern | Choice | Notes |
-|----------|--------|-------|
-| Framework | Express 4 | Node.js HTTP server |
-| Database | better-sqlite3 (WAL) | Embedded, zero-config, single-file |
-| Migrations | Custom migrator | Versioned, ordered migration files |
-| Validation | Zod | Request body, env, config schemas |
-| Auth SDK | `@danwangdev/auth-client` | Hub OIDC with PKCE, session-based |
-| Security | helmet, cors, rate-limit | Standard Express security headers |
-| LLM SDK | Fetch-based | OpenAI-compatible API for DashScope + Anthropic SDK |
-| Logging | Custom logger | Structured JSON logs via `logger` service |
+| 关注点 | 技术选型 | 备注 |
+|--------|----------|------|
+| 框架 | Express 4 | Node.js HTTP 服务器 |
+| 数据库 | better-sqlite3 (WAL) | 嵌入式、零配置、单文件 |
+| 数据库迁移 | 自定义迁移器 | 版本化、有序的迁移文件 |
+| 校验 | Zod | 请求体、环境变量、配置校验 |
+| 认证 SDK | `@danwangdev/auth-client` | Hub OIDC + PKCE，基于会话 |
+| 安全 | helmet, cors, rate-limit | 标准 Express 安全头 |
+| LLM SDK | 基于 fetch | 兼容 OpenAI API 格式（DashScope）+ Anthropic SDK |
+| 日志 | 自定义日志服务 | 通过 `logger` 服务输出结构化 JSON 日志 |
 
 ### DevOps
 
-| Concern | Choice | Notes |
-|----------|--------|-------|
-| Containerization | Docker (2 images) | Backend + Frontend via docker-compose |
-| Edge entry point | Cloudflare Tunnel | Public HTTPS → Docker container |
-| Static serving | Nginx (frontend container) | SPA fallback, static asset cache |
-| API proxy | Nginx `/api` → backend:5050 | Internal Docker network proxy |
-| Persistence | Docker volume (`db-data`) | SQLite database file |
-| Networking | `11plus-hub_default` bridge | Shared auth network with Hub |
-| CI | GitHub Actions | Build, typecheck, lint, test |
-| Deploy | `deploy.sh` | `docker compose up -d --build` one-shot |
+| 关注点 | 技术选型 | 备注 |
+|--------|----------|------|
+| 容器化 | Docker（2 个镜像） | 后端 + 前端通过 docker-compose 编排 |
+| 边缘入口 | Cloudflare Tunnel | 公网 HTTPS → Docker 容器 |
+| 静态资源 | Nginx（前端容器） | SPA 回退，静态资源缓存 |
+| API 代理 | Nginx `/api` → backend:5050 | Docker 内部网络代理 |
+| 持久化 | Docker volume（`db-data`） | SQLite 数据库文件 |
+| 网络 | `11plus-hub_default` bridge | 与 Hub 共享认证网络 |
+| CI | GitHub Actions | 构建、类型检查、Lint、测试 |
+| 部署 | `deploy.sh` | `docker compose up -d --build` 一键部署 |
 
-## Project Structure
+## 项目结构
 
 ```
 writing-buddy/
 ├── packages/
-│   ├── shared/          # Shared TypeScript types
-│   ├── backend/         # Express API (port 5050)
-│   └── frontend/        # React SPA (port 5179 dev, 5055 prod)
-├── .github/workflows/   # CI pipeline
-├── docker-compose.yml   # Production deployment
-├── deploy.sh            # One-command redeploy
-└── DESIGN.md            # Full design system (Manga Burst neubrutalism)
+│   ├── shared/          # 共享 TypeScript 类型定义
+│   ├── backend/         # Express API（端口 5050）
+│   └── frontend/        # React SPA（开发端口 5179，生产端口 5055）
+├── .github/workflows/   # CI 流水线
+├── docker-compose.yml   # 生产环境部署
+├── deploy.sh            # 一键重新部署
+└── DESIGN.md            # 完整设计系统（Manga Burst 新粗野主义）
 ```
 
-## Getting Started
+## 快速开始
 
-### Prerequisites
+### 前置要求
 
 - Node.js >= 22
 - npm >= 10
 
-### Setup
+### 安装
 
 ```bash
 git clone https://github.com/DanWangDev/writing-buddy.git
@@ -203,18 +203,18 @@ cd writing-buddy
 npm install
 ```
 
-### Environment Variables
+### 环境变量
 
-Copy `.env.example` to `.env` and configure:
+复制 `.env.example` 为 `.env` 并配置：
 
 ```bash
-# Auth (Hub OIDC)
+# 认证（Hub OIDC）
 OIDC_ISSUER=http://localhost:3009
 OIDC_INTERNAL_ISSUER=http://hub-app:3009
 OIDC_REDIRECT_URI=http://localhost:5055/api/auth/callback
 SESSION_SECRET=your-secret-here
 
-# LLM API keys
+# LLM API 密钥
 DASHSCOPE_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-...
 
@@ -227,44 +227,44 @@ VITE_API_URL=/api
 VITE_HUB_URL=http://localhost:3009
 ```
 
-### Development
+### 开发
 
 ```bash
-npm run dev:backend      # Start backend with hot reload (port 5050)
-npm run dev:frontend     # Start frontend with Vite dev server (port 5179)
+npm run dev:backend      # 启动后端热重载（端口 5050）
+npm run dev:frontend     # 启动前端 Vite 开发服务器（端口 5179）
 ```
 
-### Testing
+### 测试
 
 ```bash
-npm test                 # Run all tests
-npm run test:coverage    # Run with coverage (target: 80%+)
+npm test                 # 运行所有测试
+npm run test:coverage    # 运行测试并检查覆盖率（目标：80%+）
 ```
 
-### Building
+### 构建
 
 ```bash
-npm run build            # Build all packages
-npm run typecheck        # Type-check all packages
-npm run lint             # ESLint frontend
+npm run build            # 构建所有包
+npm run typecheck        # 类型检查所有包
+npm run lint             # 前端 ESLint 检查
 ```
 
-## Production Deploy
+## 生产环境部署
 
 ```bash
-./deploy.sh              # Docker Compose redeploy
+./deploy.sh              # Docker Compose 重新部署
 ```
 
-The stack runs as two containers on Docker Compose:
-- **Backend** — Express API on port 5050, SQLite data persisted via Docker volume
-- **Frontend** — Nginx serving the React SPA and proxying `/api` to backend (port 5055)
+生产环境运行两个 Docker Compose 容器：
+- **后端** — Express API 端口 5050，SQLite 数据通过 Docker volume 持久化
+- **前端** — Nginx 提供 React SPA 服务，并将 `/api` 代理到后端（端口 5055）
 
-Both containers join the `11plus-hub_default` bridge for auth integration with the Hub. External traffic arrives via Cloudflare Tunnel → frontend container.
+两个容器均加入 `11plus-hub_default` bridge 网络，与 Hub 进行认证集成。外部流量通过 Cloudflare Tunnel → 前端容器。
 
-## Design
+## 设计
 
-Writing Buddy uses a **Manga Burst neubrutalist** design system — bold comic-book aesthetic with thick ink outlines, hard offset shadows, vivid flat colors, and halftone textures. Bangers (display) and Comic Neue (body) fonts. Full system documented in [DESIGN.md](DESIGN.md).
+Writing Buddy 采用 **Manga Burst 新粗野主义**设计系统——大胆的漫画风格，粗墨线边框、硬阴影、鲜艳扁平色彩和网点纹理。Bangers（展示字体）和 Comic Neue（正文字体）。完整设计系统详见 [DESIGN.md](DESIGN.md)。
 
-## License
+## 开源协议
 
 MIT
