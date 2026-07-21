@@ -232,13 +232,13 @@ The extraction from vocab-master is non-breaking — the existing auth code move
 
 ### Cross-App SSO Architecture
 
-All apps live on subdomains of `*.labf.app` (e.g., `vocab-master.labf.app`, `writing-buddy.labf.app`). SSO works via a **shared HttpOnly cookie on the `.labf.app` parent domain** — no hub app, no OAuth redirects between your own apps, no message queues.
+All apps live on subdomains of `*.example.com` (e.g., `vocab-master.example.com`, `writing-buddy.example.com`). SSO works via a **shared HttpOnly cookie on the `.example.com` parent domain** — no hub app, no OAuth redirects between your own apps, no message queues.
 
 **How it works:**
 
-1. **Login (any app):** User signs in on any app → backend generates a JWT access token + refresh token → both set as HttpOnly cookies on `.labf.app` domain.
+1. **Login (any app):** User signs in on any app → backend generates a JWT access token + refresh token → both set as HttpOnly cookies on `.example.com` domain.
 
-2. **Cross-app access:** When the user visits another subdomain (e.g., `writing-buddy.labf.app`), the browser automatically sends the JWT cookie. Writing-buddy's backend validates it using the same `shared-auth` middleware and the same signing secret. User is already logged in — zero friction.
+2. **Cross-app access:** When the user visits another subdomain (e.g., `writing-buddy.example.com`), the browser automatically sends the JWT cookie. Writing-buddy's backend validates it using the same `shared-auth` middleware and the same signing secret. User is already logged in — zero friction.
 
 3. **JWT claims carry entitlements:**
 ```typescript
@@ -259,7 +259,7 @@ interface JwtPayload {
 
 5. **Token refresh:** Refresh tokens (longer-lived, e.g., 7 days) are stored as a separate HttpOnly cookie. Both apps hit the same `/auth/refresh` endpoint (served by whichever backend the request lands on, since both import `shared-auth` and connect to the shared DB). The refreshed JWT includes the latest subscription state — so if a user upgrades mid-session, the new entitlements appear on next refresh without re-login.
 
-6. **Adding future apps:** Deploy a new subdomain on `*.labf.app`, import `shared-auth`, use the same JWT signing secret. Add the new app identifier to the subscription system. Existing apps require zero code changes. The JWT `apps` array is dynamic — populated from the DB at token generation time, not hardcoded.
+6. **Adding future apps:** Deploy a new subdomain on `*.example.com`, import `shared-auth`, use the same JWT signing secret. Add the new app identifier to the subscription system. Existing apps require zero code changes. The JWT `apps` array is dynamic — populated from the DB at token generation time, not hardcoded.
 
 **Why not a hub app (yet):**
 A hub portal (single entry point listing all apps) becomes valuable when there are 3+ apps and users need help navigating the suite. For 2 apps, SSO is sufficient — users bookmark each app directly and are always logged in. The hub can be added as a future phase as simple UI on top of this same SSO foundation, without changing the auth layer.

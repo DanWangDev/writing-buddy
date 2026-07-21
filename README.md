@@ -26,7 +26,7 @@ Part of the 11+ prep suite alongside [vocab-master](https://github.com/DanWangDe
                         │  login/logout      │   (Docker bridge)  │
                         ▼                    │                    ▼
        ┌────────────────────────────────────┴────────────────────────────────────┐
-       │                          Docker Host (NAS)                                │
+       │                          Docker Host (server)                                │
        │                                                                           │
        │  ┌─────────────────────────────┐    ┌──────────────────────────────┐     │
        │  │   Frontend Container        │    │    Backend Container          │     │
@@ -108,12 +108,6 @@ Part of the 11+ prep suite alongside [vocab-master](https://github.com/DanWangDe
        │                 │                   └────────────────────────────────┘     │
        └─────────────────┼──────────────────────────────────────────────────────────┘
                          │
-                    ┌────▼────┐
-                    │   NAS   │
-                    │ port fwd│
-                    │ :5055   │
-                    └────┬────┘
-                         │
                     ┌────▼────────┐
                     │ Cloudflare  │
                     │ Tunnel      │
@@ -170,7 +164,7 @@ Session auth via OIDC with PKCE (hub-based). AI coaching with DashScope (Qwen) a
 | Concern | Choice | Notes |
 |----------|--------|-------|
 | Containerization | Docker (2 images) | Backend + Frontend via docker-compose |
-| Edge entry point | Cloudflare Tunnel | Public HTTPS → NAS port forward |
+| Edge entry point | Cloudflare Tunnel | Public HTTPS → Docker container |
 | Static serving | Nginx (frontend container) | SPA fallback, static asset cache |
 | API proxy | Nginx `/api` → backend:5050 | Internal Docker network proxy |
 | Persistence | Docker volume (`db-data`) | SQLite database file |
@@ -263,7 +257,7 @@ The stack runs as two containers on Docker Compose:
 - **Backend** — Express API on port 5050, SQLite data persisted via Docker volume
 - **Frontend** — Nginx serving the React SPA and proxying `/api` to backend (port 5055)
 
-Both containers join the `11plus-hub_default` bridge for auth integration with the Hub. External traffic arrives via Cloudflare Tunnel → NAS port forward → frontend container.
+Both containers join the `11plus-hub_default` bridge for auth integration with the Hub. External traffic arrives via Cloudflare Tunnel → frontend container.
 
 ## Design
 
