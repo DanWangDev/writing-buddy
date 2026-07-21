@@ -265,3 +265,36 @@ export async function deletePrompt(id: string): Promise<void> {
     throw new Error(json.error ?? "Delete failed");
   }
 }
+
+// Admin — AI Prompt Generation
+export type GenerateMode =
+  | "full"
+  | "refine_body"
+  | "refine_title"
+  | "suggest_tags";
+
+export interface GeneratePromptRequest {
+  mode: GenerateMode;
+  genre: PromptGenre;
+  difficulty: PromptDifficulty;
+  seed?: string;
+  current?: string;
+}
+
+export interface GeneratePromptResult {
+  title?: string;
+  body?: string;
+  tags?: string[];
+  wordCountTarget?: number;
+  tokensUsed: number;
+  model: string;
+}
+
+export async function generatePrompt(
+  data: GeneratePromptRequest,
+): Promise<GeneratePromptResult> {
+  return request<GeneratePromptResult>("/prompts/generate", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}

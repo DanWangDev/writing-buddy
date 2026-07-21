@@ -5,12 +5,14 @@ import { ConfirmDialog } from '../components/ConfirmDialog'
 import { toast } from '../components/toast-store'
 import * as api from '../services/api'
 import type { PromptStats } from '../services/api'
+import { generatePrompt } from '../services/api'
 import {
   Plus,
   ArrowLeft,
   Pencil,
   Trash2,
   Loader2,
+  Sparkles,
 } from 'lucide-react'
 
 const GENRES: PromptGenre[] = ['adventure', 'mystery', 'sci-fi', 'fantasy', 'humor', 'descriptive', 'persuasive']
@@ -302,6 +304,10 @@ function PromptForm({
   const [tagsInput, setTagsInput] = useState(prompt?.tags.join(', ') ?? '')
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [generating, setGenerating] = useState(false)
+  const [showSeedInput, setShowSeedInput] = useState(false)
+  const [seedInput, setSeedInput] = useState('')
+  const [generatingField, setGeneratingField] = useState<string | null>(null)
 
   const updateField = <K extends keyof CreatePromptDto>(key: K, value: CreatePromptDto[K]) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -310,6 +316,66 @@ function PromptForm({
       delete next[key]
       return next
     })
+  }
+
+  const handleGenerateFull = async () => {
+    setGenerating(true)
+    setErrors({})
+    try {
+      const result = await generatePrompt({
+        mode: 'full',
+        genre: form.genre,
+        difficulty: form.difficulty,
+        seed: seedInput || undefined,
+      })
+      if (result.title) updateField('title', result.title)
+      if (result.body) updateField('body', result.body)
+      if (result.tags) {
+        updateField('tags', result.tags)
+        setTagsInput(result.tags.join(', '))
+      }
+      if (result.wordCountTarget) updateField('wordCountTarget', result.wordCountTarget)
+      setShowSeedInput(false)
+      setSeedInput('')
+      toast('Prompt generated! Review and edit before saving.', 'success')
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Generation failed', 'error')
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  const handleRefineField = async (mode: 'refine_body' | 'refine_title' | 'suggest_tags') => {
+    const currentValue = mode === 'refine_title' ? form.title : form.body
+    if (!currentValue && mode !== 'suggest_tags') {
+      toast('Type something first before refining.', 'error')
+      return
+    }
+
+    setGeneratingField(mode)
+    try {
+      const result = await generatePrompt({
+        mode,
+        genre: form.genre,
+        difficulty: form.difficulty,
+        current: currentValue || form.body,
+      })
+      if (mode === 'refine_title' && result.title) {
+        updateField('title', result.title)
+        toast('Title refined!', 'success')
+      } else if (mode === 'refine_body' && result.body) {
+        updateField('body', result.body)
+        toast('Body refined!', 'success')
+      } else if (mode === 'suggest_tags' && result.tags) {
+        updateField('tags', result.tags)
+        setTagsInput(result.tags.join(', '))
+        toast('Tags suggested!', 'success')
+      }
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Refinement failed', 'error')
+    } finally {
+      setGeneratingField(null)
+    }
   }
 
   const validate = (): Record<string, string> => {
@@ -380,6 +446,55 @@ function PromptForm({
         <h1 className="font-display text-2xl text-warm-800 tracking-wider uppercase">
           {isEdit ? `Edit: ${prompt?.title}` : 'New Prompt'}
         </h1>
+        <div className="ml-auto flex items-center gap-2">
+          {!showSeedInput ? (
+            <button
+              type="button"
+              onClick={() => setShowSeedInput(true)}
+              disabled={generating}
+              className="btn-manga flex items-center gap-2 h-12 px-4 bg-violet text-white disabled:opacity-60 cursor-pointer"
+            >
+              {generating ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Sparkles className="w-4 h-4" />
+              )}
+              {generating ? 'Generating...' : 'AI Generate'}
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={seedInput}
+                onChange={e => setSeedInput(e.target.value)}
+                placeholder="A rough idea (optional)..."
+                className="h-12 px-4 rounded-[10px] border-2 border-violet/30 bg-violet-50 text-warm-800 focus:border-violet focus:ring-2 focus:ring-violet/20 outline-none transition-colors text-sm w-56"
+                onKeyDown={e => { if (e.key === 'Enter') handleGenerateFull() }}
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={handleGenerateFull}
+                disabled={generating}
+                className="btn-manga flex items-center gap-1 h-12 px-3 bg-violet text-white disabled:opacity-60 cursor-pointer text-sm"
+              >
+                {generating ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Sparkles className="w-4 h-4" />
+                )}
+                Go
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowSeedInput(false); setSeedInput('') }}
+                className="btn-manga h-12 px-3 bg-white text-warm-500 cursor-pointer text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
@@ -387,7 +502,23 @@ function PromptForm({
         <form onSubmit={handleSubmit} role="form" className="flex-1 md:w-3/5 space-y-4">
           {/* Title */}
           <div>
-            <label htmlFor="prompt-title" className="block text-sm font-semibold text-warm-700 mb-1">Title</label>
+            <div className="flex items-center justify-between mb-1">
+              <label htmlFor="prompt-title" className="text-sm font-semibold text-warm-700">Title</label>
+              <button
+                type="button"
+                onClick={() => handleRefineField('refine_title')}
+                disabled={generatingField !== null || !form.title}
+                className="flex items-center gap-1 text-xs text-violet hover:text-violet-700 disabled:opacity-40 transition-colors cursor-pointer font-semibold"
+                title="AI refine title"
+              >
+                {generatingField === 'refine_title' ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5" />
+                )}
+                Refine
+              </button>
+            </div>
             <input
               id="prompt-title"
               type="text"
@@ -401,7 +532,23 @@ function PromptForm({
 
           {/* Body */}
           <div>
-            <label htmlFor="prompt-body" className="block text-sm font-semibold text-warm-700 mb-1">Body</label>
+            <div className="flex items-center justify-between mb-1">
+              <label htmlFor="prompt-body" className="text-sm font-semibold text-warm-700">Body</label>
+              <button
+                type="button"
+                onClick={() => handleRefineField('refine_body')}
+                disabled={generatingField !== null || !form.body}
+                className="flex items-center gap-1 text-xs text-violet hover:text-violet-700 disabled:opacity-40 transition-colors cursor-pointer font-semibold"
+                title="AI refine body"
+              >
+                {generatingField === 'refine_body' ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5" />
+                )}
+                Refine
+              </button>
+            </div>
             <textarea
               id="prompt-body"
               value={form.body}
@@ -481,7 +628,23 @@ function PromptForm({
 
           {/* Tags */}
           <div>
-            <label htmlFor="prompt-tags" className="block text-sm font-semibold text-warm-700 mb-1">Tags (comma-separated)</label>
+            <div className="flex items-center justify-between mb-1">
+              <label htmlFor="prompt-tags" className="text-sm font-semibold text-warm-700">Tags (comma-separated)</label>
+              <button
+                type="button"
+                onClick={() => handleRefineField('suggest_tags')}
+                disabled={generatingField !== null || !form.body}
+                className="flex items-center gap-1 text-xs text-violet hover:text-violet-700 disabled:opacity-40 transition-colors cursor-pointer font-semibold"
+                title="AI suggest tags"
+              >
+                {generatingField === 'suggest_tags' ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5" />
+                )}
+                Suggest
+              </button>
+            </div>
             <input
               id="prompt-tags"
               type="text"
