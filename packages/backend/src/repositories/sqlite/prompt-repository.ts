@@ -146,6 +146,14 @@ export class SqlitePromptRepository implements IPromptRepository {
     return result.changes > 0
   }
 
+  findByTitle(title: string): Prompt | null {
+    const row = this.db.prepare(
+      'SELECT * FROM prompts WHERE title = ? AND archived_at IS NULL LIMIT 1'
+    ).get(title) as PromptRow | undefined
+
+    return row ? rowToPrompt(row) : null
+  }
+
   count(filters?: PromptFilters): number {
     const { clause, params } = buildWhereClause(filters)
     const row = this.db.prepare(
