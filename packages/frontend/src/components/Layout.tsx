@@ -8,6 +8,7 @@ import {
   FolderOpen,
   PenLine,
   Settings,
+  Cpu,
   X,
   Menu,
   ChevronsLeft,
@@ -27,7 +28,7 @@ export function Layout() {
   const { user } = useAuth()
 
   const NAV_ITEMS = user?.role === 'admin'
-    ? [...BASE_NAV_ITEMS, { to: '/admin/prompts', label: 'Manage Prompts', icon: Settings }]
+    ? [...BASE_NAV_ITEMS, { to: '/admin/prompts', label: 'Manage Prompts', icon: Settings }, { to: '/admin/llm-config', label: 'LLM Config', icon: Cpu }]
     : BASE_NAV_ITEMS
   const [streak, setStreak] = useState(0)
   const [mobileOpen, setMobileOpen] = useState(false)

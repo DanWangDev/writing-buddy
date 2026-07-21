@@ -14,10 +14,10 @@ import { AiCoachService } from '../services/coaching/ai-coach.js'
 import { RubricScorerService } from '../services/scoring/rubric-scorer.js'
 import { ProgressService } from '../services/progress-service.js'
 import { ContentSafetyService } from '../services/content-safety.js'
-import { DashScopeAdapter } from '../services/llm/dashscope-adapter.js'
+import { OpenAICompatibleAdapter } from '../services/llm/openai-compatible-adapter.js'
 import { env } from '../config/env.js'
 import { logger } from '../services/logger.js'
-import type { LLMProvider, LLMProviderOptions, LLMResponse } from '../services/llm/provider.js'
+import type { LlmProviderFactory } from '../services/llm/llm-provider-factory.js'
 
 // Simple per-user daily counter for suggestion endpoints (apply + category-suggest)
 const suggestionCounts = new Map<string, { count: number; date: string }>()
@@ -40,25 +40,9 @@ function checkSuggestionLimit(userId: string, limit: number): boolean {
   return true
 }
 
-function createDefaultProvider(): LLMProvider {
-  if (!env.DASHSCOPE_API_KEY) {
-    logger.warn('DASHSCOPE_API_KEY not set — coaching will use a no-op LLM provider')
-    return {
-      async generateResponse(
-        _systemPrompt: string,
-        _userPrompt: string,
-        _options: LLMProviderOptions
-      ): Promise<LLMResponse> {
-        throw new Error('LLM provider not configured')
-      },
-    }
-  }
-  return new DashScopeAdapter()
-}
-
 export function createCoachingRouter(
   db: Database,
-  llmProvider?: LLMProvider
+  getLlmFactory?: () => LlmProviderFactory
 ): Router {
   const router = Router()
 
@@ -71,24 +55,67 @@ export function createCoachingRouter(
   const userRepo = new SqliteUserRepository(db)
   const contentSafety = new ContentSafetyService()
 
-  const provider: LLMProvider = llmProvider ?? createDefaultProvider()
+  // Lazy — only create providers on first request
+  let aiCoach: AiCoachService | null = null
+  let rubricScorer: RubricScorerService | null = null
+  let _progressService: ProgressService | null = null
 
-  const aiCoach = new AiCoachService(
-    provider,
-    coachingPassRepo,
-    submissionRepo,
-    revisionRepo,
-    promptRepo,
-    userRepo,
-    contentSafety,
-    {
-      freeTierDailySessions: env.FREE_TIER_DAILY_SESSIONS,
-      dailySpendCeiling: env.DAILY_SPEND_CEILING,
+  function getCoachProvider() {
+    return getLlmFactory
+      ? getLlmFactory().getProvider('coaching')
+      : new OpenAICompatibleAdapter(env.LLM_BASE_URL, env.DASHSCOPE_API_KEY, env.LLM_MODEL)
+  }
+
+  function getApplyProvider() {
+    return getLlmFactory
+      ? getLlmFactory().getProvider('apply_suggestions')
+      : getCoachProvider()
+  }
+
+  function getCategoryProvider() {
+    return getLlmFactory
+      ? getLlmFactory().getProvider('category_suggestions')
+      : getCoachProvider()
+  }
+
+  function getScoringProvider() {
+    return getLlmFactory
+      ? getLlmFactory().getProvider('scoring')
+      : getCoachProvider()
+  }
+
+  function getAiCoach(): AiCoachService {
+    if (!aiCoach) {
+      aiCoach = new AiCoachService(
+        getCoachProvider(),
+        coachingPassRepo,
+        submissionRepo,
+        revisionRepo,
+        promptRepo,
+        userRepo,
+        contentSafety,
+        {
+          freeTierDailySessions: env.FREE_TIER_DAILY_SESSIONS,
+          dailySpendCeiling: env.DAILY_SPEND_CEILING,
+        },
+      )
     }
-  )
+    return aiCoach
+  }
 
-  const rubricScorer = new RubricScorerService(provider, rubricScoresRepo)
-  const progressService = new ProgressService(progressRepo)
+  function getRubricScorer(): RubricScorerService {
+    if (!rubricScorer) {
+      rubricScorer = new RubricScorerService(getScoringProvider(), rubricScoresRepo)
+    }
+    return rubricScorer
+  }
+
+  function getProgressService(): ProgressService {
+    if (!_progressService) {
+      _progressService = new ProgressService(progressRepo)
+    }
+    return _progressService
+  }
 
   router.post(
     '/:id/coach',
@@ -98,9 +125,9 @@ export function createCoachingRouter(
         const submissionId = req.params.id as string
         const userId = req.user!.sub
 
-        const coachingPass = await aiCoach.getNextPass(submissionId, userId)
+        const coachingPass = await getAiCoach().getNextPass(submissionId, userId)
 
-        progressService.recordCoachingActivity(userId)
+        getProgressService().recordCoachingActivity(userId)
 
         let scores = undefined
 
@@ -118,7 +145,7 @@ export function createCoachingRouter(
               }
             }
 
-            scores = await rubricScorer.scoreSubmission(
+            scores = await getRubricScorer().scoreSubmission(
               submissionId,
               latestRevision.content,
               promptBody
@@ -292,7 +319,7 @@ export function createCoachingRouter(
           ? `Coaching feedback to apply:\n${feedback}\n\nStudent's writing:\n${content}`
           : `Student's writing:\n${content}`
 
-        const llmResponse = await provider.generateResponse(
+        const llmResponse = await getApplyProvider().generateResponse(
           systemPrompt,
           userPrompt,
           { maxTokens: 2000, temperature: 0.3 }
@@ -417,7 +444,7 @@ export function createCoachingRouter(
         const systemPrompt = categoryPrompts[category]
         const userPrompt = `Student's writing:\n${content}`
 
-        const llmResponse = await provider.generateResponse(
+        const llmResponse = await getCategoryProvider().generateResponse(
           systemPrompt,
           userPrompt,
           { maxTokens: 2000, temperature: 0.3 }

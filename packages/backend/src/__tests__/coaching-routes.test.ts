@@ -34,7 +34,10 @@ function buildTestApp(db: DatabaseType, llmProvider: LLMProvider) {
   app.use(express.json())
   app.use(cookieParser())
 
-  const coachingRouter = createCoachingRouter(db, llmProvider)
+  const coachingRouter = createCoachingRouter(db, () => ({
+    getProvider: () => llmProvider,
+    getOptions: () => ({ maxTokens: 800, temperature: 0.7 }),
+  }))
   app.use('/api/writing/submissions', coachingRouter)
 
   return app
