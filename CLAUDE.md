@@ -64,6 +64,7 @@ npm run lint             # ESLint frontend
 - **Navigation:** Collapsible sidebar (desktop, defaults collapsed to 60px icon rail), hamburger menu (mobile). User menu popover with hub link and logout.
 - **UI style:** Manga Burst neubrutalism — see DESIGN.md for full system. Bangers + Comic Neue fonts, ink borders, hard shadows.
 - **Admin:** Role-gated admin UI for prompt CRUD, accessible via hub OIDC `role` claim.
+- **Docker networking:** Backend joins shared `labf-net` bridge to reach hub-backend for OIDC discovery + JWKS. Create the network once per host: `./bootstrap.sh`. Hub owns the canonical bootstrap; see [11plus-hub](https://github.com/DanWangDev/11plus-hub).
 
 ## Testing
 
