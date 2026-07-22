@@ -55,15 +55,16 @@ npm run lint             # ESLint frontend
 ## Architecture Decisions
 
 - **Route prefix:** Writing routes under `/api/writing/...`, auth routes under `/api/auth/...` (ready for single-process merge with vocab-master)
-- **LLM provider:** Interface-based (`LLMProvider`) with DashScope adapter (Alibaba Cloud Model Studio, Qwen models). OpenAI-compatible API.
+- **LLM provider:** Interface-based (`LLMProvider`) with DashScope adapter (Alibaba Cloud Model Studio, Qwen models) and Claude adapter (Anthropic API). OpenAI-compatible API.
 - **Content safety:** Dedicated service, not inline. Input screening + output filtering.
-- **Revision summaries:** Hybrid — coaching pass feedback + diff-match-patch (no extra LLM calls)
+- **Revision summaries:** Hybrid — coaching pass feedback + custom LCS-based word diff (no extra LLM calls)
 - **Rubric scoring:** Separate LLM call after Pass 4 (coaching and grading are different tones)
 - **Spend tracking:** DB-based per-request query (no in-memory counters that drift on restart)
-- **Auth:** Hub OIDC via `@danwangdev/auth-client` SDK. Session-based with PKCE. Hub role claims used for admin gating.
+- **Auth:** Hub OIDC via `@danwangdev/auth-client` SDK. Session-based with PKCE. Hub role claims used for admin gating. Hub app entitlements (apps array) checked via `requireEntitlement` middleware; admins bypass.
 - **Navigation:** Collapsible sidebar (desktop, defaults collapsed to 60px icon rail), hamburger menu (mobile). User menu popover with hub link and logout.
 - **UI style:** Manga Burst neubrutalism — see DESIGN.md for full system. Bangers + Comic Neue fonts, ink borders, hard shadows.
 - **Admin:** Role-gated admin UI for prompt CRUD, accessible via hub OIDC `role` claim.
+- **Docker networking:** Backend joins shared `labf-net` bridge to reach hub-backend for OIDC discovery + JWKS. Create the network once per host: `./bootstrap.sh`. Hub owns the canonical bootstrap; see [11plus-hub](https://github.com/DanWangDev/11plus-hub).
 
 ## Testing
 
