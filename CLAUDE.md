@@ -65,7 +65,33 @@ npm run lint             # ESLint frontend
 - **UI style:** Manga Burst neubrutalism — see DESIGN.md for full system. Bangers + Comic Neue fonts, ink borders, hard shadows.
 - **Admin:** Role-gated admin UI for prompt CRUD, accessible via hub OIDC `role` claim.
 - **Docker networking:** Backend joins shared `labf-net` bridge to reach hub-backend for OIDC discovery + JWKS. Create the network once per host: `./bootstrap.sh`. Hub owns the canonical bootstrap; see [11plus-hub](https://github.com/DanWangDev/11plus-hub).
-- **Continuous Delivery:** Self-hosted GitHub Actions runner on the NAS triggers on CI completion. Pulls latest GHCR image and runs `docker compose up -d`. Deploy workflow: `.github/workflows/deploy.yml`. Runner connects outbound only — no inbound ports.
+- **Continuous Delivery:** Self-hosted GitHub Actions runner on the NAS triggers on CI completion. Pulls latest GHCR image and runs `docker compose up -d`.
+
+```
+┌─ GitHub ────────────────────┐
+│ CI completes                │
+│ deploy workflow triggers    │
+│ runs-on: self-hosted        │
+└────────────┬────────────────┘
+             │ outbound HTTPS only
+             ▼
+┌─ Synology NAS ─────────────────────────┐
+│                                         │
+│  ┌─ Docker: actions-runner ──────────┐ │
+│  │  Ubuntu container (official)      │ │
+│  │  Connects outbound to GitHub      │ │
+│  │  Has Docker socket mounted        │ │
+│  │  Runs: docker compose pull &&     │ │
+│  │         docker compose up -d      │ │
+│  └───────────────────────────────────┘ │
+│                                         │
+│  ┌─ Docker: writing-buddy ───────────┐ │
+│  │  backend + frontend               │ │
+│  └───────────────────────────────────┘ │
+└─────────────────────────────────────────┘
+```
+
+- **Deploy workflow:** `.github/workflows/deploy.yml`. Runner connects outbound only — no inbound ports.
 
 ## Testing
 
