@@ -148,9 +148,12 @@ export class OpenAICompatibleAdapter implements LLMProvider {
       throw new Error('API returned no choices')
     }
 
-    // Support reasoning models (DeepSeek-R1, etc.) that return content in reasoning_content
+    // Support reasoning models (DeepSeek-R1, etc.) that return content in reasoning_content.
+    // Use ?? not || — empty string "" is a valid LLM response but falsy in JS.
+    // Falling through to reasoning_content would leak the model's internal monologue
+    // (which quotes system prompt instructions) to the user.
     const message = data.choices[0]?.message
-    const content = (message?.content || message?.reasoning_content) ?? ''
+    const content = (message?.content ?? message?.reasoning_content) ?? ''
     const tokensUsed = data.usage?.total_tokens ?? 0
 
     logger.info('LLM response received', {
